@@ -27,6 +27,13 @@ placeholder-derived delta window misses `</think>` when drafts are rejected.
 Both are **pure-Python** upstream backports. Patch 0002 carries only the PR's
 source changes (its test file is not present in the runtime image).
 
+Each patch is filed with full context — impact, root cause, a **reproduce case**
+to re-check relevance, validation, and ruled-out theories — under
+[`fork/patches/notes/`](fork/patches/notes/) (index and template in
+[`fork/patches/README.md`](fork/patches/README.md)). Runtime configuration facts
+needed to serve this image safely (V1 runner flag, no-NVLink all-reduce flags,
+kv-cache fp8) are in [`fork/docs/deployment-notes.md`](fork/docs/deployment-notes.md).
+
 ## The model: deterministic tag + patches on top
 
 vLLM is a monster to build from source, so we do **not** compile it. Instead:
@@ -95,9 +102,11 @@ git apply --check fork/patches/0001-restrict-embedding-width-guard-to-eagle-pr47
 - **Drop-in:** entrypoint is inherited from `vllm/vllm-openai`, so it replaces
   the stock image directly.
 - **CI:** [`build-vllm-audio.yml`](.github/workflows/build-vllm-audio.yml) —
-  builds on push to `fork/**` on `main`, or via **Run workflow** (dispatch) with
-  an optional `vllm_tag` / `publish_tags` / `promote_latest`. Needs the
-  `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` repo secrets.
+  builds on push to `main` that changes an actual image input (`fork/patches/*.patch`,
+  `fork/patches/series`, `fork/docker/**`, or the workflow — docs/notes do not
+  trigger a rebuild), or via **Run workflow** (dispatch) with an optional
+  `vllm_tag` / `publish_tags` / `promote_latest`. Needs the `DOCKERHUB_USERNAME`
+  and `DOCKERHUB_TOKEN` repo secrets.
 
 This image build used to live in
 [`Mazyod/production-stack`](https://github.com/Mazyod/production-stack). It was
