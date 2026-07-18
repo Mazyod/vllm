@@ -81,13 +81,11 @@ landed — drop the patch.
 
 ## Validation (point-in-time)
 
-Applied on `vllm/vllm-openai:v0.25.1` with the 31B fp8-block main plus its MTP
-draft on the V1 runner: before → boot crash; after → boots and serves a probe.
-Confirmed on H100 (SM90) and L40S (SM89). The built fork image was then validated
-on the full target serving config (Gemma-4-31B fp8_block, TP=2, MTP draft, fp8
-kv-cache, V1 runner) on 2×H100 on **2026-07-18**: it boots and serves, attention
-resolves to `TRITON_ATTN`, and the embedding log shows only "Sharing target model
-embedding weights" (no "Keeping separate") — confirming the patch is effective.
+Applied on `vllm/vllm-openai:v0.25.1` with the 31B main and its MTP draft: before
+→ boot crash; after → boots and serves a probe, and the embedding log shows only
+"Sharing target model embedding weights" (no "Keeping separate"), confirming the
+patch is effective. Confirmed on H100 (SM90) and L40S (SM89). The built fork image
+was re-validated the same way on **2026-07-18**.
 
 ## Ruled out (do not re-explore)
 
