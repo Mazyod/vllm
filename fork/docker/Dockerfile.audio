@@ -1,0 +1,38 @@
+# syntax=docker/dockerfile:1
+#
+# vllm-openai + audio extras + fork patches.
+#
+# This image is the Mazyod/vllm fork's release artifact. It does NOT rebuild
+# vLLM from source (that CUDA build is a monster); instead it layers on the
+# prebuilt upstream release image and applies two things on top:
+#
+#   1. The `audio` extra (av/soundfile/soxr/scipy/...), pinned to the EXACT vLLM
+#      build in the base image so pip never reinstalls or swaps the vendored
+#      vLLM. Without it, POST /v1/audio/transcriptions fails at request time
+#      with "Please install vllm[audio] for audio support".
+#
+#   2. The fork patch series (fork/patches/, applied against this exact release
+#      tag). Both are pure-Python upstream backports; see FORK.md.
+#
+# The entrypoint is inherited unchanged, so this is a drop-in replacement for
+# vllm/vllm-openai:${BASE_TAG}.
+#
+# BASE_TAG MUST be a real upstream release tag (e.g. v0.25.1). The patch series
+# is generated against that tag; bumping BASE_TAG without refreshing the series
+# (fork/scripts/refresh-patches.sh) will fail the build by design.
+ARG BASE_TAG=v0.25.1
+FROM vllm/vllm-openai:${BASE_TAG}
+
+# `pip show` reads metadata WITHOUT importing vllm, so this stays fast and needs
+# no GPU/CUDA at build time.
+RUN pip install --no-cache-dir "vllm[audio]==$(pip show vllm | awk '/^Version:/ {print $2}')"
+
+# Apply the fork patches LAST so they win even if the step above touched vLLM.
+COPY fork/patches /opt/fork/patches
+COPY fork/docker/apply-patches.sh /opt/fork/apply-patches.sh
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends patch; \
+    rm -rf /var/lib/apt/lists/*; \
+    chmod +x /opt/fork/apply-patches.sh; \
+    /opt/fork/apply-patches.sh /opt/fork/patches
