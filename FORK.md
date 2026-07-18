@@ -12,19 +12,33 @@ fork-owned file lives under `fork/` (plus one CI workflow). You can always
 
 ## What we add
 
-| # | Upstream PR | Fixes | Why we carry it |
-|---|-------------|-------|-----------------|
-| 0001 | [#47953](https://github.com/vllm-project/vllm/pull/47953) — Restrict embedding-width share guard to EAGLE drafts | Gemma-4 MTP boot crash (`mat1 and mat2 ... 6400/10752` at `pre_projection`) | v0.25.1 carries the #43957 regression; without this, V1 + MTP won't boot. |
-| 0002 | [#44993](https://github.com/vllm-project/vllm/pull/44993) — Advance grammar across reasoning boundary | Structured-output `{{` / `{"{` corruption under reasoning + spec decode (#43388) | Grammar must advance at the true reasoning boundary; the placeholder-derived delta window misses `</think>` when drafts are rejected. |
+**0001 — [#47953](https://github.com/vllm-project/vllm/pull/47953): Restrict
+embedding-width share guard to EAGLE drafts.**
+Fixes a Gemma-4 MTP boot crash (`mat1 and mat2 ... 6400/10752` at
+`pre_projection`). v0.25.1 carries the #43957 regression; without this, V1 + MTP
+won't boot.
+
+**0002 — [#44993](https://github.com/vllm-project/vllm/pull/44993): Advance
+grammar across reasoning boundary.**
+Fixes structured-output `{{` / `{"{` corruption under reasoning + spec decode
+(#43388). The grammar must advance at the true reasoning boundary; the
+placeholder-derived delta window misses `</think>` when drafts are rejected.
 
 Both are **pure-Python** upstream backports. Patch 0002 carries only the PR's
 source changes (its test file is not present in the runtime image).
+
+Each patch is filed with full context — impact, root cause, a **reproduce case**
+to re-check relevance, validation, and ruled-out theories — under
+[`fork/patches/notes/`](fork/patches/notes/) (index and template in
+[`fork/patches/README.md`](fork/patches/README.md)). Runtime configuration facts
+needed to serve this image safely (V1 runner flag, no-NVLink all-reduce flags,
+kv-cache fp8) are in [`fork/docs/deployment-notes.md`](fork/docs/deployment-notes.md).
 
 ## The model: deterministic tag + patches on top
 
 vLLM is a monster to build from source, so we do **not** compile it. Instead:
 
-```
+```text
 vllm/vllm-openai:<TAG>   (prebuilt upstream release image)
       └─ + vllm[audio]   (av / soundfile / soxr / scipy ...)
       └─ + fork/patches/ (applied to the installed package in site-packages)
@@ -88,9 +102,11 @@ git apply --check fork/patches/0001-restrict-embedding-width-guard-to-eagle-pr47
 - **Drop-in:** entrypoint is inherited from `vllm/vllm-openai`, so it replaces
   the stock image directly.
 - **CI:** [`build-vllm-audio.yml`](.github/workflows/build-vllm-audio.yml) —
-  builds on push to `fork/**` on `main`, or via **Run workflow** (dispatch) with
-  an optional `vllm_tag` / `publish_tags` / `promote_latest`. Needs the
-  `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` repo secrets.
+  builds on push to `main` that changes an actual image input (`fork/patches/*.patch`,
+  `fork/patches/series`, `fork/docker/**`, or the workflow — docs/notes do not
+  trigger a rebuild), or via **Run workflow** (dispatch) with an optional
+  `vllm_tag` / `publish_tags` / `promote_latest`. Needs the `DOCKERHUB_USERNAME`
+  and `DOCKERHUB_TOKEN` repo secrets.
 
 This image build used to live in
 [`Mazyod/production-stack`](https://github.com/Mazyod/production-stack). It was
