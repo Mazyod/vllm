@@ -12,10 +12,17 @@ fork-owned file lives under `fork/` (plus one CI workflow). You can always
 
 ## What we add
 
-| # | Upstream PR | Fixes | Why we carry it |
-|---|-------------|-------|-----------------|
-| 0001 | [#47953](https://github.com/vllm-project/vllm/pull/47953) — Restrict embedding-width share guard to EAGLE drafts | Gemma-4 MTP boot crash (`mat1 and mat2 ... 6400/10752` at `pre_projection`) | v0.25.1 carries the #43957 regression; without this, V1 + MTP won't boot. |
-| 0002 | [#44993](https://github.com/vllm-project/vllm/pull/44993) — Advance grammar across reasoning boundary | Structured-output `{{` / `{"{` corruption under reasoning + spec decode (#43388) | Grammar must advance at the true reasoning boundary; the placeholder-derived delta window misses `</think>` when drafts are rejected. |
+**0001 — [#47953](https://github.com/vllm-project/vllm/pull/47953): Restrict
+embedding-width share guard to EAGLE drafts.**
+Fixes a Gemma-4 MTP boot crash (`mat1 and mat2 ... 6400/10752` at
+`pre_projection`). v0.25.1 carries the #43957 regression; without this, V1 + MTP
+won't boot.
+
+**0002 — [#44993](https://github.com/vllm-project/vllm/pull/44993): Advance
+grammar across reasoning boundary.**
+Fixes structured-output `{{` / `{"{` corruption under reasoning + spec decode
+(#43388). The grammar must advance at the true reasoning boundary; the
+placeholder-derived delta window misses `</think>` when drafts are rejected.
 
 Both are **pure-Python** upstream backports. Patch 0002 carries only the PR's
 source changes (its test file is not present in the runtime image).
@@ -24,7 +31,7 @@ source changes (its test file is not present in the runtime image).
 
 vLLM is a monster to build from source, so we do **not** compile it. Instead:
 
-```
+```text
 vllm/vllm-openai:<TAG>   (prebuilt upstream release image)
       └─ + vllm[audio]   (av / soundfile / soxr / scipy ...)
       └─ + fork/patches/ (applied to the installed package in site-packages)

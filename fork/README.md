@@ -5,7 +5,7 @@ Everything the fork owns lives here (plus the CI workflow at
 source, so `git merge upstream/main` never conflicts with it. Start at the
 top-level [`FORK.md`](../FORK.md) for the why.
 
-```
+```text
 fork/
 ├── patches/                     # the fork's delta, one file per upstream backport
 │   ├── series                   # apply order (blank lines / # comments ignored)

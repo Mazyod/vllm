@@ -82,11 +82,11 @@ jobs:
 
           PROMOTE_LATEST="${{ github.event.inputs.promote_latest || 'true' }}"
 
-          echo "base_tag=$BASE_TAG"           >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION"             >> "$GITHUB_OUTPUT"
-          echo "primary_tag=$PRIMARY_TAG"     >> "$GITHUB_OUTPUT"
-          echo "promote_latest=$PROMOTE_LATEST" >> "$GITHUB_OUTPUT"
           {
+            echo "base_tag=$BASE_TAG"
+            echo "version=$VERSION"
+            echo "primary_tag=$PRIMARY_TAG"
+            echo "promote_latest=$PROMOTE_LATEST"
             echo "image_refs<<__REFS__"
             for t in $PUBLISH_TAGS; do echo "${IMAGE_NAME}:${t}"; done
             echo "__REFS__"
@@ -137,14 +137,16 @@ jobs:
 
       - name: Summary
         run: |
-          echo "### Build Complete" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Base image:** \`vllm/vllm-openai:${{ needs.resolve.outputs.base_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Tags:**" >> "$GITHUB_STEP_SUMMARY"
-          while IFS= read -r ref; do
-            [[ -n "$ref" ]] && echo "  - \`$ref\`" >> "$GITHUB_STEP_SUMMARY"
-          done <<< "${{ needs.resolve.outputs.image_refs }}"
-          echo "- **Digest:** \`${{ steps.build.outputs.digest }}\`" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### Build Complete"
+            echo ""
+            echo "- **Base image:** \`vllm/vllm-openai:${{ needs.resolve.outputs.base_tag }}\`"
+            echo "- **Tags:**"
+            while IFS= read -r ref; do
+              [[ -n "$ref" ]] && echo "  - \`$ref\`"
+            done <<< "${{ needs.resolve.outputs.image_refs }}"
+            echo "- **Digest:** \`${{ steps.build.outputs.digest }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # ---------------------------------------------------------------------------
   # Job 3: Verify audio deps import AND the fork patches are present (CPU-only)
@@ -212,7 +214,9 @@ jobs:
 
       - name: Summary
         run: |
-          echo "### Release Complete" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- \`${{ env.IMAGE_NAME }}:${{ needs.resolve.outputs.primary_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- \`${{ env.IMAGE_NAME }}:latest\`" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### Release Complete"
+            echo ""
+            echo "- \`${{ env.IMAGE_NAME }}:${{ needs.resolve.outputs.primary_tag }}\`"
+            echo "- \`${{ env.IMAGE_NAME }}:latest\`"
+          } >> "$GITHUB_STEP_SUMMARY"
