@@ -30,9 +30,7 @@ source changes (its test file is not present in the runtime image).
 Each patch is filed with full context — impact, root cause, a **reproduce case**
 to re-check relevance, validation, and ruled-out theories — under
 [`fork/patches/notes/`](fork/patches/notes/) (index and template in
-[`fork/patches/README.md`](fork/patches/README.md)). Runtime configuration facts
-needed to serve this image safely (V1 runner flag, no-NVLink all-reduce flags,
-kv-cache fp8) are in [`fork/docs/deployment-notes.md`](fork/docs/deployment-notes.md).
+[`fork/patches/README.md`](fork/patches/README.md)).
 
 ## The model: deterministic tag + patches on top
 

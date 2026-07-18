@@ -18,8 +18,6 @@ fork/
 ├── docker/
 │   ├── Dockerfile.audio         # FROM vllm/vllm-openai:${BASE_TAG} + audio + patches
 │   └── apply-patches.sh         # applies the series to installed vLLM (fail-closed)
-├── docs/
-│   └── deployment-notes.md      # runtime config facts (V1 runner, no-NVLink, kv fp8)
 └── scripts/
     └── refresh-patches.sh       # rebase the series onto a new release tag (lockstep)
 ```

@@ -25,8 +25,7 @@ fork/patches/
 The `.patch` files and `series` are the mechanical inputs consumed by
 `../docker/apply-patches.sh`. The `notes/` docs are for humans and do not affect
 the build. Operational mechanics (patch model, lockstep with upstream releases,
-how the image is built) live in the top-level [`FORK.md`](../../FORK.md); runtime
-configuration facts live in [`../docs/deployment-notes.md`](../docs/deployment-notes.md).
+how the image is built) live in the top-level [`FORK.md`](../../FORK.md).
 
 ## Index
 
