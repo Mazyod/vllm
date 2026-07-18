@@ -75,6 +75,12 @@ If `refresh-patches.sh` reports a patch no longer applies, rebase that patch by
 hand — or, if the upstream PR has since merged into the release, drop it from
 `fork/patches/series` entirely.
 
+**CI hygiene.** This fork keeps only its own workflow
+(`.github/workflows/build-vllm-audio.yml`); upstream's governance/lint workflows
+(PR bot, auto-label, stale bot, pre-commit gate, macOS smoke test) are deleted
+because they are noise on a personal fork. A `git merge upstream/main` can
+re-introduce them — if it does, delete them again as part of the sync.
+
 ## Testing the patches locally
 
 The canonical integrated tree is the `fork/<tag>` branch (the release tag with
