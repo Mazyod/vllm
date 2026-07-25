@@ -7,6 +7,7 @@ top-level [`FORK.md`](../FORK.md) for the why.
 
 ```text
 fork/
+├── alignment.ledger             # the complete declared divergence from upstream
 ├── patches/                     # the fork's delta + its documented context
 │   ├── README.md                # filing convention, patch index, note template
 │   ├── series                   # apply order (blank lines / # comments ignored)
@@ -19,8 +20,24 @@ fork/
 │   ├── Dockerfile.audio         # FROM vllm/vllm-openai:${BASE_TAG} + audio + patches
 │   └── apply-patches.sh         # applies the series to installed vLLM (fail-closed)
 └── scripts/
+    ├── check-alignment.sh       # fail on any divergence the ledger does not declare
     └── refresh-patches.sh       # rebase the series onto a new release tag (lockstep)
 ```
+
+## Alignment
+
+`alignment.ledger` declares every way this fork differs from upstream: the
+fork-owned paths it adds, and the upstream workflows it deletes. Modifying an
+upstream-owned file is not declarable — that is what patches are for.
+
+```bash
+fork/scripts/check-alignment.sh    # add --fetch to refresh the upstream ref
+```
+
+It compares `HEAD` against the merge-base with `upstream/main`, so unmerged
+upstream commits are never mistaken for fork changes, and it reads only
+committed state — commit your work before trusting a local run. CI runs it on
+every pull request and as a gate on the image build. See FORK.md § Charter.
 
 ## Patches
 

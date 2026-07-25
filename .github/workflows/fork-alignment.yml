@@ -1,0 +1,31 @@
+name: Fork alignment
+
+# Enforces the fork's alignment charter (FORK.md § Charter) on every change:
+# this fork may only ADD fork-owned files and DELETE the upstream workflows
+# declared in fork/alignment.ledger. Modifying an upstream-owned file in the
+# tree is a hard failure — such changes belong in fork/patches/, applied to the
+# image at build time.
+#
+# The image build (build-vllm-audio.yml) runs the same check as a publish gate,
+# so a drifting fork can neither merge nor ship.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  alignment:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v5
+        with:
+          # merge-base needs the real commit history; blobless keeps it cheap.
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: Check alignment with upstream
+        run: fork/scripts/check-alignment.sh --fetch

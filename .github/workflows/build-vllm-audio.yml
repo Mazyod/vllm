@@ -42,6 +42,24 @@ env:
 
 jobs:
   # ---------------------------------------------------------------------------
+  # Job 0: Alignment gate — a fork that has drifted from upstream must not ship
+  # ---------------------------------------------------------------------------
+  alignment:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v5
+        with:
+          # merge-base needs the real commit history; blobless keeps it cheap.
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: Check alignment with upstream
+        run: fork/scripts/check-alignment.sh --fetch
+
+  # ---------------------------------------------------------------------------
   # Job 1: Resolve the base tag and the image refs to publish
   # ---------------------------------------------------------------------------
   resolve:
@@ -106,7 +124,7 @@ jobs:
   # Job 2: Build the audio + patched image and push
   # ---------------------------------------------------------------------------
   build-and-push:
-    needs: resolve
+    needs: [alignment, resolve]
     runs-on: ubuntu-latest
     permissions:
       contents: read

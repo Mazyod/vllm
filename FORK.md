@@ -7,8 +7,54 @@ image.
 
 The guiding rule: **upstream stays pristine, our changes sit clearly on top.**
 Nothing here is intermingled with vLLM source on the default branch — every
-fork-owned file lives under `fork/` (plus one CI workflow). You can always
+fork-owned file lives under `fork/` (plus two CI workflows). You can always
 `git merge upstream/main` without touching a line of engine code.
+
+## Charter: alignment first
+
+This fork's standing goal is to stay **as close to upstream as it can while
+still being useful**. Every divergence is a liability we have chosen to carry,
+so every divergence has to earn its place. Three rules, in priority order:
+
+**R1 — Additive only, plus a declared deletion list.** The fork never modifies
+an upstream-owned file in this tree. It adds fork-owned files and deletes the
+upstream workflows enumerated in
+[`fork/alignment.ledger`](fork/alignment.ledger) — nothing else, ever. A change
+to upstream *content* rides as a patch applied to the image at build time, never
+as an edit here. This is the whole reason `git merge upstream/main` stays a
+non-event.
+
+**R2 — One patch, one concrete goal, traceable to upstream.** A patch backports
+exactly one upstream PR, or serves one narrowly-stated fork need. It touches the
+fewest files that achieve that goal and ships with a note under
+[`fork/patches/notes/`](fork/patches/notes/). No omnibus patches, no drive-by
+edits riding along, no local "improvements" to vLLM.
+
+**R3 — Every divergence carries an exit criterion.** A patch records the
+upstream commit that will retire it; a declared deletion records why it is
+permanent. Nothing diverges "just because", and nothing outlives its reason.
+
+**The standing obligation.** At every release, *first* drop what upstream has
+absorbed, *then* rebase what it hasn't. The series is expected to shrink by
+default; growing it is the exception that needs an argument.
+
+R1 is enforced mechanically, not by good intentions:
+[`fork/scripts/check-alignment.sh`](fork/scripts/check-alignment.sh) measures the
+real divergence from the merge-base with `upstream/main` and fails on anything
+the ledger does not declare. It runs on every pull request
+([`fork-alignment.yml`](.github/workflows/fork-alignment.yml)) and as a gate on
+the image build, so a drifted fork can neither merge nor ship.
+
+```console
+$ fork/scripts/check-alignment.sh
+fork alignment
+  upstream base : c233d90aa (merge-base with upstream/main)
+  ledger        : fork/alignment.ledger
+
+  added     12 files, declared                                   OK
+  deleted   6 files, declared                                    OK
+  modified  0 upstream files                                     OK
+```
 
 ## What we add
 
@@ -64,7 +110,12 @@ ship an image whose patches silently did nothing.
 When vLLM cuts a new release (e.g. `v0.27.0`):
 
 ```bash
-# 1. Rebase the patch series onto the new tag (verifies + regenerates).
+# 0. Re-align with upstream first. The merge conflicts only on the workflows the
+#    ledger declares deleted; delete them again, then confirm nothing else drifted.
+git merge upstream/main
+fork/scripts/check-alignment.sh
+
+# 1. Drop what upstream absorbed, then rebase what it did not (see below).
 fork/scripts/refresh-patches.sh v0.27.0
 
 # 2. Bump the base tag the image builds from.
@@ -74,17 +125,21 @@ fork/scripts/refresh-patches.sh v0.27.0
 #    the workflow) builds and publishes openimage/vllm-openai-audio:v0.27.0.
 ```
 
-Before step 1, check whether each patch's upstream PR already landed in the new
-release — `git merge-base --is-ancestor <merge-commit> <tag>`, with the merge
-commit recorded in the patch's note. If it did, drop the patch from
-`fork/patches/series` instead of rebasing it. Otherwise, if
-`refresh-patches.sh` reports a patch no longer applies, rebase it by hand.
+Step 1 starts with the **drop** check, per R3: for each patch, take the upstream
+merge commit recorded in its note and ask whether the new tag already contains
+it — `git merge-base --is-ancestor <merge-commit> <tag>`. If it does, delete the
+patch, its note and its `fork/patches/series` line instead of rebasing it. Only
+then run `refresh-patches.sh`; if it reports a surviving patch no longer applies,
+rebase that one by hand.
 
-**CI hygiene.** This fork keeps only its own workflow
-(`.github/workflows/build-vllm-audio.yml`); upstream's governance/lint workflows
-(PR bot, auto-label, stale bot, pre-commit gate, macOS smoke test) are deleted
-because they are noise on a personal fork. A `git merge upstream/main` can
-re-introduce them — if it does, delete them again as part of the sync.
+**CI hygiene.** This fork keeps only its own two workflows
+([`build-vllm-audio.yml`](.github/workflows/build-vllm-audio.yml) and
+[`fork-alignment.yml`](.github/workflows/fork-alignment.yml)); upstream's
+governance/lint workflows are deleted because they are noise on a personal fork.
+They are the fork's only non-additive divergence, so they are enumerated with
+their rationale in [`fork/alignment.ledger`](fork/alignment.ledger) — and they
+are exactly what `git merge upstream/main` will conflict on. Re-delete them as
+part of the sync; `check-alignment.sh` fails if one survives.
 
 ## Testing the patches locally
 

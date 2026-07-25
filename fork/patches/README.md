@@ -38,8 +38,24 @@ how the image is built) live in the top-level [`FORK.md`](../../FORK.md).
 
 ## Adding a patch
 
+A patch is the fork's most expensive kind of divergence, so it has to clear the
+charter's bar first (FORK.md § Charter):
+
+- **One goal, traceable upstream.** Exactly one upstream PR, or one
+  narrowly-stated fork need — never a bundle. If you cannot name the single
+  thing it fixes, it is not ready.
+- **Smallest possible diff.** Only the files that goal requires. No drive-by
+  edits, no local "improvements" to vLLM, no test files that the runtime image
+  does not carry.
+- **A stated exit.** Record the upstream commit that will retire it, so the next
+  release can drop it mechanically. A patch with no exit criterion does not go in.
+
+Then:
+
 1. Generate the `.patch` against the pinned base tag (see `FORK.md`; the diff
    paths must be repo-relative `vllm/...` so `patch -p1` applies in the image).
+   If the upstream PR has already merged, generate from the **merged commit** so
+   the fork ships what upstream shipped.
 2. Add its filename to `series` in apply order.
 3. Write `notes/000N-<slug>.md` using the template below.
 4. Update the index table above.
@@ -57,8 +73,8 @@ Copy this into `notes/000N-<slug>.md`:
 | **Upstream PR** | <url> |
 | **Files touched** | `path/to/file.py` |
 | **Applied on** | `vX.Y.Z` |
-| **Upstream status** | Open / merged in vX.Y.Z. Related: #... |
-| **Drop this patch when** | <exit criteria — verify with the reproduce, then remove from series> |
+| **Upstream status** | Open, or **Merged** <date> as `<commit>` — say whether that commit is in a release yet. Related: #... |
+| **Drop this patch when** | `git merge-base --is-ancestor <merge-commit> <tag>` succeeds for the tag we rebase onto — then delete the patch, this note and its `series` line. |
 
 ## Why it hurts us (impact)
 <symptom, blast radius, error text/traceback, how often>
