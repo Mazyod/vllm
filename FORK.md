@@ -15,8 +15,8 @@ fork-owned file lives under `fork/` (plus one CI workflow). You can always
 **0001 — [#47953](https://github.com/vllm-project/vllm/pull/47953): Restrict
 embedding-width share guard to EAGLE drafts.**
 Fixes a Gemma-4 MTP boot crash (`mat1 and mat2 ... 6400/10752` at
-`pre_projection`). v0.25.1 carries the #43957 regression; without this, V1 + MTP
-won't boot.
+`pre_projection`). v0.26.0 still carries the #43957 regression; without this,
+V1 + MTP won't boot.
 
 **0002 — [#44993](https://github.com/vllm-project/vllm/pull/44993): Advance
 grammar across reasoning boundary.**
@@ -24,8 +24,11 @@ Fixes structured-output `{{` / `{"{` corruption under reasoning + spec decode
 (#43388). The grammar must advance at the true reasoning boundary; the
 placeholder-derived delta window misses `</think>` when drafts are rejected.
 
-Both are **pure-Python** upstream backports. Patch 0002 carries only the PR's
-source changes (its test file is not present in the runtime image).
+Both are **pure-Python** upstream backports, byte-identical to the merged
+upstream commits. Patch 0002 carries only the PR's source changes (its test file
+is not present in the runtime image). Both PRs merged *after* `v0.26.0` was cut,
+so they are still not in any release — drop them once a release we rebase onto
+contains them.
 
 Each patch is filed with full context — impact, root cause, a **reproduce case**
 to re-check relevance, validation, and ruled-out theories — under
@@ -49,7 +52,7 @@ Two things are deliberately decoupled:
   patches. It is *not* what we build.
 - **The image** is built from a pinned release tag — `DEFAULT_BASE_TAG` in
   [`.github/workflows/build-vllm-audio.yml`](.github/workflows/build-vllm-audio.yml),
-  currently **`v0.25.1`**.
+  currently **`v0.26.0`**.
 
 The patch files in `fork/patches/` are generated against that exact tag, which
 is why they apply with no fuzz. If a patch ever fails to apply, the image build
@@ -58,22 +61,24 @@ ship an image whose patches silently did nothing.
 
 ## Lockstep with upstream releases
 
-When vLLM cuts a new release (e.g. `v0.26.0`):
+When vLLM cuts a new release (e.g. `v0.27.0`):
 
 ```bash
 # 1. Rebase the patch series onto the new tag (verifies + regenerates).
-fork/scripts/refresh-patches.sh v0.26.0
+fork/scripts/refresh-patches.sh v0.27.0
 
 # 2. Bump the base tag the image builds from.
-#    edit .github/workflows/build-vllm-audio.yml -> DEFAULT_BASE_TAG: v0.26.0
+#    edit .github/workflows/build-vllm-audio.yml -> DEFAULT_BASE_TAG: v0.27.0
 
 # 3. Review the regenerated patches, commit, push. Pushing to main (or running
-#    the workflow) builds and publishes openimage/vllm-openai-audio:v0.26.0.
+#    the workflow) builds and publishes openimage/vllm-openai-audio:v0.27.0.
 ```
 
-If `refresh-patches.sh` reports a patch no longer applies, rebase that patch by
-hand — or, if the upstream PR has since merged into the release, drop it from
-`fork/patches/series` entirely.
+Before step 1, check whether each patch's upstream PR already landed in the new
+release — `git merge-base --is-ancestor <merge-commit> <tag>`, with the merge
+commit recorded in the patch's note. If it did, drop the patch from
+`fork/patches/series` instead of rebasing it. Otherwise, if
+`refresh-patches.sh` reports a patch no longer applies, rebase it by hand.
 
 **CI hygiene.** This fork keeps only its own workflow
 (`.github/workflows/build-vllm-audio.yml`); upstream's governance/lint workflows
@@ -87,22 +92,22 @@ The canonical integrated tree is the `fork/<tag>` branch (the release tag with
 the patch series applied as discrete commits):
 
 ```bash
-git fetch origin fork/v0.25.1
-git log --oneline v0.25.1..origin/fork/v0.25.1   # exactly the two patches
+git fetch origin fork/v0.26.0
+git log --oneline v0.26.0..origin/fork/v0.26.0   # exactly the two patches
 ```
 
 Or apply a single patch against a fresh checkout to inspect it in isolation:
 
 ```bash
-git worktree add /tmp/v0.25.1 v0.25.1
-cd /tmp/v0.25.1
+git worktree add /tmp/v0.26.0 v0.26.0
+cd /tmp/v0.26.0
 git apply --check fork/patches/0001-restrict-embedding-width-guard-to-eagle-pr47953.patch
 ```
 
 ## The image
 
 - **Registry / name:** `docker.io/openimage/vllm-openai-audio`
-- **Tags:** the upstream base tag (e.g. `v0.25.1`) and `latest`.
+- **Tags:** the upstream base tag (e.g. `v0.26.0`) and `latest`.
 - **Drop-in:** entrypoint is inherited from `vllm/vllm-openai`, so it replaces
   the stock image directly.
 - **CI:** [`build-vllm-audio.yml`](.github/workflows/build-vllm-audio.yml) —

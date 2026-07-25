@@ -17,10 +17,10 @@
 # The entrypoint is inherited unchanged, so this is a drop-in replacement for
 # vllm/vllm-openai:${BASE_TAG}.
 #
-# BASE_TAG MUST be a real upstream release tag (e.g. v0.25.1). The patch series
+# BASE_TAG MUST be a real upstream release tag (e.g. v0.26.0). The patch series
 # is generated against that tag; bumping BASE_TAG without refreshing the series
 # (fork/scripts/refresh-patches.sh) will fail the build by design.
-ARG BASE_TAG=v0.25.1
+ARG BASE_TAG=v0.26.0
 FROM vllm/vllm-openai:${BASE_TAG}
 
 # `pip show` reads metadata WITHOUT importing vllm, so this stays fast and needs

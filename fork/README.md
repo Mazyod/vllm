@@ -43,8 +43,8 @@ against a new tag with `scripts/refresh-patches.sh <tag>`.
 ```bash
 # from the repo root
 docker build -f fork/docker/Dockerfile.audio \
-  --build-arg BASE_TAG=v0.25.1 \
-  -t openimage/vllm-openai-audio:v0.25.1 .
+  --build-arg BASE_TAG=v0.26.0 \
+  -t openimage/vllm-openai-audio:v0.26.0 .
 ```
 
 The build fails loudly if any patch does not apply to `BASE_TAG` — that is the

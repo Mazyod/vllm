@@ -5,9 +5,9 @@
 | **Patch file** | [`../0002-advance-grammar-across-reasoning-boundary-pr44993.patch`](../0002-advance-grammar-across-reasoning-boundary-pr44993.patch) |
 | **Upstream PR** | <https://github.com/vllm-project/vllm/pull/44993> |
 | **Files touched** | `vllm/v1/core/sched/scheduler.py`, `vllm/v1/structured_output/__init__.py` |
-| **Applied on** | `v0.25.1` (source changes only; the PR's test file is not needed in the runtime image) |
-| **Upstream status** | Open, mergeable. Closes issues #43388, #34650, #48228. Related: #41967 (Gemma-4 + MTP dropping the first tool-call arguments — same root cause in the tool-call path). |
-| **Drop this patch when** | #44993 lands in a release we rebase onto — verify with the reproduce below, then remove it from `../series`. |
+| **Applied on** | `v0.26.0` (source changes only; the PR's test file is not needed in the runtime image) |
+| **Upstream status** | **Merged** 2026-07-24 as `0416dab27` — *after* `v0.26.0` was cut (2026-07-20), so it is in no release yet. Closes issues #43388, #34650, #48228. Related: #41967 (Gemma-4 + MTP dropping the first tool-call arguments — same root cause in the tool-call path). |
+| **Drop this patch when** | `0416dab27` is an ancestor of the tag we rebase onto (`git merge-base --is-ancestor 0416dab27 <tag>`) — expected in the release after `v0.26.0`. Then remove it from `../series`. |
 
 ## Why it hurts us (impact)
 
@@ -77,7 +77,8 @@ VLLM_USE_V2_MODEL_RUNNER=0 vllm serve google/gemma-4-E2B-it \
 Drive it with structured (native) JSON requests that also enable thinking, at
 concurrency around 16.
 
-- **Stock `v0.25.1`:** roughly 75–100% of responses corrupt with `{{`.
+- **Stock `v0.26.0`:** roughly 75–100% of responses corrupt with `{{`. (Measured
+  on `v0.25.1`; both touched paths are unchanged in `v0.26.0`.)
 - **With patch 0002:** 0% corrupt.
 
 **Relevance check:** if stock (unpatched) shows 0% corruption here, the upstream
@@ -89,6 +90,12 @@ On Gemma-4-E2B, applying both coupled changes moved corruption from
 **75 / 100 / 96 / 91%** (at concurrency 8 / 16 / 24 / 32) to **0 / 0 / 0 / 0%**,
 with no errors. Because the fault is in the shared grammar-bitmask path and not in
 any model-specific code, the fix carries to the 31B production model.
+
+**2026-07-25 — `v0.26.0` rebase, static verification only.** `should_advance` and
+the scheduler call site are byte-identical in `v0.25.1` and `v0.26.0`, so the bug
+carries over unchanged; the regenerated patch matches upstream's merged commit
+`0416dab27` exactly, and the patched files are byte-identical to `upstream/main`.
+Not re-run on hardware.
 
 ## Ruled out (do not re-explore)
 

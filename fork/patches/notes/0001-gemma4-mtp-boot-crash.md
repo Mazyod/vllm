@@ -5,9 +5,9 @@
 | **Patch file** | [`../0001-restrict-embedding-width-guard-to-eagle-pr47953.patch`](../0001-restrict-embedding-width-guard-to-eagle-pr47953.patch) |
 | **Upstream PR** | <https://github.com/vllm-project/vllm/pull/47953> |
 | **File touched** | `vllm/v1/spec_decode/llm_base_proposer.py` |
-| **Applied on** | `v0.25.1` |
-| **Upstream status** | Open, mergeable. Related: issue #47794, sibling PR #47833 ("Always share target embeddings for MTP"). |
-| **Drop this patch when** | #47953 (or an equivalent such as #47833) lands in a release we rebase onto — verify with the reproduce below, then remove it from `../series`. |
+| **Applied on** | `v0.26.0` |
+| **Upstream status** | **Merged** 2026-07-21 as `b2b8f679d` — *after* `v0.26.0` was cut (2026-07-20), so it is in no release yet. Related: issue #47794, sibling PR #47833 ("Always share target embeddings for MTP"). |
+| **Drop this patch when** | `b2b8f679d` is an ancestor of the tag we rebase onto (`git merge-base --is-ancestor b2b8f679d <tag>`) — expected in the release after `v0.26.0`. Then remove it from `../series`. |
 
 ## Why it hurts us (impact)
 
@@ -42,11 +42,13 @@ MTP drafts, which is wrong for Gemma-4:
 4. `pre_projection` is `Linear(2 * backbone_hidden_size = 10752, ...)`, so the
    **6400**-wide input cannot be multiplied by the **10752**-wide weight. Crash.
 
-This is a **`0.25.x`-only regression**: before #43957 (e.g. the pre-regression
-nightly `34b560b72`, `v0.23.1rc1.dev786`), vLLM shared the target embedding
-unconditionally for MTP, so `combined = 10752` and it worked. The `pre_projection`
-weight is genuinely **10752**-wide in the checkpoint, so the correct fix is to
-**share** the embedding, not to resize anything.
+This regression is present in every release from `0.25.0` through **`v0.26.0`**
+(fixed on `main` only by #47953, merged after the `v0.26.0` cut): before #43957
+(e.g. the pre-regression nightly `34b560b72`, `v0.23.1rc1.dev786`), vLLM shared
+the target embedding unconditionally for MTP, so `combined = 10752` and it
+worked. The `pre_projection` weight is genuinely **10752**-wide in the
+checkpoint, so the correct fix is to **share** the embedding, not to resize
+anything.
 
 **The fix** restricts the width guard to EAGLE drafts. EAGLE draft modules define
 `has_own_embed_tokens`; MTP drafts do not (the code already branches on
@@ -71,8 +73,9 @@ VLLM_USE_V2_MODEL_RUNNER=0 vllm serve <gemma-4-31B-it-FP8-block> \
   --max-model-len 8192
 ```
 
-- **Stock `v0.25.1`:** crashes at boot; the log contains `Keeping separate
-  embedding weights` and the `6400`/`10752` shape error.
+- **Stock `v0.26.0`:** crashes at boot; the log contains `Keeping separate
+  embedding weights` and the `6400`/`10752` shape error. (The guard is byte-for-byte
+  unchanged since `v0.25.1`, where this was observed directly.)
 - **With patch 0001:** boots; the log contains only `Sharing target model
   embedding weights with the draft model`, and the server serves a completion.
 
@@ -86,6 +89,11 @@ Applied on `vllm/vllm-openai:v0.25.1` with the 31B main and its MTP draft: befor
 "Sharing target model embedding weights" (no "Keeping separate"), confirming the
 patch is effective. Confirmed on H100 (SM90) and L40S (SM89). The built fork image
 was re-validated the same way on **2026-07-18**.
+
+**2026-07-25 — `v0.26.0` rebase, static verification only.** `_maybe_share_embeddings`
+is byte-identical in `v0.25.1` and `v0.26.0`, so the crash carries over unchanged;
+the regenerated patch matches upstream's merged commit `b2b8f679d` exactly and
+applies to `v0.26.0` with no fuzz. Not re-run on hardware.
 
 ## Ruled out (do not re-explore)
 
