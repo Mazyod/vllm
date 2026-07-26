@@ -1,0 +1,5 @@
+# One patch filename per line, applied in order by fork/docker/apply-patches.sh.
+#
+# Empty. Both patches this fork carried were retired at v0.26.0 after the
+# release gate showed upstream had absorbed the behaviour: reverting each one
+# in the shipping configuration changed nothing. See fork/bench/baselines/.

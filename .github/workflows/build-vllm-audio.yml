@@ -1,0 +1,259 @@
+name: Build and Push vLLM-OpenAI (audio + fork patches) Image
+
+# Migrated from Mazyod/production-stack. This fork is the new home for building
+# the vLLM engine image; production-stack now only builds the router.
+#
+# Unlike the production-stack version, this build is PINNED to a deterministic
+# upstream release tag (DEFAULT_BASE_TAG) rather than auto-following the latest
+# release. vLLM is a monster to track on bleeding edge, so the fork patch series
+# (fork/patches/) is rebased onto each release in lockstep and the base tag is
+# bumped deliberately. See FORK.md.
+
+on:
+  workflow_dispatch:
+    inputs:
+      vllm_tag:
+        description: "Upstream vllm/vllm-openai base tag to build (default: DEFAULT_BASE_TAG)"
+        required: false
+        default: ""
+      publish_tags:
+        description: "Tags to publish under, space/comma-separated (default: the base tag)."
+        required: false
+        default: ""
+      promote_latest:
+        description: "Move :latest to this build (true/false)."
+        required: false
+        default: "true"
+
+  push:
+    branches: [main]
+    # Only the actual image inputs trigger a rebuild — not docs/notes under fork/.
+    paths:
+      - "fork/patches/*.patch"
+      - "fork/patches/series"
+      - "fork/docker/**"
+      - ".github/workflows/build-vllm-audio.yml"
+
+env:
+  IMAGE_NAME: docker.io/openimage/vllm-openai-audio
+  # Deterministic upstream release the patch series is generated against.
+  # Bump this in lockstep with fork/scripts/refresh-patches.sh on each release.
+  DEFAULT_BASE_TAG: v0.26.0
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 0: Alignment gate — a fork that has drifted from upstream must not ship
+  # ---------------------------------------------------------------------------
+  alignment:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v5
+        with:
+          # merge-base needs the real commit history; blobless keeps it cheap.
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: Check alignment with upstream
+        run: fork/scripts/check-alignment.sh --fetch
+
+  # ---------------------------------------------------------------------------
+  # Job 1: Resolve the base tag and the image refs to publish
+  # ---------------------------------------------------------------------------
+  resolve:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      base_tag: ${{ steps.resolve.outputs.base_tag }}
+      version: ${{ steps.resolve.outputs.version }}
+      primary_tag: ${{ steps.resolve.outputs.primary_tag }}
+      image_refs: ${{ steps.resolve.outputs.image_refs }}
+      promote_latest: ${{ steps.resolve.outputs.promote_latest }}
+    steps:
+      - name: Resolve base tag and publish refs
+        id: resolve
+        run: |
+          set -euo pipefail
+
+          INPUT_TAG="${{ github.event.inputs.vllm_tag }}"
+          INPUT_PUBLISH_TAGS="${{ github.event.inputs.publish_tags }}"
+          BASE_TAG="${INPUT_TAG:-${DEFAULT_BASE_TAG}}"
+
+          # The prebuilt base image must exist on Docker Hub, otherwise the build
+          # fails later with a confusing pull error.
+          BASE_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://hub.docker.com/v2/repositories/vllm/vllm-openai/tags/${BASE_TAG}")
+          if [[ "$BASE_CODE" != "200" ]]; then
+            echo "::error::Base image vllm/vllm-openai:${BASE_TAG} not found on Docker Hub (HTTP $BASE_CODE)"
+            exit 1
+          fi
+
+          VERSION="${BASE_TAG#v}"
+
+          # Published tags default to the base tag; a dispatch may override them.
+          if [[ -n "$INPUT_PUBLISH_TAGS" ]]; then
+            PUBLISH_TAGS=$(echo "$INPUT_PUBLISH_TAGS" | tr ',' ' ' | xargs)
+          else
+            PUBLISH_TAGS="$BASE_TAG"
+          fi
+          PRIMARY_TAG="${PUBLISH_TAGS%% *}"
+
+          PROMOTE_LATEST="${{ github.event.inputs.promote_latest || 'true' }}"
+
+          {
+            echo "base_tag=$BASE_TAG"
+            echo "version=$VERSION"
+            echo "primary_tag=$PRIMARY_TAG"
+            echo "promote_latest=$PROMOTE_LATEST"
+            echo "image_refs<<__REFS__"
+            for t in $PUBLISH_TAGS; do echo "${IMAGE_NAME}:${t}"; done
+            echo "__REFS__"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "========================================"
+          echo "  Base image     : vllm/vllm-openai:$BASE_TAG"
+          echo "  Version        : $VERSION"
+          echo "  Publish tags   : $PUBLISH_TAGS"
+          echo "  Promote latest : $PROMOTE_LATEST"
+          echo "========================================"
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Build the audio + patched image and push
+  # ---------------------------------------------------------------------------
+  build-and-push:
+    needs: [alignment, resolve]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push image
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: fork/docker/Dockerfile.audio
+          # vllm/vllm-openai is published for linux/amd64 only.
+          platforms: linux/amd64
+          push: true
+          build-args: |
+            BASE_TAG=${{ needs.resolve.outputs.base_tag }}
+          tags: ${{ needs.resolve.outputs.image_refs }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Summary
+        run: |
+          {
+            echo "### Build Complete"
+            echo ""
+            echo "- **Base image:** \`vllm/vllm-openai:${{ needs.resolve.outputs.base_tag }}\`"
+            echo "- **Tags:**"
+            while IFS= read -r ref; do
+              [[ -n "$ref" ]] && echo "  - \`$ref\`"
+            done <<< "${{ needs.resolve.outputs.image_refs }}"
+            echo "- **Digest:** \`${{ steps.build.outputs.digest }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ---------------------------------------------------------------------------
+  # Job 3: Verify audio deps import AND the fork patches are present (CPU-only)
+  # ---------------------------------------------------------------------------
+  test:
+    needs: [resolve, build-and-push]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Pull the built image
+        run: docker pull "${{ env.IMAGE_NAME }}:${{ needs.resolve.outputs.primary_tag }}"
+
+      - name: Assert audio decode deps are present
+        run: |
+          # /v1/audio/transcriptions needs these. vLLM guards `import av` and
+          # `import soundfile`; if either is missing it degrades to a
+          # PlaceholderModule. Importing both is pure CPU work — no GPU.
+          IMAGE="${{ env.IMAGE_NAME }}:${{ needs.resolve.outputs.primary_tag }}"
+          docker run --rm --entrypoint python3 "$IMAGE" -c \
+            "import av, soundfile; print('audio deps OK: av', av.__version__, '| soundfile', soundfile.__version__)"
+
+      - name: Assert the image carries exactly the declared patch series
+        run: |
+          # Cheap, GPU-free proof that what shipped is what the series declares.
+          # Derived from the series rather than hardcoded, so it cannot go stale
+          # when a patch is added or retired: every patch must reverse-apply
+          # cleanly (proving it is present), and the count must match.
+          IMAGE="${{ env.IMAGE_NAME }}:${{ needs.resolve.outputs.primary_tag }}"
+          # `grep -c` exits 1 on no match, and the count is then empty rather
+          # than zero — an empty series is normal, so count without grep.
+          EXPECTED=$(awk 'NF && $1 !~ /^#/' fork/patches/series | wc -l | tr -d ' ')
+          echo "series declares $EXPECTED patch(es)"
+          docker run --rm --entrypoint bash -e EXPECTED="$EXPECTED" "$IMAGE" -c '
+            set -euo pipefail
+            SITE=$(python3 -c "import os, vllm; print(os.path.dirname(os.path.dirname(vllm.__file__)))")
+            found=0
+            while IFS= read -r line || [ -n "$line" ]; do
+              case "$line" in ""|\#*) continue ;; esac
+              patch -R -p1 --dry-run --force --directory="$SITE" \
+                < "/opt/fork/patches/$line" > /dev/null
+              echo "  present: $line"
+              found=$((found + 1))
+            done < /opt/fork/patches/series
+            [ "$found" = "$EXPECTED" ] || {
+              echo "ERROR: image carries $found patches, series declares $EXPECTED" >&2
+              exit 1
+            }
+            echo "patch series verified: $found applied, $EXPECTED declared"
+          '
+
+  # ---------------------------------------------------------------------------
+  # Job 4: Promote :latest after the checks pass
+  # ---------------------------------------------------------------------------
+  tag-latest:
+    needs: [resolve, build-and-push, test]
+    if: needs.resolve.outputs.promote_latest == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Tag primary image as latest
+        run: |
+          SOURCE="${{ env.IMAGE_NAME }}:${{ needs.resolve.outputs.primary_tag }}"
+          docker buildx imagetools create --tag "${{ env.IMAGE_NAME }}:latest" "$SOURCE"
+
+      - name: Summary
+        run: |
+          {
+            echo "### Release Complete"
+            echo ""
+            echo "- \`${{ env.IMAGE_NAME }}:${{ needs.resolve.outputs.primary_tag }}\`"
+            echo "- \`${{ env.IMAGE_NAME }}:latest\`"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,10 @@
+# Upstream merge commit for each patch in the series.
+#
+# The release gate's phase 0 uses this to answer "has upstream absorbed this
+# patch yet" mechanically:  git merge-base --is-ancestor <commit> <tag>
+#
+# Keep in sync with the "Upstream status" row of each note under notes/.
+#
+# Format: <patch-filename> <upstream-merge-commit>
+#
+# Empty while the series is empty.
