@@ -1,0 +1,173 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+
+"""Verdict computation and report emission are pure functions."""
+
+import pytest
+
+from fork.bench.receipts import ProbeResult
+from fork.bench.verdict import (
+    PATCH_BROKEN,
+    PATCH_HARMFUL,
+    PATCH_RETIRED,
+    PATCH_STILL_REQUIRED,
+    build_report,
+    compare_controls,
+    exit_code,
+    patch_verdict,
+)
+
+
+def test_leave_one_out_fails_and_full_series_passes_means_still_required():
+    assert patch_verdict(True, True) == PATCH_STILL_REQUIRED
+
+
+def test_both_pass_means_retired():
+    assert patch_verdict(False, True) == PATCH_RETIRED
+
+
+def test_both_fail_means_broken():
+    assert patch_verdict(True, False) == PATCH_BROKEN
+
+
+def test_leave_one_out_passes_and_full_series_fails_means_harmful():
+    assert patch_verdict(False, False) == PATCH_HARMFUL
+
+
+def test_exit_code_is_zero_when_everything_is_still_required_and_passing():
+    results = [ProbeResult("R1", "gemma-full", True, "ok")]
+    assert exit_code(results, {"0001": PATCH_STILL_REQUIRED}) == 0
+
+
+def test_exit_code_is_zero_for_a_retired_patch():
+    results = [ProbeResult("R1", "gemma-full", True, "ok")]
+    assert exit_code(results, {"0001": PATCH_RETIRED}) == 0
+
+
+def test_exit_code_is_nonzero_for_a_broken_patch():
+    assert exit_code([], {"0001": PATCH_BROKEN}) != 0
+
+
+def test_exit_code_is_nonzero_for_a_harmful_patch():
+    assert exit_code([], {"0001": PATCH_HARMFUL}) != 0
+
+
+def test_exit_code_is_nonzero_when_a_full_series_probe_fails():
+    results = [ProbeResult("R1", "gemma-full", False, "kept separate")]
+    assert exit_code(results, {}) != 0
+
+
+def test_exit_code_ignores_failures_on_non_gating_profiles():
+    """Leave-one-out boots land here when the series carries patches again."""
+    results = [ProbeResult("R5", "qwen-tp2-noflags", False, "crashed as expected")]
+    assert exit_code(results, {}) == 0
+
+
+def test_exit_code_ignores_a_negative_probe_crashing_as_predicted():
+    """N1 is expected to crash. A run where every prediction held exits zero."""
+    results = [ProbeResult("R5", "gemma-v2-kvfp8", False, "crashed as predicted")]
+    assert exit_code(results, {}) == 0
+
+
+def test_exit_code_ignores_an_exploratory_probe_whose_outcome_is_unknown():
+    """N2 answers an open question; the image does not ship the V2 runner."""
+    results = [ProbeResult("R5", "gemma-v2-spec-kv-dtype", False, "crashed")]
+    assert exit_code(results, {}) == 0
+
+
+def test_exit_code_gates_on_an_unrecognised_profile():
+    """An id nothing declares is a harness bug, so fail rather than waive."""
+    results = [ProbeResult("R5", "not-a-declared-profile", False, "?")]
+    assert exit_code(results, {}) != 0
+
+
+def test_report_names_the_tag_and_every_patch_verdict():
+    report = build_report(
+        "v0.26.0",
+        {"gpu": "H100", "interconnect": "SYS"},
+        [ProbeResult("R1", "gemma-full", True, "ok")],
+        {"0001": PATCH_STILL_REQUIRED},
+        {},
+    )
+    assert "v0.26.0" in report
+    assert "0001" in report
+    assert PATCH_STILL_REQUIRED in report
+
+
+def test_report_includes_the_machine_fingerprint():
+    report = build_report("v0.26.0", {"gpu": "H100", "interconnect": "SYS"}, [], {}, {})
+    assert "H100" in report
+    assert "SYS" in report
+
+
+def test_report_marks_failing_probes_visibly():
+    report = build_report(
+        "v0.26.0",
+        {},
+        [ProbeResult("R2", "qwen-full", False, "selected=FLASHINFER")],
+        {},
+        {},
+    )
+    assert "FAIL" in report
+    assert "selected=FLASHINFER" in report
+
+
+def test_report_distinguishes_a_diagnostic_failure_from_a_gating_one():
+    report = build_report(
+        "v0.26.0",
+        {},
+        [ProbeResult("R5", "gemma-minus-0001", False, "crashed as expected")],
+        {},
+        {},
+    )
+    assert "as expected" in report
+
+
+def test_controls_are_differenced_against_the_profile_they_control_for():
+    perf = {
+        "gemma-perf": {"decode_tok_s": 160.0, "ttft_p50": 0.40},
+        "gemma-perf-nospec": {"decode_tok_s": 120.0, "ttft_p50": 0.40},
+    }
+    rows = compare_controls(perf)
+    decode = [r for r in rows if r[2] == "decode_tok_s"]
+    assert len(decode) == 1
+    control, baseline_id, _, base, value, change = decode[0]
+    assert (control, baseline_id) == ("gemma-perf-nospec", "gemma-perf")
+    assert (base, value) == (160.0, 120.0)
+    assert change == pytest.approx(-25.0)
+
+
+def test_controls_are_skipped_when_the_baseline_did_not_run():
+    assert compare_controls({"gemma-perf-nospec": {"decode_tok_s": 120.0}}) == []
+
+
+def test_controls_ignore_a_zero_baseline_rather_than_dividing_by_it():
+    perf = {
+        "gemma-perf": {"decode_tok_s": 0.0},
+        "gemma-perf-nospec": {"decode_tok_s": 120.0},
+    }
+    assert compare_controls(perf) == []
+
+
+def test_report_shows_the_control_comparison():
+    perf = {
+        "gemma-perf": {"decode_tok_s": 160.0},
+        "gemma-perf-nospec": {"decode_tok_s": 120.0},
+    }
+    report = build_report("v0.26.0", {}, [], {}, perf)
+    assert "Same-box controls" in report
+    assert "-25.0%" in report
+
+
+def test_controls_do_not_compare_bookkeeping_as_though_it_were_a_measurement():
+    """Sample counts and window lengths are not results; a "+0.0% change" in
+    how many samples were taken is noise that buries the real rows.
+    """
+    perf = {
+        "gemma-perf": {"decode_tok_s": 100.0, "n": 4, "elapsed_s": 1.5},
+        "gemma-perf-nospec": {"decode_tok_s": 50.0, "n": 4, "elapsed_s": 3.0},
+    }
+    metrics = {row[2] for row in compare_controls(perf)}
+    assert "decode_tok_s" in metrics
+    assert "n" not in metrics
+    assert "elapsed_s" not in metrics

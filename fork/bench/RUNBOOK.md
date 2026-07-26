@@ -1,0 +1,162 @@
+# Release gate runbook
+
+The session protocol. Phases run in order; each has a precondition that must
+hold before the next begins. Deviate only to triage a failure, and record what
+was done. See [DESIGN.md](DESIGN.md) for why each probe exists and
+[LESSONS.md](LESSONS.md) for what the first hardware session cost to learn.
+
+Every Python command uses `uv run --no-project`. Without the flag `uv` tries to
+resolve vLLM itself, which this tooling never needs and which fails outright on
+a machine with no CUDA wheel.
+
+## Phase 0 — static (free, local)
+
+1. `git fetch upstream --tags`
+2. Render the brief:
+
+   ```bash
+   uv run --no-project -- python -c \
+     "from pathlib import Path; from fork.bench.static import brief; \
+      print(brief('<TAG>', Path('.')))"
+   ```
+
+3. Read the upstream release notes and run `scan_release_notes` over them.
+4. **Gate:** decide whether this release warrants GPU spend. A release that
+   touches none of the flagged areas and absorbs no patch may not.
+
+## Phase 0.5 — CPU preflight (free, local)
+
+1. `bash fork/bench/preflight.sh`
+2. **Gate:** `PREFLIGHT GREEN`. Do not provision otherwise. This includes a full
+   dry run of the gate, so the orchestration is proven before any spend.
+
+## The quick check
+
+If you only have time for one thing, run the shipping topology on a rented box:
+
+```bash
+export HF_TOKEN=...   # gated checkpoints do not download without it
+uv run --no-project --with httpx -- python -m fork.bench \
+  --tag <TAG> --image <IMAGE> --out runs/<TAG> --phase 4 --rent
+```
+
+`--rent` is phases 1 and 5 done for you: it searches for an on-demand offer
+matching the shipping topology, rents it, arms the reaper before anything else,
+pushes this tree onto the box, runs the gate there, brings the results back, and
+destroys the instance — confirming with the provider that it is gone.
+
+Phase 4 itself is TP2 with the all-reduce workarounds on, carrying the full
+receipt and behavioural probe set, plus the N3 arm with the workarounds off. It
+answers "will this release serve the way production needs" without the
+leave-one-out matrix. Exit code 0 means every gating probe passed.
+
+Run the full `--phase 2 --phase 3 --phase 4` when you also want to know whether
+the patch series can shrink.
+
+## Phase 1 — provision
+
+`--rent` does all of this. The steps are here because a failure mid-run leaves
+you finishing by hand, and because the guarantees are worth knowing.
+
+1. Search for an on-demand offer: 2 Hopper GPUs, at least 150 GB disk, and a
+   directly mapped port. Never an interruptible bid — being outbid part-way
+   truncates the run and voids its numbers.
+2. Rent it. Arm the reaper immediately, before anything else — it owns teardown
+   on a hard cap regardless of what the driver is doing.
+3. Run `nvidia-smi topo -m` and classify the GPU0-GPU1 link.
+4. **Gate:** a `NV*` link means the box cannot answer the all-reduce question
+   natively. Run the forced-PCIe arm on it rather than re-hunting.
+5. Stage both models' weights in parallel.
+
+The instance is booted *from* the image under test, so there is no daemon to
+hand a container to. On the box the gate runs with `--launcher local`, which
+starts the engine as a child process; `--rent` passes that for you.
+
+Whatever goes wrong, one command cleans up after a run whose driver died:
+
+```bash
+uv run --no-project -- python -c \
+  "from fork.bench.provision import sweep; from fork.bench.vast import VastCli; \
+   print(sweep(VastCli(), 'fork-bench-<TAG>'))"
+```
+
+## Phase 2 — correctness (both GPUs in parallel)
+
+Run every phase 2 profile. GPU 0 takes the Gemma profiles, GPU 1 the Qwen ones.
+These are pass/fail and not timing-sensitive, so running both at once is free.
+
+```bash
+uv run --no-project --with httpx -- python -m fork.bench \
+  --tag <TAG> --image <IMAGE> --out runs/<TAG> --phase 2
+```
+
+**Gate:** every profile produced either a receipt or a captured crash signature.
+A profile that produced neither is a harness failure, not a finding — R5 fails
+on an empty log for exactly this reason.
+
+## Phase 3 — performance (strictly serialized)
+
+Run one profile at a time with the other GPU idle. Two servers under load on one
+box contend for CPU and PCIe and will understate throughput.
+
+**Gate:** numbers recorded with the machine fingerprint attached.
+
+## Phase 4 — TP2 arm
+
+1. Stop everything from phases 2 and 3.
+2. Run the phase 4 profiles.
+
+## Phase 5 — verdict and teardown
+
+1. Emit the report.
+2. Collect the run directory back before anything is destroyed.
+3. Destroy the instance.
+4. **Gate:** confirm destruction against the provider API. An instance believed
+   destroyed is not destroyed. `--rent` fails loudly rather than quietly when
+   the provider will not confirm.
+
+## Abort conditions
+
+| condition | action |
+| --- | --- |
+| topology gate fails three times | abort, report, destroy |
+| a boot exceeds its deadline | capture the full log, mark the profile failed, continue |
+| a probe hangs past its deadline | capture partial results, continue |
+| the instance dies mid-run | report what streamed, with an explicit truncation note |
+| the reaper fires | the session is over; whatever streamed is the result |
+
+## Developing the harness itself
+
+Renting per attempt re-downloads sixty gigabytes of weights every time. When
+iterating on the gate rather than gating a release, keep **one** box warm and
+push fixes onto it:
+
+1. Rent once, and arm a detached reaper so the cost is bounded whatever happens
+   to your shell:
+
+   ```bash
+   nohup bash -c 'sleep 9000; vastai destroy instance <ID> -y' >/dev/null 2>&1 &
+   ```
+
+2. Push the tree and run one phase at a time:
+
+   ```bash
+   rsync -az --delete -e "ssh -p <PORT>" fork/ root@<HOST>:/workspace/bench/fork/
+   ssh -p <PORT> root@<HOST> 'cd /workspace/bench && \
+     python3 -m fork.bench --tag <TAG> --out run --launcher local --phase 2'
+   ```
+
+3. Read the boot logs of profiles that *passed*, not only the ones that failed.
+   The worst defect found so far — patch reverts accumulating across profiles —
+   was visible only as a log line in a run whose results all looked fine.
+
+Destroy the box the moment you stop needing it, and confirm with
+`vastai show instances`. An exit code is not evidence that anything was torn
+down.
+
+## After the run
+
+Replace any `derived-from-source` fixture in
+[`fixtures/README.md`](fixtures/README.md) with the real boot log this session
+captured. Engine stdout carries no identifying data, so the captures can be
+committed close to verbatim.

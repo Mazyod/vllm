@@ -1,0 +1,8 @@
+(APIServer pid=8) WARNING 07-26 10:40:01 [vllm.py:2149] Model Runner V2 does not yet support the thinking_token_budget request parameter. Set VLLM_USE_V2_MODEL_RUNNER=0 if this is required.
+(EngineCore pid=86) INFO 07-26 10:40:14 [core.py:114] Initializing a V1 LLM engine (v0.25.0) with config: model='RedHatAI/gemma-4-31B-it-FP8-block', speculative_config=SpeculativeConfig(method='mtp', model='google/gemma-4-31B-it-assistant', num_spec_tokens=4), tokenizer='RedHatAI/gemma-4-31B-it-FP8-block', skip_tokenizer_init=False, tensor_parallel_size=2, pipeline_parallel_size=1, disable_custom_all_reduce=False, quantization=compressed-tensors, kv_cache_dtype=fp8, device_config=cuda, served_model_name=gemma-4-31b, enable_prefix_caching=False, compilation_config={'mode': <CompilationMode.VLLM_COMPILE: 3>, 'pass_config': {}},
+(Worker pid=102) INFO 07-26 10:40:34 [cuda_communicator.py:264] Using ['CUSTOM', 'SYMM_MEM', 'PYNCCL'] all-reduce backends (in dispatch order) for group 'tp:0' out of potential backends: ['NCCL_SYMM_MEM', 'QUICK_REDUCE', 'FLASHINFER', 'AITER_CUSTOM', 'CUSTOM', 'SYMM_MEM', 'PYNCCL'].
+(Worker_TP0 pid=102) INFO 07-26 10:40:35 [cuda.py:476] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+(Worker_TP0 pid=102) INFO 07-26 10:41:16 [flashinfer_all_reduce.py:119] Auto-selected flashinfer allreduce backend: mnnvl
+(Worker_TP0 pid=102) INFO 07-26 10:41:17 [flashinfer_all_reduce.py:168] Initialized FlashInfer Allreduce norm fusion workspace with backend=mnnvl
+(Worker_TP1 pid=103) INFO 07-26 10:46:50 [custom_all_reduce.py:213] Registering 198 cuda graph addresses
+(Worker_TP0 pid=103) INFO 07-26 10:46:52 [custom_all_reduce.py:213] Registering 198 cuda graph addresses
