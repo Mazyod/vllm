@@ -30,11 +30,22 @@ how the image is built) live in the top-level [`FORK.md`](../../FORK.md).
 ## Index
 
 - **0001** — Gemma-4 MTP boot crash (`6400`/`10752` at `pre_projection`).
-  Upstream [#47953](https://github.com/vllm-project/vllm/pull/47953) ·
-  context: [notes/0001-gemma4-mtp-boot-crash.md](notes/0001-gemma4-mtp-boot-crash.md)
+  Upstream [#47953](https://github.com/vllm-project/vllm/pull/47953)
+  (merged to `main` as `b2b8f679d0`, **not in `v0.26.0`** — missed the release
+  branch by one day; first present in `v0.26.1rc0`) ·
+  context: [notes/0001-gemma4-mtp-boot-crash.md](notes/0001-gemma4-mtp-boot-crash.md).
+  *Wrongly retired at v0.26.0 by a false leave-one-out verdict; restored
+  2026-08-06 after the unpatched image crash-looped in production.*
 - **0002** — Structured-output `{{` / `{"{` corruption across the reasoning
-  boundary. Upstream [#44993](https://github.com/vllm-project/vllm/pull/44993) ·
-  context: [notes/0002-structured-output-reasoning-corruption.md](notes/0002-structured-output-reasoning-corruption.md)
+  boundary. Upstream [#44993](https://github.com/vllm-project/vllm/pull/44993)
+  (merged to `main` as `0416dab275`, **not in `v0.26.0`**) ·
+  context: [notes/0002-structured-output-reasoning-corruption.md](notes/0002-structured-output-reasoning-corruption.md).
+  *Restored 2026-08-06 alongside 0001: its retirement rested on the same
+  revert mechanism, and its fix commit is not an ancestor of the pinned tag.*
+- **0003** — DeepSeek-V4 DSpark/FlashMLA sparse-prefill crash under
+  concurrency. Upstream [#49302](https://github.com/vllm-project/vllm/pull/49302)
+  (merged to `main` as `de6ec294ef07`, not in `v0.26.0`) ·
+  context: [notes/0003-dsv4-dspark-flashmla-prefill-crash.md](notes/0003-dsv4-dspark-flashmla-prefill-crash.md)
 
 ## Adding a patch
 

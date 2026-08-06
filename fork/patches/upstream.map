@@ -6,5 +6,6 @@
 # Keep in sync with the "Upstream status" row of each note under notes/.
 #
 # Format: <patch-filename> <upstream-merge-commit>
-#
-# Empty while the series is empty.
+0001-restrict-embedding-width-guard-to-eagle-pr47953.patch b2b8f679d0589f0c956f3e734cc70dab07b27b8a
+0002-advance-grammar-across-reasoning-boundary-pr44993.patch 0416dab275d51327b331a1c6baaec754a68d7764
+0003-fix-dsa-crash-breakable-cudagraphs-pr49302.patch de6ec294ef0772673ade8fa3abf3f61f501880ae
