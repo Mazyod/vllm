@@ -23,7 +23,6 @@ from fork.bench.proc import run_argv
 from fork.bench.profiles import Profile
 from fork.bench.receipts import ProbeResult
 from fork.bench.runner import (
-    FORCE_PCIE_ENV,
     PATCH_DIR,
     append_result,
     build_docker_command,
@@ -126,15 +125,10 @@ class ProcessLauncher:
     Subclasses decide what to run. Everything about watching it — draining the
     log, noticing an early death, giving up at the deadline — is shared, so the
     two ways of starting a server cannot drift apart.
-
-    Attributes:
-        force_pcie: Whether to push the all-reduce onto PCIe, for a box that
-            turned out to have NVLink.
     """
 
-    def __init__(self, force_pcie: bool = False) -> None:
+    def __init__(self) -> None:
         self._running: list[tuple[subprocess.Popen, threading.Thread]] = []
-        self.force_pcie = force_pcie
 
     def build(
         self, profile: Profile, image: str, port: int, replica: int = 0
@@ -277,8 +271,7 @@ class DockerLauncher(ProcessLauncher):
     def build(
         self, profile: Profile, image: str, port: int, replica: int = 0
     ) -> tuple[list[str], dict[str, str] | None]:
-        extra_env = FORCE_PCIE_ENV if self.force_pcie else None
-        return build_docker_command(profile, image, port, extra_env, replica), None
+        return build_docker_command(profile, image, port, None, replica), None
 
 
 class LocalLauncher(ProcessLauncher):
@@ -318,10 +311,9 @@ class LocalLauncher(ProcessLauncher):
     def build(
         self, profile: Profile, image: str, port: int, replica: int = 0
     ) -> tuple[list[str], dict[str, str] | None]:
-        extra_env = FORCE_PCIE_ENV if self.force_pcie else None
         return (
             build_local_command(profile, port),
-            build_local_env(profile, os.environ, extra_env, replica),
+            build_local_env(profile, os.environ, None, replica),
         )
 
 
@@ -411,25 +403,29 @@ def absorbed_by_patch(tag: str) -> dict[str, bool | None]:
 
 
 TOPOLOGY_NATIVE = "native"
-TOPOLOGY_FORCE_PCIE = "force_pcie"
+TOPOLOGY_NVLINK = "nvlink"
 TOPOLOGY_UNKNOWN = "unknown"
 
 
 def classify_topology(phases: tuple[int, ...], nvlink: bool | None) -> str:
-    """Decide how this machine can answer the all-reduce question.
+    """Decide whether this machine can answer the all-reduce question at all.
 
-    A rented offer advertising no NVLink regularly turns out to have one. Such
-    a box is not wasted: disabling peer access forces the all-reduce through
-    PCIe, which is the path production takes, so the workarounds are still
-    measured honestly. Only an unreadable topology is disqualifying, because
-    then neither claim can be supported.
+    Production is PCIe-attached H200s with no NVLink, and the bug class the
+    TP2 workarounds exist for **only appears on hardware that genuinely lacks
+    the link**. Renting an NVLink box and disabling peer access with
+    `NCCL_P2P_DISABLE` does not bring it back — the gate used to do exactly
+    that and call the result equivalent, which would have produced a green run
+    that said nothing about the configuration being shipped.
+
+    So an NVLink pair is disqualifying, not salvageable. Destroy it and hunt
+    another offer.
 
     Args:
         phases: Phases about to run.
         nvlink: Whether the GPUs share an NVLink, or None if unknown.
 
     Returns:
-        One of TOPOLOGY_NATIVE, TOPOLOGY_FORCE_PCIE or TOPOLOGY_UNKNOWN.
+        One of TOPOLOGY_NATIVE, TOPOLOGY_NVLINK or TOPOLOGY_UNKNOWN.
     """
     tp2_scheduled = any(
         profile.tensor_parallel_size >= 2
@@ -440,7 +436,7 @@ def classify_topology(phases: tuple[int, ...], nvlink: bool | None) -> str:
         return TOPOLOGY_NATIVE
     if nvlink is None:
         return TOPOLOGY_UNKNOWN
-    return TOPOLOGY_FORCE_PCIE
+    return TOPOLOGY_NVLINK
 
 
 def run_gate(
@@ -468,16 +464,25 @@ def run_gate(
     if not isinstance(launcher, DryRunLauncher):
         topology = classify_topology(phases, has_nvlink())
         fingerprint["all_reduce_path"] = topology
-        if topology == TOPOLOGY_UNKNOWN:
-            (out_dir / "report.md").write_text(
-                f"# Release gate: {tag}\n\n## Refused to run\n\n"
+        if topology in (TOPOLOGY_UNKNOWN, TOPOLOGY_NVLINK):
+            reason = (
                 "GPU topology could not be read, so the all-reduce probes cannot "
-                "be trusted either way. Run where `nvidia-smi topo -m` works.\n",
+                "be trusted either way. Run where `nvidia-smi topo -m` works."
+                if topology == TOPOLOGY_UNKNOWN
+                else (
+                    "This pair is NVLink-connected. Production is PCIe with no "
+                    "NVLink, and the bug class the TP2 workarounds exist for does "
+                    "not reproduce on a linked pair — not even with peer access "
+                    "disabled. A green run here would say nothing about what "
+                    "ships. Destroy this instance and rent a genuinely "
+                    "PCIe-only pair."
+                )
+            )
+            (out_dir / "report.md").write_text(
+                f"# Release gate: {tag}\n\n## Refused to run\n\n{reason}\n",
                 encoding="utf-8",
             )
             return 2
-        if topology == TOPOLOGY_FORCE_PCIE:
-            launcher.force_pcie = True
 
     results: list[ProbeResult] = []
     for phase in phases:

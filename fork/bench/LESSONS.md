@@ -154,3 +154,30 @@ trigger, so the never-gated unpatched rebuild republished the certified
 11. **Candidates are not releases.** Push-triggered image builds publish under
     `<tag>-cand-<sha>` and never move `:latest` or republish a base tag;
     promotion is a deliberate dispatch after a gate run.
+
+## The venue assumption that was never true (2026-08-06)
+
+### Forcing PCIe on an NVLink box is not the same machine
+
+The gate treated an NVLink pair as salvageable: detect the link, set
+`NCCL_P2P_DISABLE=1`, call the all-reduce path equivalent, and keep the offer
+rather than re-hunting. That reasoning is wrong, and the operator confirmed it
+from production experience — **the bug class the TP2 workarounds exist for only
+appears on hardware that genuinely lacks the link.** Disabling peer access on a
+linked pair does not bring it back.
+
+So the "not wasted" optimisation was a way to spend an hour and produce a green
+run about a machine nobody deploys on. Nothing caught it, because the run would
+have looked exactly like a good one: same probes, same receipts, same report.
+
+An NVLink pair is now disqualifying. The gate refuses, says why, and the
+instance gets destroyed and re-hunted. `NCCL_P2P_DISABLE` appears nowhere in
+`fork/bench`, and a test asserts it stays that way — the convenience is easy to
+re-invent precisely because it sounds thrifty.
+
+The July run that this correction post-dates was, by luck, on a genuinely
+PCIe-only pair (`interconnect: PXB`), so its all-reduce conclusions stand.
+
+12. **Reproduce the topology, do not simulate it.** A configuration flag that
+    approximates hardware is not the hardware. If the venue cannot be matched,
+    refuse the run rather than substituting a proxy and reporting a verdict.

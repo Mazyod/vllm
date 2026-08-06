@@ -6,8 +6,8 @@
 import json
 
 from fork.bench.gate import (
-    TOPOLOGY_FORCE_PCIE,
     TOPOLOGY_NATIVE,
+    TOPOLOGY_NVLINK,
     TOPOLOGY_UNKNOWN,
     DryRunLauncher,
     classify_topology,
@@ -104,9 +104,11 @@ def test_topology_is_native_on_a_pcie_only_pair():
     assert classify_topology((4,), nvlink=False) == TOPOLOGY_NATIVE
 
 
-def test_topology_falls_back_to_forced_pcie_when_the_box_has_nvlink():
-    """An offer that turns out to have NVLink is re-used, not re-hunted."""
-    assert classify_topology((4,), nvlink=True) == TOPOLOGY_FORCE_PCIE
+def test_an_nvlink_pair_is_disqualified_rather_than_forced_onto_pcie():
+    """The TP2 bug class only appears on hardware that genuinely lacks the
+    link; disabling peer access on a linked pair does not bring it back, so a
+    green run there would say nothing about what ships."""
+    assert classify_topology((4,), nvlink=True) == TOPOLOGY_NVLINK
 
 
 def test_topology_is_unknown_when_the_matrix_cannot_be_read():

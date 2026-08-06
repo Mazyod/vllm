@@ -58,9 +58,16 @@ on a proxy: prove it there, and it holds in production.
 The absence of NVLink is a requirement, not a cost compromise: two of the
 configurations under test are all-reduce workarounds that only fail on a machine
 without it. Offers advertising no NVLink regularly turn out to have it, so
-`check_topology` classifies the pair rather than trusting the listing. A pair
-that *does* have NVLink is not wasted — it runs the forced-PCIe arm instead, so
-the all-reduce numbers stay honest without re-hunting for an offer.
+`classify_topology` classifies the pair rather than trusting the listing.
+
+**A pair that turns out to have NVLink is disqualified, not salvaged.** The bug
+class these workarounds exist for appears only on hardware that genuinely lacks
+the link; renting a linked pair and disabling peer access with
+`NCCL_P2P_DISABLE` does *not* reproduce it. The gate used to do exactly that and
+treat the result as equivalent, which would have produced a green run that said
+nothing about the deployed configuration. It now refuses and tells the operator
+to destroy the instance and hunt another offer. No code in `fork/bench` sets
+`NCCL_P2P_DISABLE`, and a test enforces that.
 
 **Trigger.** Manual. The decision to spend stays a human one. Everything after
 that decision — rent, verify, run, collect, destroy — is automated behind
@@ -274,7 +281,7 @@ onto the survivors of a partial fleet reads as a throughput win.
 | --- | --- | --- | --- |
 | 0 | **Static, local, free.** Per patch: is its recorded upstream merge commit an ancestor of the new tag? Does it still apply (`patch -p1 --dry-run`, the command the image build runs)? Scan the release notes for the areas this fork depends on: speculative decoding, sliding-window attention, all-reduce, kv-cache dtype, model runner, structured output. | brief reviewed; decision to spend | none |
 | 0.5 | **CPU preflight.** Probe code exercised end to end against the bundled mock server. | preflight green | none |
-| 1 | **Provision and host check.** Rent an on-demand offer, arm the reaper, classify the pair, stage both models' weights. `--rent` does all of it. | topology classified: PCIe-only natively, or NVLink with the forced-PCIe arm selected. An unreadable matrix refuses the run | ~15 min |
+| 1 | **Provision and host check.** Rent an on-demand offer, arm the reaper, classify the pair, stage both models' weights. `--rent` does all of it. | topology classified PCIe-only. An NVLink pair or an unreadable matrix refuses the run | ~15 min |
 | 2 | **Correctness, both GPUs in parallel.** Every leave-one-out and negative boot. Not timing-sensitive, so the parallelism is free. | each boot produced a receipt or a captured crash signature | ~25 min |
 | 3 | **Performance, strictly serialized.** Each shipping configuration at TP2, one at a time. | numbers recorded | ~20 min |
 | 4 | **TP2 arm — the shipping topology.** Both configurations with the all-reduce workarounds on, carrying the full receipt *and* behavioural probe set (must pass), then N3 with the workarounds off. | every gating probe passed | ~25 min |
@@ -282,7 +289,9 @@ onto the survivors of a partial fleet reads as a throughput win.
 
 **Phase 1's topology gate is not optional.** Offers advertising no NVLink
 regularly turn out to have it. Detecting that costs about two minutes; skipping
-the check invalidates every all-reduce conclusion in the run.
+the check invalidates every all-reduce conclusion in the run — and the answer
+on detection is to hunt another offer, because forcing peer access off on a
+linked pair does not reproduce the failure being tested for.
 
 **Phase 5's ordering is not optional either.** Destroying before collecting
 spends the money and throws away the answer, so collection happens inside the

@@ -165,14 +165,20 @@ def test_evaluate_runs_performance_probes_for_a_perf_profile():
     assert all(r.profile_id == "gemma-perf" for r in results)
 
 
-def test_docker_command_forces_the_all_reduce_through_pcie_when_asked():
-    """A rented box with NVLink still answers the question with peer access off."""
-    from fork.bench.runner import FORCE_PCIE_ENV
+def test_the_harness_never_disables_peer_access():
+    """Production is PCIe with no NVLink and the TP2 bug class does not
+    reproduce on a linked pair with peer access off. The gate refuses such a
+    box rather than pretending; nothing here may quietly re-enable that."""
+    from pathlib import Path
 
-    command = " ".join(
-        build_docker_command(profiles.get("gemma-tp2"), "img:tag", 8000, FORCE_PCIE_ENV)
-    )
-    assert "NCCL_P2P_DISABLE=1" in command
+    bench = Path(__file__).resolve().parents[1]
+    offenders = [
+        path.name
+        for path in bench.glob("*.py")
+        if "NCCL_P2P_DISABLE" in path.read_text(encoding="utf-8")
+        and path.name != "gate.py"
+    ]
+    assert not offenders, f"force-PCIe env resurrected in: {offenders}"
 
 
 def test_docker_command_leaves_peer_access_alone_by_default():

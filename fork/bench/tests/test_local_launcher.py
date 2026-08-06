@@ -13,7 +13,7 @@ from pathlib import Path
 
 from fork.bench import profiles
 from fork.bench.gate import LocalLauncher
-from fork.bench.runner import FORCE_PCIE_ENV, build_local_command, build_local_env
+from fork.bench.runner import build_local_command, build_local_env
 
 
 def _profile(profile_id: str):
@@ -67,9 +67,11 @@ def test_the_environment_keeps_what_the_box_already_had():
     assert env["HF_HOME"] == "/workspace/hf"
 
 
-def test_forcing_pcie_wins_over_the_profiles_own_environment():
-    env = build_local_env(_profile("gemma-tp2"), base={}, extra_env=FORCE_PCIE_ENV)
-    assert env["NCCL_P2P_DISABLE"] == "1"
+def test_extra_env_wins_over_the_profiles_own_environment():
+    env = build_local_env(
+        _profile("gemma-tp2"), base={}, extra_env={"VLLM_LOGGING_LEVEL": "DEBUG"}
+    )
+    assert env["VLLM_LOGGING_LEVEL"] == "DEBUG"
 
 
 def test_a_launcher_keeps_the_log_of_an_engine_that_died(monkeypatch):

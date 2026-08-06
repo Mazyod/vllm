@@ -54,9 +54,6 @@ def build_serve_command(profile: Profile, port: int) -> list[str]:
     ]
 
 
-FORCE_PCIE_ENV = {"NCCL_P2P_DISABLE": "1", "NCCL_SHM_DISABLE": "0"}
-
-
 def build_local_env(
     profile: Profile,
     base: Mapping[str, str],
@@ -69,8 +66,8 @@ def build_local_env(
         profile: Configuration under test.
         base: Environment already present, kept so a rented box keeps its model
             cache and access token.
-        extra_env: Applied last, so forcing the all-reduce through PCIe wins
-            over anything the profile asked for.
+        extra_env: Applied last, so it wins over anything the profile asked
+            for.
         replica: Zero-based replica index.
 
     Returns:
@@ -155,8 +152,7 @@ def build_docker_command(
         profile: Configuration under test.
         image: Fully qualified image reference.
         port: Port to publish and bind.
-        extra_env: Additional environment, applied last. Used to force the
-            all-reduce through PCIe on a box that turned out to have NVLink.
+        extra_env: Additional environment, applied last.
         replica: Zero-based replica index.
 
     Returns:
