@@ -231,8 +231,13 @@ def receipt_probe(
     R5 also fails on an empty log: a profile that produced neither a receipt
     nor a crash signature is a harness failure, not a finding.
 
+    R6 is the revert receipt: it holds the profile's expect_boot_evidence
+    against what the running engine actually logged. A leave-one-out profile
+    without it can pass while the engine executes code its verdict is not
+    about — the exact failure behind the v0.26.0 patch-0001 misretirement.
+
     Args:
-        probe_id: One of R1 through R5.
+        probe_id: One of R1 through R6.
         profile_id: Profile the evidence came from.
         evidence: Parsed boot log.
         served: Whether the server reached a healthy state.
@@ -255,6 +260,24 @@ def receipt_probe(
             passed,
             f"served={served} crashed={crashed} lines={evidence.lines_seen}",
             {"crash_signature": evidence.crash_signature},
+        )
+    if probe_id == "R6":
+        expected = dict(getattr(profile, "expect_boot_evidence", None) or {})
+        if not expected:
+            return ProbeResult(
+                probe_id,
+                profile_id,
+                False,
+                "no expect_boot_evidence declared; R6 has nothing to verify",
+            )
+        actual = {name: getattr(evidence, name) for name in expected}
+        mismatched = {n: v for n, v in actual.items() if v != expected[n]}
+        return ProbeResult(
+            probe_id,
+            profile_id,
+            not mismatched,
+            " ".join(f"{n}={v}" for n, v in actual.items()),
+            {"expected": expected, "actual": actual},
         )
     if probe_id == "R2":
         expected = getattr(profile, "expect_attention_backend", "") or "TRITON_ATTN"

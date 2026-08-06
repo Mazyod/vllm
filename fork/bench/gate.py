@@ -33,6 +33,7 @@ from fork.bench.runner import (
     replica_ports,
     wait_for_health,
 )
+from fork.bench.static import is_absorbed, read_upstream_map
 from fork.bench.verdict import build_report, derive_patch_verdicts, exit_code
 
 _FIXTURES = Path(__file__).parent / "fixtures"
@@ -154,9 +155,24 @@ class ProcessLauncher:
     def prepare(self, profile: Profile) -> None:
         """Put the machine into the state this profile is meant to test.
 
+        Refuses leave-one-out profiles by default: a launcher that cannot
+        establish patch state must not silently test the full series while
+        reporting a leave-one-out result. Subclasses that can revert (or embed
+        the revert in the launch command) override this.
+
         Args:
             profile: Configuration about to launch.
+
+        Raises:
+            NotImplementedError: If the profile needs patches reverted and
+                this launcher has no way to do it.
         """
+        if profile.revert_patches:
+            raise NotImplementedError(
+                f"{type(self).__name__} cannot revert patches; profile "
+                f"{profile.id} would test the full series while reporting a "
+                "leave-one-out result"
+            )
 
     @staticmethod
     def _drain(process: subprocess.Popen, sink: list[str]) -> None:
@@ -252,6 +268,11 @@ class ProcessLauncher:
 
 class DockerLauncher(ProcessLauncher):
     """Runs the image in a container. Needs a docker daemon on the host."""
+
+    def prepare(self, profile: Profile) -> None:
+        """No host-side state to set: build_docker_command embeds the reverts
+        in the container's launch command, and every container starts from the
+        image's clean, fully patched filesystem."""
 
     def build(
         self, profile: Profile, image: str, port: int, replica: int = 0
@@ -361,6 +382,34 @@ def run_phase(
     return results
 
 
+def absorbed_by_patch(tag: str) -> dict[str, bool | None]:
+    """Answer "has upstream absorbed this patch" per patch, from upstream.map.
+
+    Args:
+        tag: Release tag under test.
+
+    Returns:
+        Patch number ("0001") to True/False, or None when the question cannot
+        be answered here — no upstream.map, no git checkout, or unfetched
+        revisions. None is deliberately distinct from False: unknown ancestry
+        must weaken a retirement verdict, never license one.
+    """
+    mapping_path = Path(__file__).parents[1] / "patches" / "upstream.map"
+    answers: dict[str, bool | None] = {}
+    try:
+        mapping = read_upstream_map(mapping_path)
+    except OSError:
+        return answers
+    repo = Path(__file__).parents[2]
+    for name, commit in mapping.items():
+        number = name.split("-", 1)[0]
+        try:
+            answers[number] = is_absorbed(commit, tag, repo)
+        except (LookupError, OSError):
+            answers[number] = None
+    return answers
+
+
 TOPOLOGY_NATIVE = "native"
 TOPOLOGY_FORCE_PCIE = "force_pcie"
 TOPOLOGY_UNKNOWN = "unknown"
@@ -434,7 +483,10 @@ def run_gate(
     for phase in phases:
         results.extend(run_phase(phase, image, launcher, out_dir))
 
-    verdicts = derive_patch_verdicts(results)
+    # The dry run must not shell out; without git the verdicts fall back to
+    # "retirement unconfirmed", which is the honest reading of a fixture run.
+    absorbed = {} if isinstance(launcher, DryRunLauncher) else absorbed_by_patch(tag)
+    verdicts = derive_patch_verdicts(results, absorbed)
 
     # Merge rather than assign: each profile yields four P results, and keying
     # straight off profile_id would keep only the last one.

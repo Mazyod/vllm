@@ -13,12 +13,24 @@ PATCH_STILL_REQUIRED = "still required"
 PATCH_RETIRED = "retired"
 PATCH_BROKEN = "broken on this tag"
 PATCH_HARMFUL = "now harmful"
+PATCH_PROBE_BLIND = "probe blind"
+PATCH_RETIREMENT_UNCONFIRMED = "retirement unconfirmed"
 
 _ACTIONS = {
     PATCH_STILL_REQUIRED: "carry forward",
     PATCH_RETIRED: "delete the patch, its note, and its series line",
     PATCH_BROKEN: "rebase before shipping",
     PATCH_HARMFUL: "drop urgently",
+    PATCH_PROBE_BLIND: (
+        "carry forward — the leave-one-out probe passed but the upstream fix "
+        "is NOT in this tag, so the probe cannot see this patch's failure "
+        "mode; fix the probe before trusting it"
+    ),
+    PATCH_RETIREMENT_UNCONFIRMED: (
+        "carry forward — leave-one-out passed but ancestry was not checkable "
+        "here; confirm with upstream.map on a checkout before deleting "
+        "anything"
+    ),
 }
 
 _FATAL_VERDICTS = frozenset({PATCH_BROKEN, PATCH_HARMFUL})
@@ -29,37 +41,62 @@ _FATAL_VERDICTS = frozenset({PATCH_BROKEN, PATCH_HARMFUL})
 _NOT_A_MEASUREMENT = frozenset({"n", "elapsed_s"})
 
 
-def patch_verdict(leave_one_out_failed: bool, full_series_passed: bool) -> str:
-    """Classify a patch from its two boots.
+def patch_verdict(
+    leave_one_out_failed: bool,
+    full_series_passed: bool,
+    absorbed: bool | None = None,
+) -> str:
+    """Classify a patch from its two boots and the upstream ancestry answer.
+
+    A passing leave-one-out alone must never retire a patch: a probe can be
+    blind to the failure mode (v0.26.0 moved patch 0001's crash from boot to
+    the first speculative-decode request, and a boot-only probe called it
+    retirable). Retirement requires the dynamic and static evidence to agree.
 
     Args:
         leave_one_out_failed: The build without this patch failed as expected.
         full_series_passed: The build with the whole series passed.
+        absorbed: Whether upstream.map's fix commit is an ancestor of the tag,
+            or None when ancestry could not be checked (e.g. no git checkout
+            on a rented box).
 
     Returns:
-        One of the four patch verdict constants.
+        One of the patch verdict constants.
     """
     if leave_one_out_failed and full_series_passed:
         return PATCH_STILL_REQUIRED
     if not leave_one_out_failed and full_series_passed:
-        return PATCH_RETIRED
+        if absorbed is True:
+            return PATCH_RETIRED
+        if absorbed is False:
+            return PATCH_PROBE_BLIND
+        return PATCH_RETIREMENT_UNCONFIRMED
     if leave_one_out_failed and not full_series_passed:
         return PATCH_BROKEN
     return PATCH_HARMFUL
 
 
-def derive_patch_verdicts(results: Sequence[ProbeResult]) -> dict[str, str]:
+def derive_patch_verdicts(
+    results: Sequence[ProbeResult],
+    absorbed_by_patch: Mapping[str, bool | None] | None = None,
+) -> dict[str, str]:
     """Pair each leave-one-out profile with its full-series counterpart.
 
     A leave-one-out profile is named "<model>-minus-<patch-number>". Its patch
-    is "still required" when that profile failed and the full series passed.
+    is "still required" when that profile failed and the full series passed,
+    and "retired" only when it passed AND ancestry confirms the fix is in the
+    tag — a passing probe with the fix absent is a blind probe, not a retired
+    patch.
 
     Args:
         results: Every probe result from the run.
+        absorbed_by_patch: Patch number ("0001") to the upstream.map ancestry
+            answer, None per-patch (or as a whole) when unknown.
 
     Returns:
         Patch number to verdict, for patches that had a leave-one-out profile.
     """
+    absorbed_by_patch = absorbed_by_patch or {}
     passed_by_profile: dict[str, bool] = {}
     for result in results:
         passed_by_profile[result.profile_id] = (
@@ -77,6 +114,7 @@ def derive_patch_verdicts(results: Sequence[ProbeResult]) -> dict[str, str]:
         verdicts[patch] = patch_verdict(
             leave_one_out_failed=not passed,
             full_series_passed=passed_by_profile[full],
+            absorbed=absorbed_by_patch.get(patch),
         )
     return verdicts
 

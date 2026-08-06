@@ -100,3 +100,57 @@ evidence of why it died.
 7. **Iterate on one warm box.** Renting per attempt re-downloads sixty
    gigabytes; keeping one and pushing fixes turns a twenty-minute cycle into a
    three-minute one. Arm a detached reaper so the cost is bounded regardless.
+
+## The one production paid for (2026-08-06)
+
+### A boot-only probe retired the patch whose bug had moved past boot
+
+The gate's first run declared patch `0001` retirable: reverted from a
+verified-clean state, the engine served anyway. On 2026-08-06 the unpatched
+`:latest` crash-looped a production Gemma-4-31B + MTP deployment with patch
+`0001`'s exact signature (`[s, 6400] X [10752, 512]` at `pre_projection`).
+
+Three things had to line up, and all three did:
+
+1. **The failure model was stale.** "100% reproducible boot crash" was
+   validated on `v0.25.1` and carried to `v0.26.0` by static reasoning
+   ("the guard is byte-identical"). On `v0.26.0` the boot dummy-run feeds the
+   drafter a preallocated `inputs_embeds` buffer and never exercises its own
+   embedding lookup — the code the width guard breaks — so the crash moved to
+   the **first scheduled speculative-decode step**. `gemma-minus-0001` carried
+   only the boot receipt `R5`, so the reverted engine was never sent a single
+   request. It booted; the probe passed; the verdict said retire.
+2. **The contradicting datapoint was retracted, not pursued.** In the
+   contaminated run, an engine missing `0001` died the moment a request had
+   "spec-decode tokens scheduled". That was the production failure mode,
+   observed on the box, hours before the verdict. It arrived tangled with the
+   revert-accumulation bug, was retracted as unattributable, and the open
+   question was never re-run in isolation.
+3. **The dynamic result was allowed to outvote the static one.** Ancestry said
+   `#47953` is not in `v0.26.0`; the probe said the engine is fine without it.
+   That disagreement was read as the harness proving the ancestry check
+   pessimistic — celebrated, even — when it was actually the probe confessing
+   blindness. A probe that passes can be blind; ancestry cannot be wrong about
+   absence.
+
+Amplifier: the retirement push emptied `series`, which is itself a build
+trigger, so the never-gated unpatched rebuild republished the certified
+`v0.26.0` tag and took `:latest` with it.
+
+## Rules added after the misretirement
+
+8. **Retirement needs both witnesses.** A leave-one-out pass retires a patch
+   only when `upstream.map` ancestry independently confirms the fix is in the
+   tag. Probe-passes-but-fix-absent renders "probe blind"; ancestry-unknown
+   renders "retirement unconfirmed". Both keep the patch
+   (`verdict.patch_verdict`).
+9. **A reverted engine must take traffic.** Every leave-one-out profile
+   carries a B-probe; a boot receipt alone cannot see a failure that fires on
+   the first real request (`test_static` enforces this).
+10. **A revert must leave a receipt in the engine's own log.** `R6` checks the
+    profile's `expect_boot_evidence` against what the booted engine actually
+    logged, so a revert that never reached the running code fails the arm
+    instead of informing a verdict.
+11. **Candidates are not releases.** Push-triggered image builds publish under
+    `<tag>-cand-<sha>` and never move `:latest` or republish a base tag;
+    promotion is a deliberate dispatch after a gate run.

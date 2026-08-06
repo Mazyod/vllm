@@ -94,3 +94,49 @@ def test_scan_release_notes_ignores_unrelated_text():
 def test_scan_release_notes_deduplicates_repeated_hits():
     hits = scan_release_notes("all-reduce here and all-reduce there")
     assert len(hits) == len(set(hits))
+
+
+def _series() -> list[str]:
+    return [
+        line.strip()
+        for line in (PATCH_DIR / "series").read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    ]
+
+
+def test_every_series_patch_has_a_leave_one_out_arm_or_a_waiver():
+    """A patch nothing exercises leave-one-out is retired on ancestry alone,
+    silently. Either some profile reverts it or the waiver names why not."""
+    from fork.bench import profiles
+
+    exercised = {
+        name for profile in profiles.PROFILES for name in profile.revert_patches
+    }
+    waived = set(profiles.LEAVE_ONE_OUT_WAIVERS)
+    missing = set(_series()) - exercised - waived
+    assert not missing, f"no leave-one-out arm and no waiver for: {sorted(missing)}"
+
+
+def test_every_leave_one_out_profile_fires_traffic():
+    """v0.26.0 moved patch 0001's crash from boot to the first spec-decode
+    request; a boot-only receipt called the patch retirable and production
+    paid for it. Reverted engines must serve real requests."""
+    from fork.bench import profiles
+
+    for profile in profiles.PROFILES:
+        if profile.revert_patches:
+            assert any(p[0] in "BP" for p in profile.probes), (
+                f"{profile.id} reverts a patch but never sends traffic"
+            )
+
+
+def test_expect_boot_evidence_names_are_real_boot_evidence_fields():
+    import dataclasses
+
+    from fork.bench import profiles
+    from fork.bench.receipts import BootEvidence
+
+    known = {field.name for field in dataclasses.fields(BootEvidence)}
+    for profile in profiles.PROFILES:
+        unknown = set(profile.expect_boot_evidence) - known
+        assert not unknown, f"{profile.id} expects unknown evidence: {unknown}"

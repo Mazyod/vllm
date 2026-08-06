@@ -141,3 +141,35 @@ def test_r5_fails_on_an_empty_log_even_when_the_server_answered():
 def test_unknown_probe_id_raises():
     with pytest.raises(KeyError):
         receipt_probe("R9", "gemma-full", _evidence("gemma-full-boot.log"), True)
+
+
+def test_r6_passes_when_the_engine_logged_the_reverted_behaviour():
+    """The revert receipt: 'Keeping separate embedding weights' in the boot
+    log is proof patch 0001's revert reached the running engine."""
+    from fork.bench import profiles
+
+    profile = profiles.get("gemma-minus-0001")
+    evidence = _evidence("boot-crash.log")
+    result = receipt_probe("R6", profile.id, evidence, served=False, profile=profile)
+    assert result.passed
+
+
+def test_r6_fails_when_the_engine_still_ran_patched_code():
+    """A served engine whose log shows the patched behaviour means the revert
+    never took effect — the exact silent no-op behind the v0.26.0
+    misretirement. R6 turns it into a failed probe instead of a verdict."""
+    from fork.bench import profiles
+
+    profile = profiles.get("gemma-minus-0001")
+    evidence = _evidence("gemma-full-boot.log")
+    result = receipt_probe("R6", profile.id, evidence, served=True, profile=profile)
+    assert not result.passed
+
+
+def test_r6_fails_when_no_expected_evidence_is_declared():
+    from fork.bench import profiles
+
+    profile = profiles.get("gemma-minus-0002")
+    evidence = _evidence("gemma-full-boot.log")
+    result = receipt_probe("R6", profile.id, evidence, served=True, profile=profile)
+    assert not result.passed

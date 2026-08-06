@@ -9,10 +9,13 @@ from fork.bench.receipts import ProbeResult
 from fork.bench.verdict import (
     PATCH_BROKEN,
     PATCH_HARMFUL,
+    PATCH_PROBE_BLIND,
     PATCH_RETIRED,
+    PATCH_RETIREMENT_UNCONFIRMED,
     PATCH_STILL_REQUIRED,
     build_report,
     compare_controls,
+    derive_patch_verdicts,
     exit_code,
     patch_verdict,
 )
@@ -22,8 +25,37 @@ def test_leave_one_out_fails_and_full_series_passes_means_still_required():
     assert patch_verdict(True, True) == PATCH_STILL_REQUIRED
 
 
-def test_both_pass_means_retired():
-    assert patch_verdict(False, True) == PATCH_RETIRED
+def test_both_pass_means_retired_only_when_ancestry_agrees():
+    assert patch_verdict(False, True, absorbed=True) == PATCH_RETIRED
+
+
+def test_both_pass_with_fix_absent_upstream_means_the_probe_is_blind():
+    """The v0.26.0 misretirement: leave-one-out served, but #47953 was not in
+    the tag — the probe could not see the failure, and the patch shipped
+    deleted. A passing probe must never outvote ancestry."""
+    assert patch_verdict(False, True, absorbed=False) == PATCH_PROBE_BLIND
+
+
+def test_both_pass_with_ancestry_unknown_cannot_retire():
+    """On a rented box there is no git checkout; unknown must fail closed."""
+    assert patch_verdict(False, True, absorbed=None) == PATCH_RETIREMENT_UNCONFIRMED
+
+
+def test_derive_verdicts_threads_ancestry_through_to_the_verdict():
+    results = [
+        ProbeResult("R5", "gemma-full", True, "ok"),
+        ProbeResult("R5", "gemma-minus-0001", True, "served"),
+    ]
+    verdicts = derive_patch_verdicts(results, {"0001": False})
+    assert verdicts == {"0001": PATCH_PROBE_BLIND}
+
+
+def test_exit_code_is_zero_for_a_blind_probe_verdict():
+    """A blind probe means the harness owes work, not that the image is bad:
+    the release still ships with the patch applied."""
+    results = [ProbeResult("R1", "gemma-full", True, "ok")]
+    assert exit_code(results, {"0001": PATCH_PROBE_BLIND}) == 0
+    assert exit_code(results, {"0001": PATCH_RETIREMENT_UNCONFIRMED}) == 0
 
 
 def test_both_fail_means_broken():

@@ -21,9 +21,9 @@ on:
         required: false
         default: ""
       promote_latest:
-        description: "Move :latest to this build (true/false)."
+        description: "Move :latest to this build (true/false). Promote only a build the release gate has passed."
         required: false
-        default: "true"
+        default: "false"
 
   push:
     branches: [main]
@@ -93,15 +93,25 @@ jobs:
 
           VERSION="${BASE_TAG#v}"
 
-          # Published tags default to the base tag; a dispatch may override them.
-          if [[ -n "$INPUT_PUBLISH_TAGS" ]]; then
-            PUBLISH_TAGS=$(echo "$INPUT_PUBLISH_TAGS" | tr ',' ' ' | xargs)
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            # A push build is a candidate, never a certified artifact. The
+            # 2026-07-27 series push rebuilt from an emptied series,
+            # republished the gated v0.26.0 tag and moved :latest — and the
+            # never-gated result crash-looped in production. Candidates get
+            # their own tag; promotion is a deliberate dispatch after a gate
+            # run.
+            PUBLISH_TAGS="${BASE_TAG}-cand-${GITHUB_SHA:0:7}"
+            PROMOTE_LATEST="false"
           else
-            PUBLISH_TAGS="$BASE_TAG"
+            # Published tags default to the base tag; a dispatch may override.
+            if [[ -n "$INPUT_PUBLISH_TAGS" ]]; then
+              PUBLISH_TAGS=$(echo "$INPUT_PUBLISH_TAGS" | tr ',' ' ' | xargs)
+            else
+              PUBLISH_TAGS="$BASE_TAG"
+            fi
+            PROMOTE_LATEST="${{ github.event.inputs.promote_latest || 'false' }}"
           fi
           PRIMARY_TAG="${PUBLISH_TAGS%% *}"
-
-          PROMOTE_LATEST="${{ github.event.inputs.promote_latest || 'true' }}"
 
           {
             echo "base_tag=$BASE_TAG"

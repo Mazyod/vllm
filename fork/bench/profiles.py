@@ -19,6 +19,20 @@ GEMMA_SERVED = "gemma-4-31b"
 QWEN_MODEL = "Qwen/Qwen3.6-27B-FP8"
 QWEN_SERVED = "qwen3.6-27b"
 
+PATCH_0001 = "0001-restrict-embedding-width-guard-to-eagle-pr47953.patch"
+PATCH_0002 = "0002-advance-grammar-across-reasoning-boundary-pr44993.patch"
+PATCH_0003 = "0003-fix-dsa-crash-breakable-cudagraphs-pr49302.patch"
+
+# Patches with no leave-one-out arm, and why. test_static holds the series to
+# this: every patch in fork/patches/series is either exercised leave-one-out
+# by some profile or waived here with a reason.
+LEAVE_ONE_OUT_WAIVERS: dict[str, str] = {
+    PATCH_0003: (
+        "DSV4/DSpark is not in the gate fleet; ancestry (upstream.map) and "
+        "the external DSV4 bench own its relevance"
+    ),
+}
+
 _V1 = {"VLLM_USE_V2_MODEL_RUNNER": "0", "VLLM_LOGGING_LEVEL": "INFO"}
 _V2 = {"VLLM_USE_V2_MODEL_RUNNER": "1", "VLLM_LOGGING_LEVEL": "INFO"}
 
@@ -48,6 +62,11 @@ class Profile:
         revert_patches: Patch filenames to revert before launch.
         probes: Probe ids to run against this server.
         expect: Either "serves" or "boot_crash".
+        expect_boot_evidence: BootEvidence attribute name to the value the
+            boot log must prove, checked by probe R6. A leave-one-out profile
+            declares the reverted behaviour's log signature here, so a revert
+            that never reached the running engine fails loudly instead of
+            producing a verdict about code that was not tested.
         expect_attention_backend: Backend the engine must select. Gemma's is
             load-bearing — the V1 pin exists to keep the sliding-window path on
             TRITON_ATTN. Qwen is a hybrid Mamba model that legitimately selects
@@ -77,6 +96,7 @@ class Profile:
     revert_patches: tuple[str, ...] = ()
     probes: tuple[str, ...] = ()
     expect: str = "serves"
+    expect_boot_evidence: Mapping[str, bool] = field(default_factory=dict)
     expect_attention_backend: str = ""
     gating: bool = True
     control_for: str | None = None
@@ -152,6 +172,46 @@ PROFILES: tuple[Profile, ...] = (
         extra_args=_GEMMA_BASE,
         probes=("R1", "R2", "R4", "R5", "B1", "B3", "B4"),
         expect_attention_backend="TRITON_ATTN",
+    ),
+    # Leave-one-out arms. Lessons from the v0.26.0 misretirement are baked in:
+    # every arm carries a traffic probe (a boot-only receipt is blind to
+    # failures that moved past boot — 0001's crash fires at the first
+    # scheduled spec-decode step on v0.26.0, not at engine init), and R6
+    # asserts the reverted behaviour's log signature so a revert that never
+    # reached the engine cannot produce a verdict.
+    Profile(
+        id="gemma-minus-0001",
+        model=GEMMA_MODEL,
+        served_name=GEMMA_SERVED,
+        phase=2,
+        draft=GEMMA_DRAFT,
+        gpu_indices=(0,),
+        env=_V1,
+        extra_args=_GEMMA_BASE,
+        revert_patches=(PATCH_0001,),
+        probes=("R4", "R5", "R6", "B3"),
+        expect_boot_evidence={"keeps_separate": True},
+        expect="boot_crash",
+        gating=False,
+    ),
+    Profile(
+        id="gemma-minus-0002",
+        model=GEMMA_MODEL,
+        served_name=GEMMA_SERVED,
+        phase=2,
+        draft=GEMMA_DRAFT,
+        gpu_indices=(0,),
+        env=_V1,
+        extra_args=_GEMMA_BASE,
+        revert_patches=(PATCH_0002,),
+        # 0002's revert has no boot-log signature — the grammar bug is
+        # request-time only — so there is no R6 here and B1 is the whole
+        # discriminator. B1 passed 0/100 on unpatched v0.26.0 three times,
+        # so until it learns to reproduce the corruption on this tag, the
+        # ancestry cross-check will (correctly) render "probe blind" rather
+        # than "retired".
+        probes=("R1", "R5", "B1"),
+        gating=False,
     ),
     Profile(
         id="gemma-v2-kvfp8",

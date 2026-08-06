@@ -135,3 +135,24 @@ def test_every_profile_replays_a_log_that_can_satisfy_its_expectations():
             f"{profile.id} replays a log selecting {selected!r} "
             f"but expects {profile.expect_attention_backend!r}"
         )
+
+
+def test_every_revert_receipt_replays_a_log_that_can_satisfy_it():
+    """Same rule as above, for R6. A leave-one-out profile whose fixture
+    cannot show the reverted behaviour makes the dry run report a revert
+    failure that is really a fixture mismatch — and would train the next
+    reader to ignore exactly the probe that had to be believed."""
+    from fork.bench import profiles
+    from fork.bench.gate import DryRunLauncher
+    from fork.bench.receipts import parse_boot_log
+
+    launcher = DryRunLauncher()
+    for profile in profiles.PROFILES:
+        if not profile.expect_boot_evidence:
+            continue
+        evidence = parse_boot_log(launcher._fixture(profile))
+        for name, wanted in profile.expect_boot_evidence.items():
+            assert getattr(evidence, name) == wanted, (
+                f"{profile.id} replays a log with {name}="
+                f"{getattr(evidence, name)!r} but R6 expects {wanted!r}"
+            )
