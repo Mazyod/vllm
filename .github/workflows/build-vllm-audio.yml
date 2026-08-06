@@ -24,6 +24,14 @@ on:
         description: "Move :latest to this build (true/false). Promote only a build the release gate has passed."
         required: false
         default: "false"
+      promote_from:
+        description: >-
+          Existing tag to promote, e.g. v0.26.0-cand-984ab7a. When set nothing
+          is rebuilt: that exact digest is verified and retagged. This is how a
+          gated artifact reaches :latest — a rebuild would publish a lookalike
+          the gate never saw.
+        required: false
+        default: ""
 
   push:
     branches: [main]
@@ -72,6 +80,8 @@ jobs:
       primary_tag: ${{ steps.resolve.outputs.primary_tag }}
       image_refs: ${{ steps.resolve.outputs.image_refs }}
       promote_latest: ${{ steps.resolve.outputs.promote_latest }}
+      promote_from: ${{ steps.resolve.outputs.promote_from }}
+      source_ref: ${{ steps.resolve.outputs.source_ref }}
     steps:
       - name: Resolve base tag and publish refs
         id: resolve
@@ -113,11 +123,23 @@ jobs:
           fi
           PRIMARY_TAG="${PUBLISH_TAGS%% *}"
 
+          # What downstream jobs verify and promote. Promoting an existing tag
+          # rebuilds nothing, so the artifact the gate approved is the artifact
+          # that ships.
+          PROMOTE_FROM="${{ github.event.inputs.promote_from }}"
+          if [[ -n "$PROMOTE_FROM" ]]; then
+            SOURCE_REF="${IMAGE_NAME}:${PROMOTE_FROM}"
+          else
+            SOURCE_REF="${IMAGE_NAME}:${PRIMARY_TAG}"
+          fi
+
           {
             echo "base_tag=$BASE_TAG"
             echo "version=$VERSION"
             echo "primary_tag=$PRIMARY_TAG"
             echo "promote_latest=$PROMOTE_LATEST"
+            echo "promote_from=$PROMOTE_FROM"
+            echo "source_ref=$SOURCE_REF"
             echo "image_refs<<__REFS__"
             for t in $PUBLISH_TAGS; do echo "${IMAGE_NAME}:${t}"; done
             echo "__REFS__"
@@ -128,6 +150,8 @@ jobs:
           echo "  Version        : $VERSION"
           echo "  Publish tags   : $PUBLISH_TAGS"
           echo "  Promote latest : $PROMOTE_LATEST"
+          echo "  Promote from   : ${PROMOTE_FROM:-<build a new image>}"
+          echo "  Source ref     : $SOURCE_REF"
           echo "========================================"
 
   # ---------------------------------------------------------------------------
@@ -135,6 +159,8 @@ jobs:
   # ---------------------------------------------------------------------------
   build-and-push:
     needs: [alignment, resolve]
+    # A promotion rebuilds nothing; it retags a digest that already exists.
+    if: needs.resolve.outputs.promote_from == ''
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -184,25 +210,36 @@ jobs:
   # ---------------------------------------------------------------------------
   test:
     needs: [resolve, build-and-push]
+    # Runs for a fresh build and for a promotion, where the build was skipped.
+    if: >-
+      always() && needs.resolve.result == 'success' &&
+      (needs.build-and-push.result == 'success' ||
+       needs.build-and-push.result == 'skipped')
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
+      # Without this the series file below is unreadable, EXPECTED computes as
+      # 0, and the patch assertion silently compares nothing — which is how it
+      # passed for every build of the empty series while proving nothing.
+      - name: Checkout fork
+        uses: actions/checkout@v5
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Pull the built image
-        run: docker pull "${{ env.IMAGE_NAME }}:${{ needs.resolve.outputs.primary_tag }}"
+      - name: Pull the image under test
+        run: docker pull "${{ needs.resolve.outputs.source_ref }}"
 
       - name: Assert audio decode deps are present
         run: |
           # /v1/audio/transcriptions needs these. vLLM guards `import av` and
           # `import soundfile`; if either is missing it degrades to a
           # PlaceholderModule. Importing both is pure CPU work — no GPU.
-          IMAGE="${{ env.IMAGE_NAME }}:${{ needs.resolve.outputs.primary_tag }}"
+          IMAGE="${{ needs.resolve.outputs.source_ref }}"
           docker run --rm --entrypoint python3 "$IMAGE" -c \
             "import av, soundfile; print('audio deps OK: av', av.__version__, '| soundfile', soundfile.__version__)"
 
@@ -212,10 +249,15 @@ jobs:
           # Derived from the series rather than hardcoded, so it cannot go stale
           # when a patch is added or retired: every patch must reverse-apply
           # cleanly (proving it is present), and the count must match.
-          IMAGE="${{ env.IMAGE_NAME }}:${{ needs.resolve.outputs.primary_tag }}"
+          IMAGE="${{ needs.resolve.outputs.source_ref }}"
+          # Fail closed on an unreadable series: "0 declared" and "0 found"
+          # agree, so a missing file renders as a passing check that compared
+          # nothing at all.
+          SERIES=fork/patches/series
+          [[ -f "$SERIES" ]] || { echo "::error::$SERIES not found; the checkout is missing"; exit 1; }
           # `grep -c` exits 1 on no match, and the count is then empty rather
           # than zero — an empty series is normal, so count without grep.
-          EXPECTED=$(awk 'NF && $1 !~ /^#/' fork/patches/series | wc -l | tr -d ' ')
+          EXPECTED=$(awk 'NF && $1 !~ /^#/' "$SERIES" | wc -l | tr -d ' ')
           echo "series declares $EXPECTED patch(es)"
           docker run --rm --entrypoint bash -e EXPECTED="$EXPECTED" "$IMAGE" -c '
             set -euo pipefail
@@ -236,11 +278,14 @@ jobs:
           '
 
   # ---------------------------------------------------------------------------
-  # Job 4: Promote :latest after the checks pass
+  # Job 4: Promote the verified digest — never a rebuild of it
   # ---------------------------------------------------------------------------
-  tag-latest:
+  promote:
     needs: [resolve, build-and-push, test]
-    if: needs.resolve.outputs.promote_latest == 'true'
+    if: >-
+      always() && needs.test.result == 'success' &&
+      (needs.resolve.outputs.promote_latest == 'true' ||
+       needs.resolve.outputs.promote_from != '')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -254,16 +299,47 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Tag primary image as latest
+      - name: Retag the verified digest
+        id: promote
         run: |
-          SOURCE="${{ env.IMAGE_NAME }}:${{ needs.resolve.outputs.primary_tag }}"
-          docker buildx imagetools create --tag "${{ env.IMAGE_NAME }}:latest" "$SOURCE"
+          set -euo pipefail
+          SOURCE="${{ needs.resolve.outputs.source_ref }}"
+
+          # Pin to the digest before retagging. Resolving once means every tag
+          # written below names the same bytes the test job just verified, even
+          # if the source tag moves underneath this run.
+          DIGEST=$(docker buildx imagetools inspect "$SOURCE" \
+            --format '{{.Manifest.Digest}}')
+          PINNED="${IMAGE_NAME}@${DIGEST}"
+          echo "promoting $SOURCE -> $DIGEST"
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+
+          # On a promotion the publish tags were never pushed by this run,
+          # because nothing was built. Point them at the pinned digest.
+          if [[ -n "${{ needs.resolve.outputs.promote_from }}" ]]; then
+            while IFS= read -r ref; do
+              [[ -n "$ref" ]] || continue
+              echo "  tagging $ref"
+              docker buildx imagetools create --tag "$ref" "$PINNED"
+            done <<< "${{ needs.resolve.outputs.image_refs }}"
+          fi
+
+          if [[ "${{ needs.resolve.outputs.promote_latest }}" == "true" ]]; then
+            echo "  tagging ${IMAGE_NAME}:latest"
+            docker buildx imagetools create --tag "${IMAGE_NAME}:latest" "$PINNED"
+          fi
 
       - name: Summary
         run: |
           {
             echo "### Release Complete"
             echo ""
-            echo "- \`${{ env.IMAGE_NAME }}:${{ needs.resolve.outputs.primary_tag }}\`"
-            echo "- \`${{ env.IMAGE_NAME }}:latest\`"
+            echo "- **Promoted digest:** \`${{ steps.promote.outputs.digest }}\`"
+            echo "- **Source:** \`${{ needs.resolve.outputs.source_ref }}\`"
+            while IFS= read -r ref; do
+              [[ -n "$ref" ]] && echo "- \`$ref\`"
+            done <<< "${{ needs.resolve.outputs.image_refs }}"
+            if [[ "${{ needs.resolve.outputs.promote_latest }}" == "true" ]]; then
+              echo "- \`${{ env.IMAGE_NAME }}:latest\`"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
