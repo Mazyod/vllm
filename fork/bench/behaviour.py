@@ -3,7 +3,13 @@
 
 """Probes that fire requests at a running server and classify the outcomes."""
 
+import base64
+import io
+import math
 import re
+import struct
+import wave
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 import httpx
@@ -35,6 +41,19 @@ _JSON_SCHEMA_FORMAT = {
     "json_schema": {"name": "summary", "schema": _SCHEMA, "strict": True},
 }
 
+# The reasoning leg of the three-way interaction B1 exists to catch. DESIGN.md
+# claimed B1 ran "with reasoning on" long before any request asked for it.
+_THINKING: dict[str, Any] = {"chat_template_kwargs": {"enable_thinking": True}}
+
+# Clip lengths fired together by B5. Deliberately unequal: upstream #50957 is
+# concurrent audio requests of *differing* durations killing EngineCore, and a
+# burst of identical clips does not reproduce it. The spread is what matters,
+# so the floor sits at half a second rather than as low as it could go: a clip
+# short enough to trip a minimum-length guard in the processor would fail a
+# gating profile for a probe bug rather than an engine one.
+_AUDIO_SECONDS = (0.5, 1.7, 0.9, 3.1, 0.6, 2.3)
+_AUDIO_RATE = 16000
+
 _PROMPTS = (
     "Summarise the operating principle of speculative decoding.",
     "Summarise how tensor parallelism splits attention weights.",
@@ -56,6 +75,33 @@ def count_corrupt_openers(text: str) -> int:
     """
     stripped = text.lstrip().removeprefix("```json").removeprefix("```").lstrip()
     return 1 if _CORRUPT_RE.match(stripped) else 0
+
+
+def constrained_outputs(message: dict[str, Any]) -> list[str]:
+    """Every grammar-constrained string in an assistant message.
+
+    Tool mode puts the constrained JSON in `tool_calls[].function.arguments`
+    and leaves `content` null. Reading only `content` made half of B1's
+    requests — the tool-mode half — structurally unable to observe the
+    corruption they were fired to detect, which is upstream #41967's path.
+
+    Args:
+        message: The `choices[0].message` object of a chat completion.
+
+    Returns:
+        Each constrained payload, in the order the response carried them.
+    """
+    outputs: list[str] = []
+    content = message.get("content")
+    if isinstance(content, str) and content.strip():
+        outputs.append(content)
+    for call in message.get("tool_calls") or []:
+        if not isinstance(call, dict):
+            continue
+        arguments = (call.get("function") or {}).get("arguments")
+        if isinstance(arguments, str) and arguments.strip():
+            outputs.append(arguments)
+    return outputs
 
 
 def is_fsm_error(status: int, body: str) -> bool:
@@ -114,6 +160,57 @@ def acceptance_rate(samples: dict[str, float]) -> float | None:
     return accepted / drafted
 
 
+def wav_bytes(seconds: float, rate: int = _AUDIO_RATE) -> bytes:
+    """Synthesise a mono 16-bit PCM WAV of the given length.
+
+    Generated rather than committed as a fixture: the probe cares about clip
+    *duration*, and a tone carries that in the header and frame count without
+    a binary blob in the tree. Content is irrelevant — the failure under test
+    is an engine crash on mixed-length batching, not a transcription result.
+
+    Args:
+        seconds: Clip length.
+        rate: Sample rate in Hz.
+
+    Returns:
+        A complete RIFF/WAVE file.
+    """
+    frames = max(1, int(seconds * rate))
+    samples = (
+        int(12000 * math.sin(2 * math.pi * 440 * index / rate))
+        for index in range(frames)
+    )
+    buffer = io.BytesIO()
+    with wave.open(buffer, "wb") as handle:
+        handle.setnchannels(1)
+        handle.setsampwidth(2)
+        handle.setframerate(rate)
+        handle.writeframes(b"".join(struct.pack("<h", value) for value in samples))
+    return buffer.getvalue()
+
+
+def audio_survived(statuses: list[int], healthy: bool) -> tuple[bool, str]:
+    """Classify a concurrent audio burst.
+
+    The engine staying up is the load-bearing assertion. Upstream #50957 kills
+    EngineCore outright, so individual requests may return anything at all
+    while the real damage is that the server is gone afterwards — a probe that
+    only counted non-200s could read a dead engine as a handful of errors.
+
+    Args:
+        statuses: HTTP status per request, in completion order.
+        healthy: Whether /health answered 200 after the burst.
+
+    Returns:
+        Whether the burst was survived, and a one-line detail.
+    """
+    bad = [code for code in statuses if code != 200]
+    detail = f"{len(statuses) - len(bad)}/{len(statuses)} ok engine_alive={healthy}" + (
+        f" statuses={sorted(set(bad))}" if bad else ""
+    )
+    return (healthy and not bad and bool(statuses)), detail
+
+
 def _post(client: httpx.Client, model: str, index: int, **extra: Any) -> httpx.Response:
     payload: dict[str, Any] = {
         "model": model,
@@ -124,16 +221,21 @@ def _post(client: httpx.Client, model: str, index: int, **extra: Any) -> httpx.R
     return client.post("/v1/chat/completions", json=payload)
 
 
-def _content(response: httpx.Response) -> str:
+def _message(response: httpx.Response) -> dict[str, Any]:
     try:
         message = response.json()["choices"][0]["message"]
     except Exception:
-        return ""
-    return message.get("content") or ""
+        return {}
+    return message if isinstance(message, dict) else {}
+
+
+def _content(response: httpx.Response) -> str:
+    return _message(response).get("content") or ""
 
 
 def _b1(client: httpx.Client, model: str, count: int) -> tuple[bool, str, dict]:
     corrupt = 0
+    checked = 0
     for index in range(count):
         native = index % 2 == 0
         extra: dict[str, Any] = (
@@ -141,8 +243,21 @@ def _b1(client: httpx.Client, model: str, count: int) -> tuple[bool, str, dict]:
             if native
             else {"tools": [_TOOL], "tool_choice": "auto"}
         )
-        corrupt += count_corrupt_openers(_content(_post(client, model, index, **extra)))
-    return corrupt == 0, f"{corrupt}/{count} corrupt", {"corrupt": corrupt}
+        # Reasoning is the third leg of the interaction. Without it the
+        # end-of-think marker never shares a speculative window with the first
+        # `{`, the bug cannot occur, and a clean result means nothing.
+        outputs = constrained_outputs(
+            _message(_post(client, model, index, **_THINKING, **extra))
+        )
+        checked += len(outputs)
+        corrupt += sum(count_corrupt_openers(text) for text in outputs)
+    # A run that inspected nothing is a blind probe, not a clean one.
+    passed = corrupt == 0 and checked > 0
+    return (
+        passed,
+        f"{corrupt}/{count} corrupt ({checked} constrained outputs inspected)",
+        {"corrupt": corrupt, "inspected": checked},
+    )
 
 
 def _b2(client: httpx.Client, model: str, count: int) -> tuple[bool, str, dict]:
@@ -173,7 +288,52 @@ def _b4(client: httpx.Client, model: str, count: int) -> tuple[bool, str, dict]:
     return passed, f"status={response.status_code}", {"status": response.status_code}
 
 
-_PROBES = {"B1": _b1, "B2": _b2, "B3": _b3, "B4": _b4}
+def _post_audio(client: httpx.Client, model: str, seconds: float) -> httpx.Response:
+    encoded = base64.b64encode(wav_bytes(seconds)).decode()
+    return client.post(
+        "/v1/chat/completions",
+        json={
+            "model": model,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "Describe this audio in one word."},
+                        {
+                            "type": "input_audio",
+                            "input_audio": {"data": encoded, "format": "wav"},
+                        },
+                    ],
+                }
+            ],
+            "max_tokens": 32,
+        },
+    )
+
+
+def _b5(client: httpx.Client, model: str, count: int) -> tuple[bool, str, dict]:
+    lengths = [_AUDIO_SECONDS[index % len(_AUDIO_SECONDS)] for index in range(count)]
+    with ThreadPoolExecutor(max_workers=len(lengths)) as pool:
+        futures = [
+            pool.submit(_post_audio, client, model, seconds) for seconds in lengths
+        ]
+        statuses = []
+        for future in futures:
+            try:
+                statuses.append(future.result().status_code)
+            except Exception:  # noqa: BLE001 - a dropped connection is a status
+                statuses.append(0)
+
+    try:
+        healthy = client.get("/health").status_code == 200
+    except Exception:  # noqa: BLE001 - unreachable is the failure this catches
+        healthy = False
+
+    passed, detail = audio_survived(statuses, healthy)
+    return passed, detail, {"statuses": statuses, "engine_alive": healthy}
+
+
+_PROBES = {"B1": _b1, "B2": _b2, "B3": _b3, "B4": _b4, "B5": _b5}
 
 
 def run_behaviour_probe(
@@ -185,7 +345,7 @@ def run_behaviour_probe(
     """Run one behavioural probe against a live server.
 
     Args:
-        probe_id: One of B1 through B4.
+        probe_id: One of B1 through B5.
         base_url: Server base URL.
         model: Served model name.
         count: Number of requests to fire.

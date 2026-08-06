@@ -38,8 +38,11 @@ The gate turns each into a probe that produces a receipt.
 Stated so nobody later assumes coverage that is not here:
 
 - **Accuracy and output quality.** Nothing here would catch a quantization bug
-  that degrades generation quality while serving normally.
-- **Vision, audio, multimodal.**
+  that degrades generation quality while serving normally. B5 sends audio but
+  never reads what came back: it asserts the engine survived, not that it
+  heard anything.
+- **Vision and video.** Audio is covered only by B5, and only for the crash
+  mode in #50957 — mixed clip durations arriving together.
 - **Architectures the image does not target.**
 - **Autonomous triggering.** The gate is run deliberately, by hand.
 - **Capacity planning.** Throughput numbers are a trend record, not a sizing
@@ -174,10 +177,22 @@ and R3 assert on.
 
 | id | probe | pass condition |
 | --- | --- | --- |
-| B1 | 100 structured-output requests (50 native, 50 tool mode) with reasoning and MTP both on; count `{{` and `{"{` openers. Runs at TP2, the shipping topology, as well as single-GPU | 0 corrupt on the full series |
+| B1 | 100 structured-output requests (50 native, 50 tool mode), each with `enable_thinking` set and MTP on; count `{{` and `{"{` openers across **content and tool-call arguments**. Runs at TP2, the shipping topology, as well as single-GPU | 0 corrupt, and at least one constrained output actually inspected |
 | B2 | 60 guided and tool-calling requests; count HTTP 500 `Failed to advance FSM` | 0 |
 | B3 | `vllm:spec_decode_*` counters non-zero; acceptance rate recorded | speculative decoding actually live |
 | B4 | a request carrying `thinking_token_budget` | accepted, not rejected |
+| B5 | 12 concurrent chat requests carrying `input_audio` clips of **differing durations** (0.2–3.1 s), then `/health` | every request 200 **and the engine still alive** |
+
+B1's pass condition counts inspections because two of its three legs used to be
+missing: it never asked for reasoning, and it read `message.content`, which is
+null in tool mode. It scored 0/100 against an engine with patch `0002` reverted,
+three times, and that clean result was read as evidence the patch could go. A
+structured-output probe has to assemble all of MTP, guided decoding and
+reasoning, or a pass means only that it did not look.
+
+B5 asserts survival rather than transcription quality. Upstream #50957 kills
+EngineCore on concurrent audio of mixed clip lengths, so the requests in flight
+are not the damage — the dead server afterwards is.
 
 ### Negative probes — assert a known failure still happens
 

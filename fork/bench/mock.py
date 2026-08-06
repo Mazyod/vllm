@@ -170,6 +170,33 @@ def _handler_class(config: MockConfig) -> type[BaseHTTPRequestHandler]:
                 self.wfile.write(b"0\r\n\r\n")
                 return
 
+            # Tool mode puts the constrained JSON in the tool call and leaves
+            # content null, exactly as the engine does. Modelling it is what
+            # lets the dry run exercise the tool-call extraction path rather
+            # than silently reading a field the real server never fills.
+            if request.get("tools"):
+                message = {
+                    "role": "assistant",
+                    "content": None,
+                    "reasoning_content": _REASONING,
+                    "tool_calls": [
+                        {
+                            "id": "call_mock",
+                            "type": "function",
+                            "function": {
+                                "name": "record_summary",
+                                "arguments": content,
+                            },
+                        }
+                    ],
+                }
+            else:
+                message = {
+                    "role": "assistant",
+                    "content": content,
+                    "reasoning_content": _REASONING,
+                }
+
             body = json.dumps(
                 {
                     "id": "chatcmpl-mock",
@@ -178,11 +205,7 @@ def _handler_class(config: MockConfig) -> type[BaseHTTPRequestHandler]:
                     "choices": [
                         {
                             "index": 0,
-                            "message": {
-                                "role": "assistant",
-                                "content": content,
-                                "reasoning_content": _REASONING,
-                            },
+                            "message": message,
                             "finish_reason": "stop",
                         }
                     ],

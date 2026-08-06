@@ -170,7 +170,7 @@ PROFILES: tuple[Profile, ...] = (
         gpu_indices=(0,),
         env=_V1,
         extra_args=_GEMMA_BASE,
-        probes=("R1", "R2", "R4", "R5", "B1", "B3", "B4"),
+        probes=("R1", "R2", "R4", "R5", "B1", "B3", "B4", "B5"),
         expect_attention_backend="TRITON_ATTN",
     ),
     # Leave-one-out arms. Lessons from the v0.26.0 misretirement are baked in:
@@ -340,7 +340,7 @@ PROFILES: tuple[Profile, ...] = (
         gpu_indices=(0, 1),
         env=_V1,
         extra_args=_GEMMA_BASE + _AR_FLAGS,
-        probes=("R1", "R2", "R3", "R4", "R5", "B1", "B3", "B4"),
+        probes=("R1", "R2", "R3", "R4", "R5", "B1", "B3", "B4", "B5"),
         expect_attention_backend="TRITON_ATTN",
     ),
     Profile(

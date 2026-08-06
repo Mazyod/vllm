@@ -21,6 +21,10 @@ PATCH_DIR = "/opt/fork/patches"
 _REVERT_SCRIPT = "/opt/fork/bench/revert-patch.sh"
 _B1_COUNT = 100
 _B2_COUNT = 60
+# Fired concurrently, so this is a batch width rather than a volume. Wide
+# enough that clips of differing lengths land in one scheduler step, which is
+# the condition upstream #50957 needs.
+_B5_COUNT = 12
 _DEFAULT_COUNT = 8
 
 
@@ -239,6 +243,8 @@ def _request_count(probe_id: str) -> int:
         return _B1_COUNT
     if probe_id == "B2":
         return _B2_COUNT
+    if probe_id == "B5":
+        return _B5_COUNT
     return _DEFAULT_COUNT
 
 
