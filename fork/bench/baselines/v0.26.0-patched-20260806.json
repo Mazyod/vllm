@@ -1,0 +1,65 @@
+{
+  "machine": {
+    "all_reduce_path": "native",
+    "driver": "590.48.01",
+    "gpu": "NVIDIA H100 PCIe",
+    "gpu_count": "2",
+    "interconnect": "PXB"
+  },
+  "perf": {
+    "gemma-perf": {
+      "acceptance_rate": 0.5401208544125914,
+      "decode_tok_s": 156.91236533278163,
+      "elapsed_s": 1.6314839143306017,
+      "n": 4,
+      "throughput_conc1": 113.72905689680731,
+      "throughput_conc32": 492.7728186322267,
+      "throughput_conc8": 177.76521010136503,
+      "ttft_p50": 0.2829690594226122,
+      "ttft_p99": 9.051983661949635
+    },
+    "gemma-perf-kvauto": {
+      "acceptance_rate": 0.5525677603423681,
+      "decode_tok_s": 162.81485934020566,
+      "elapsed_s": 1.5723380595445633,
+      "n": 4,
+      "throughput_conc1": 152.74051524326777,
+      "throughput_conc32": 1923.3056876781454,
+      "throughput_conc8": 520.2767990821155,
+      "ttft_p50": 0.2309438418596983,
+      "ttft_p99": 0.4582279194146395
+    },
+    "gemma-perf-nospec": {
+      "decode_tok_s": 70.44168481336753,
+      "elapsed_s": 3.6342117693275213,
+      "n": 4,
+      "throughput_conc1": 67.53089154703926,
+      "throughput_conc32": 963.7344437436329,
+      "throughput_conc8": 342.33839028065586,
+      "ttft_p50": 0.2577180955559015,
+      "ttft_p99": 0.46658220514655113
+    },
+    "gemma-perf-tp1x2": {
+      "decode_tok_s": 114.49707084996652,
+      "elapsed_s": 2.235865058377385,
+      "n": 4,
+      "throughput_conc1": 98.2250138670455,
+      "throughput_conc32": 1737.1800949997973,
+      "throughput_conc8": 306.06322995141363,
+      "ttft_p50": 0.31418227031826973,
+      "ttft_p99": 5.086131419986486
+    },
+    "qwen-perf": {
+      "acceptance_rate": 0.7741251325556734,
+      "decode_tok_s": 149.03791004707455,
+      "elapsed_s": 1.7176837753504515,
+      "n": 4,
+      "throughput_conc1": 128.44876602235556,
+      "throughput_conc32": 840.1709017579581,
+      "throughput_conc8": 213.35342179138496,
+      "ttft_p50": 0.2167818434536457,
+      "ttft_p99": 0.9222460519522429
+    }
+  },
+  "tag": "v0.26.0"
+}
