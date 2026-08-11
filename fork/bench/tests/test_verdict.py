@@ -148,11 +148,12 @@ def test_report_distinguishes_a_diagnostic_failure_from_a_gating_one():
     report = build_report(
         "v0.26.0",
         {},
-        [ProbeResult("R5", "gemma-minus-0001", False, "crashed as expected")],
+        [ProbeResult("R5", "qwen-tp2-noflags", False, "crashed as expected")],
         {},
         {},
     )
-    assert "as expected" in report
+    assert "fail (as expected)" in report
+    assert "**FAIL**" not in report
 
 
 def test_controls_are_differenced_against_the_profile_they_control_for():

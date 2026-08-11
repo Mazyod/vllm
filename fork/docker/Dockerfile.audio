@@ -11,8 +11,9 @@
 #      vLLM. Without it, POST /v1/audio/transcriptions fails at request time
 #      with "Please install vllm[audio] for audio support".
 #
-#   2. The fork patch series (fork/patches/, applied against this exact release
-#      tag). Both are pure-Python upstream backports; see FORK.md.
+#   2. The fork patch series (fork/patches/, generated against this exact
+#      release tag; possibly empty when upstream has absorbed everything).
+#      See FORK.md.
 #
 # The entrypoint is inherited unchanged, so this is a drop-in replacement for
 # vllm/vllm-openai:${BASE_TAG}.
@@ -20,7 +21,7 @@
 # BASE_TAG MUST be a real upstream release tag (e.g. v0.26.0). The patch series
 # is generated against that tag; bumping BASE_TAG without refreshing the series
 # (fork/scripts/refresh-patches.sh) will fail the build by design.
-ARG BASE_TAG=v0.26.0
+ARG BASE_TAG=v0.27.1
 FROM vllm/vllm-openai:${BASE_TAG}
 
 # `pip show` reads metadata WITHOUT importing vllm, so this stays fast and needs

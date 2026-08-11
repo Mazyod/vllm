@@ -58,28 +58,15 @@ fork alignment
 
 ## What we add
 
-**0001 — [#47953](https://github.com/vllm-project/vllm/pull/47953): Restrict
-embedding-width share guard to EAGLE drafts.**
-Fixes a Gemma-4 MTP boot crash (`mat1 and mat2 ... 6400/10752` at
-`pre_projection`). v0.26.0 still carries the #43957 regression; without this,
-V1 + MTP won't boot.
-
-**0002 — [#44993](https://github.com/vllm-project/vllm/pull/44993): Advance
-grammar across reasoning boundary.**
-Fixes structured-output `{{` / `{"{` corruption under reasoning + spec decode
-(#43388). The grammar must advance at the true reasoning boundary; the
-placeholder-derived delta window misses `</think>` when drafts are rejected.
-
-Both are **pure-Python** upstream backports, byte-identical to the merged
-upstream commits. Patch 0002 carries only the PR's source changes (its test file
-is not present in the runtime image). Both PRs merged *after* `v0.26.0` was cut,
-so they are still not in any release — drop them once a release we rebase onto
-contains them.
-
-Each patch is filed with full context — impact, root cause, a **reproduce case**
-to re-check relevance, validation, and ruled-out theories — under
-[`fork/patches/notes/`](fork/patches/notes/) (index and template in
-[`fork/patches/README.md`](fork/patches/README.md)).
+**The patch series is currently empty.** `v0.27.1` absorbed everything the fork
+carried (0001 [#47953](https://github.com/vllm-project/vllm/pull/47953),
+0002 [#44993](https://github.com/vllm-project/vllm/pull/44993),
+0003 [#49302](https://github.com/vllm-project/vllm/pull/49302)); the image is
+now the upstream release plus the audio extra, nothing else. The retirement
+record and the filing convention for the next patch live in
+[`fork/patches/README.md`](fork/patches/README.md) — every patch ships with
+full context (impact, root cause, a **reproduce case**, validation, ruled-out
+theories) as a note under [`fork/patches/notes/`](fork/patches/notes/).
 
 ## The model: deterministic tag + patches on top
 
@@ -94,11 +81,14 @@ vllm/vllm-openai:<TAG>   (prebuilt upstream release image)
 
 Two things are deliberately decoupled:
 
-- **git `main`** tracks upstream `main` for reference and for regenerating
-  patches. It is *not* what we build.
+- **git `main`** sits on the pinned release tag (the tag's commit is an
+  ancestor of `HEAD`, enforced by `check-alignment.sh`) with the fork overlay
+  on top. Release tags are cut aside from upstream `main` and carry
+  release-branch cherry-picks, so `main` is synced by merging **the tag**, not
+  upstream `main`.
 - **The image** is built from a pinned release tag — `DEFAULT_BASE_TAG` in
   [`.github/workflows/build-vllm-audio.yml`](.github/workflows/build-vllm-audio.yml),
-  currently **`v0.26.0`**.
+  currently **`v0.27.1`**.
 
 The patch files in `fork/patches/` are generated against that exact tag, which
 is why they apply with no fuzz. If a patch ever fails to apply, the image build
@@ -107,22 +97,27 @@ ship an image whose patches silently did nothing.
 
 ## Lockstep with upstream releases
 
-When vLLM cuts a new release (e.g. `v0.27.0`):
+When vLLM cuts a new release (e.g. `v0.27.1`):
 
 ```bash
-# 0. Re-align with upstream first. The merge conflicts only on the workflows the
-#    ledger declares deleted; delete them again, then confirm nothing else drifted.
-git merge upstream/main
-fork/scripts/check-alignment.sh
+# 0. Merge the release TAG (not upstream/main — tags are cut aside from main,
+#    and check-alignment.sh requires HEAD to sit on the pinned tag). Conflicts:
+#    the ledger's deleted workflows (delete them again) and, possibly, files the
+#    previous release branch cherry-picked (take the tag's side).
+git merge v0.27.1
 
 # 1. Drop what upstream absorbed, then rebase what it did not (see below).
-fork/scripts/refresh-patches.sh v0.27.0
+fork/scripts/refresh-patches.sh v0.27.1   # skip if the series emptied
 
-# 2. Bump the base tag the image builds from.
-#    edit .github/workflows/build-vllm-audio.yml -> DEFAULT_BASE_TAG: v0.27.0
+# 2. Bump BOTH pins to the tag:
+#    .github/workflows/build-vllm-audio.yml -> DEFAULT_BASE_TAG
+#    fork/docker/Dockerfile.audio           -> ARG BASE_TAG (what check-alignment reads)
+fork/scripts/check-alignment.sh
 
-# 3. Review the regenerated patches, commit, push. Pushing to main (or running
-#    the workflow) builds and publishes openimage/vllm-openai-audio:v0.27.0.
+# 3. Review, commit, push. A push builds a CANDIDATE (:<tag>-cand-<sha>) and
+#    never moves :latest. Gate the candidate (fork/bench/RUNBOOK.md), then
+#    promote the gated digest via workflow dispatch: promote_from=<cand tag>,
+#    publish_tags=<tag>, promote_latest=true.
 ```
 
 Step 1 starts with the **drop** check, per R3: for each patch, take the upstream
@@ -138,25 +133,27 @@ rebase that one by hand.
 governance/lint workflows are deleted because they are noise on a personal fork.
 They are the fork's only non-additive divergence, so they are enumerated with
 their rationale in [`fork/alignment.ledger`](fork/alignment.ledger) — and they
-are exactly what `git merge upstream/main` will conflict on. Re-delete them as
-part of the sync; `check-alignment.sh` fails if one survives.
+are exactly what merging the next release tag will conflict on (any new bot
+workflow upstream adds needs its own ledger entry). Re-delete them as part of
+the sync; `check-alignment.sh` fails if one survives.
 
 ## Testing the patches locally
 
-The canonical integrated tree is the `fork/<tag>` branch (the release tag with
-the patch series applied as discrete commits):
+When the series is non-empty, the canonical integrated tree is the `fork/<tag>`
+branch (the release tag with the patch series applied as discrete commits) —
+`fork/v0.26.0` is the last one, since the series emptied at `v0.27.1`:
 
 ```bash
 git fetch origin fork/v0.26.0
-git log --oneline v0.26.0..origin/fork/v0.26.0   # exactly the two patches
+git log --oneline v0.26.0..origin/fork/v0.26.0   # exactly the patch commits
 ```
 
 Or apply a single patch against a fresh checkout to inspect it in isolation:
 
 ```bash
-git worktree add /tmp/v0.26.0 v0.26.0
-cd /tmp/v0.26.0
-git apply --check fork/patches/0001-restrict-embedding-width-guard-to-eagle-pr47953.patch
+git worktree add /tmp/<tag> <tag>
+cd /tmp/<tag>
+git apply --check fork/patches/<patch-file>
 ```
 
 ## The image

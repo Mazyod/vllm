@@ -103,6 +103,19 @@ def test_a_launcher_stops_waiting_once_the_engine_is_gone(monkeypatch):
     assert time.monotonic() - started < 30
 
 
+def _leave_one_out_profile():
+    """A synthetic minus-arm; the registry carries none while the series is
+    empty, but launcher patch-state handling must keep working."""
+    return profiles.Profile(
+        id="gemma-minus-0001",
+        model=profiles.GEMMA_MODEL,
+        served_name=profiles.GEMMA_SERVED,
+        phase=2,
+        revert_patches=("0001-synthetic.patch",),
+        gating=False,
+    )
+
+
 def test_a_launcher_without_revert_support_refuses_leave_one_out_profiles():
     """The base prepare() is fail-closed: a future launcher that cannot set
     patch state must refuse a leave-one-out profile rather than test the full
@@ -116,7 +129,7 @@ def test_a_launcher_without_revert_support_refuses_leave_one_out_profiles():
             return [], None
 
     with pytest.raises(NotImplementedError):
-        BareLauncher().prepare(_profile("gemma-minus-0001"))
+        BareLauncher().prepare(_leave_one_out_profile())
 
 
 def test_the_docker_launcher_accepts_leave_one_out_profiles():
@@ -124,4 +137,4 @@ def test_the_docker_launcher_accepts_leave_one_out_profiles():
     deliberate no-op rather than an inherited refusal."""
     from fork.bench.gate import DockerLauncher
 
-    DockerLauncher().prepare(_profile("gemma-minus-0001"))
+    DockerLauncher().prepare(_leave_one_out_profile())

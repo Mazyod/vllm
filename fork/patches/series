@@ -1,4 +1,2 @@
 # One patch filename per line, applied in order by fork/docker/apply-patches.sh.
-0001-restrict-embedding-width-guard-to-eagle-pr47953.patch
-0002-advance-grammar-across-reasoning-boundary-pr44993.patch
-0003-fix-dsa-crash-breakable-cudagraphs-pr49302.patch
+# Empty since v0.27.1: the release absorbed the whole series (see README.md).

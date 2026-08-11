@@ -31,3 +31,6 @@ del  .github/workflows/macos-smoke-test.yml      permanent  upstream release smo
 del  .github/workflows/new_pr_bot.yml            permanent  upstream PR greeter; noise on a personal fork
 del  .github/workflows/pre-commit.yml            permanent  gates on the upstream lint CI this fork does not run
 del  .github/workflows/stale.yml                 permanent  upstream stale bot; noise on a personal fork
+del  .github/workflows/notify-ci-authorized.yml  permanent  upstream CI-command bot (arrived v0.27.x); no upstream PR flow here
+del  .github/workflows/record-ci-approval.yml    permanent  upstream CI-command bot (arrived v0.27.x); no upstream PR flow here
+del  .github/workflows/run-ci-command.yml        permanent  upstream CI-command bot (arrived v0.27.x); no upstream PR flow here
