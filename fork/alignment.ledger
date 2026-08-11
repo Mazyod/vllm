@@ -22,6 +22,7 @@ add  FORK.md                                     permanent  fork charter and ope
 add  fork/**                                     permanent  the fork overlay: patches, notes, docker, scripts, release gate
 add  .github/workflows/build-vllm-audio.yml      permanent  builds openimage/vllm-openai-audio from the pinned tag
 add  .github/workflows/fork-alignment.yml        permanent  enforces this ledger on every pull request
+add  runs/**                                     permanent  gate-run artifacts stay local; only the ignore file is tracked
 
 # --- Deleted: upstream workflows. These DO conflict on `git merge upstream/main`
 # --- (modify/delete); re-delete them as part of the sync. --------------------

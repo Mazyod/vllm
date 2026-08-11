@@ -1,0 +1,16 @@
+(APIServer pid=1660) INFO 08-11 13:59:24 [api_utils.py:345] 
+(APIServer pid=1660) INFO 08-11 13:59:24 [api_utils.py:345]        █     █     █▄   ▄█
+(APIServer pid=1660) INFO 08-11 13:59:24 [api_utils.py:345]  ▄▄ ▄█ █     █     █ ▀▄▀ █  version 0.27.1
+(APIServer pid=1660) INFO 08-11 13:59:24 [api_utils.py:345]   █▄█▀ █     █     █     █  model   RedHatAI/gemma-4-31B-it-FP8-block
+(APIServer pid=1660) INFO 08-11 13:59:24 [api_utils.py:345]    ▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀     ▀
+(APIServer pid=1660) INFO 08-11 13:59:24 [api_utils.py:345] 
+(APIServer pid=1660) INFO 08-11 13:59:24 [api_utils.py:273] non-default args: {'model_tag': 'RedHatAI/gemma-4-31B-it-FP8-block', 'enable_auto_tool_choice': True, 'tool_call_parser': 'gemma4', 'host': '0.0.0.0', 'model': 'RedHatAI/gemma-4-31B-it-FP8-block', 'max_model_len': 8192, 'served_model_name': ['gemma-4-31b'], 'reasoning_parser': 'gemma4', 'kv_cache_dtype': 'fp8', 'enable_prefix_caching': True, 'speculative_config': {'method': 'mtp', 'model': 'google/gemma-4-31B-it-assistant', 'num_speculative_tokens': 4}}
+(APIServer pid=1660) Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+(EngineCore pid=2698) INFO 08-11 14:00:16 [cuda.py:482] Using TRITON_ATTN attention backend out of potential backends: ['TRITON_ATTN'].
+(EngineCore pid=2698) INFO 08-11 14:00:27 [gpu_model_runner.py:5332] Loading drafter model...
+(EngineCore pid=2698) INFO 08-11 14:00:28 [gemma4.py:187] Gemma4 MTP: sharing target model's backbone-dim embed_tokens with the draft model.
+(EngineCore pid=2698) INFO 08-11 14:00:28 [gemma4.py:359] Gemma4 MTP: draft layer 0 (sliding_attention) -> language_model.model.layers.58.self_attn.attn
+(EngineCore pid=2698) INFO 08-11 14:00:28 [gemma4.py:359] Gemma4 MTP: draft layer 1 (sliding_attention) -> language_model.model.layers.58.self_attn.attn
+(EngineCore pid=2698) INFO 08-11 14:00:28 [gemma4.py:359] Gemma4 MTP: draft layer 2 (sliding_attention) -> language_model.model.layers.58.self_attn.attn
+(EngineCore pid=2698) INFO 08-11 14:00:28 [gemma4.py:359] Gemma4 MTP: draft layer 3 (full_attention) -> language_model.model.layers.59.self_attn.attn
+(APIServer pid=1660) INFO:     Application startup complete.

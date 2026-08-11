@@ -40,6 +40,20 @@ def test_full_boot_has_no_crash_signature():
     assert _evidence("gemma-full-boot.log").crash_signature == ""
 
 
+def test_v0271_boot_yields_the_same_evidence_under_the_new_wording():
+    """v0.27.1 moved Gemma's external-draft logging into gemma4.py and
+    reworded it; the fixture is the real 2026-08-11 boot. The first gate run
+    read this healthy engine as R1/R4 failures because the parser only knew
+    the v0.26.0 lines."""
+    evidence = _evidence("gemma-full-boot-v0271.log")
+    assert evidence.shares_embeddings is True
+    assert evidence.keeps_separate is False
+    assert evidence.mtp_detected is True
+    assert evidence.draft_layers == 4
+    assert evidence.attention_backends == ("TRITON_ATTN",)
+    assert evidence.crash_signature == ""
+
+
 def test_a_crash_log_can_show_sharing_then_a_separate_override():
     """The guard overrides the earlier decision, so a real log carries both."""
     evidence = _evidence("boot-crash.log")

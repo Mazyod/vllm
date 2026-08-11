@@ -197,6 +197,13 @@ def audio_survived(statuses: list[int], healthy: bool) -> tuple[bool, str]:
     while the real damage is that the server is gone afterwards — a probe that
     only counted non-200s could read a dead engine as a handful of errors.
 
+    A clean 400 also counts as survival: the gate fleet's Gemma checkpoint
+    ships `audio_config: null` (the FP8 export strips the audio tower), so
+    rejection is its correct steady state on every release. What must never
+    appear is a 5xx, a dropped connection, or a dead engine. Exercising audio
+    end to end needs an audio-tower model in the fleet, which it does not
+    currently have.
+
     Args:
         statuses: HTTP status per request, in completion order.
         healthy: Whether /health answered 200 after the burst.
@@ -204,9 +211,13 @@ def audio_survived(statuses: list[int], healthy: bool) -> tuple[bool, str]:
     Returns:
         Whether the burst was survived, and a one-line detail.
     """
-    bad = [code for code in statuses if code != 200]
-    detail = f"{len(statuses) - len(bad)}/{len(statuses)} ok engine_alive={healthy}" + (
-        f" statuses={sorted(set(bad))}" if bad else ""
+    bad = [code for code in statuses if code not in (200, 400)]
+    rejected = statuses.count(400)
+    detail = (
+        f"{statuses.count(200)}/{len(statuses)} ok"
+        + (f", {rejected} rejected" if rejected else "")
+        + f" engine_alive={healthy}"
+        + (f" statuses={sorted(set(bad))}" if bad else "")
     )
     return (healthy and not bad and bool(statuses)), detail
 
@@ -233,9 +244,28 @@ def _content(response: httpx.Response) -> str:
     return _message(response).get("content") or ""
 
 
+def _response_shape(response: httpx.Response, outputs: list[str]) -> str:
+    """Why a response did or did not yield a constrained output."""
+    if response.status_code != 200:
+        return f"http_{response.status_code}"
+    if outputs:
+        return "constrained"
+    try:
+        choice = response.json()["choices"][0]
+    except Exception:  # noqa: BLE001 - an unparseable body is itself the shape
+        return "unparseable"
+    if choice.get("finish_reason") == "length":
+        return "truncated"
+    message = choice.get("message") or {}
+    if isinstance(message, dict) and (message.get("reasoning_content") or "").strip():
+        return "reasoning_only"
+    return "empty"
+
+
 def _b1(client: httpx.Client, model: str, count: int) -> tuple[bool, str, dict]:
     corrupt = 0
     checked = 0
+    shapes: dict[str, int] = {}
     for index in range(count):
         native = index % 2 == 0
         extra: dict[str, Any] = (
@@ -245,18 +275,23 @@ def _b1(client: httpx.Client, model: str, count: int) -> tuple[bool, str, dict]:
         )
         # Reasoning is the third leg of the interaction. Without it the
         # end-of-think marker never shares a speculative window with the first
-        # `{`, the bug cannot occur, and a clean result means nothing.
-        outputs = constrained_outputs(
-            _message(_post(client, model, index, **_THINKING, **extra))
-        )
+        # `{`, the bug cannot occur, and a clean result means nothing. It also
+        # has to COMPLETE: under the default 256-token budget Gemma's thinking
+        # consumed every request whole and B1 inspected 0/100 on the
+        # 2026-08-11 run — the constrained payload only exists after </think>.
+        response = _post(client, model, index, max_tokens=2048, **_THINKING, **extra)
+        outputs = constrained_outputs(_message(response))
         checked += len(outputs)
         corrupt += sum(count_corrupt_openers(text) for text in outputs)
-    # A run that inspected nothing is a blind probe, not a clean one.
+        shape = _response_shape(response, outputs)
+        shapes[shape] = shapes.get(shape, 0) + 1
+    # A run that inspected nothing is a blind probe, not a clean one — and the
+    # shape tally says why it was blind instead of leaving a bare zero.
     passed = corrupt == 0 and checked > 0
     return (
         passed,
         f"{corrupt}/{count} corrupt ({checked} constrained outputs inspected)",
-        {"corrupt": corrupt, "inspected": checked},
+        {"corrupt": corrupt, "inspected": checked, "shapes": shapes},
     )
 
 
@@ -318,11 +353,18 @@ def _b5(client: httpx.Client, model: str, count: int) -> tuple[bool, str, dict]:
             pool.submit(_post_audio, client, model, seconds) for seconds in lengths
         ]
         statuses = []
+        error_bodies: list[str] = []
         for future in futures:
             try:
-                statuses.append(future.result().status_code)
+                response = future.result()
             except Exception:  # noqa: BLE001 - a dropped connection is a status
                 statuses.append(0)
+                continue
+            statuses.append(response.status_code)
+            # The 2026-08-11 run produced twelve bare 400s and no way to say
+            # why; keep a couple of bodies so a rejection explains itself.
+            if response.status_code != 200 and len(error_bodies) < 2:
+                error_bodies.append(response.text[:300])
 
     try:
         healthy = client.get("/health").status_code == 200
@@ -330,7 +372,10 @@ def _b5(client: httpx.Client, model: str, count: int) -> tuple[bool, str, dict]:
         healthy = False
 
     passed, detail = audio_survived(statuses, healthy)
-    return passed, detail, {"statuses": statuses, "engine_alive": healthy}
+    data: dict[str, Any] = {"statuses": statuses, "engine_alive": healthy}
+    if error_bodies:
+        data["error_bodies"] = error_bodies
+    return passed, detail, data
 
 
 _PROBES = {"B1": _b1, "B2": _b2, "B3": _b3, "B4": _b4, "B5": _b5}

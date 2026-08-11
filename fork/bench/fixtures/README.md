@@ -17,6 +17,7 @@ Two rules keep these tests from going tautological:
 | fixture | provenance | engine | failure mode |
 | --- | --- | --- | --- |
 | `gemma-full-boot.log` | captured | v0.26.0 | none — healthy V1 boot with MTP sharing embeddings |
+| `gemma-full-boot-v0271.log` | captured | v0.27.1 | none — healthy boot under the reworded gemma4.py external-draft logging |
 | `qwen-full.log` | captured | v0.26.0 | none — healthy hybrid-model boot selecting `FLASH_ATTN` |
 | `boot-crash.log` | captured | v0.25.1 | a real engine boot crash, replayed as the dry run's crash fallback |
 | `gemma-v2-kvfp8-crash.log` | captured | v0.25.0 | N1: V2 runner selects FlashInfer, then hits the SM90 sliding-window guard |

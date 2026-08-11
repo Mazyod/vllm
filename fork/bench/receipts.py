@@ -28,7 +28,11 @@ _SIGNATURE_WINDOW = 12
 # the TP2 workarounds exist to disable.
 _FUSED_AR_BACKENDS = frozenset({"CUSTOM", "FLASHINFER"})
 
-_SHARE_RE = re.compile(r"Sharing target model embedding weights")
+# v0.27.1 moved Gemma's external-draft logging from llm_base_proposer to
+# gemma4.py and reworded it; both wordings are the same sharing decision.
+_SHARE_RE = re.compile(
+    r"Sharing target model embedding weights|Gemma4 MTP: sharing target model"
+)
 _SEPARATE_RE = re.compile(r"Keeping separate embedding weights")
 _BACKEND_RE = re.compile(
     r"Using (\w+) attention backend out of potential backends: \[([^\]]*)\]"
@@ -36,7 +40,9 @@ _BACKEND_RE = re.compile(
 _DISABLE_AR_RE = re.compile(r"disable_custom_all_reduce=(True|False)")
 _FUSE_RE = re.compile(r"['\"]fuse_allreduce_rms['\"]:\s*(True|False)")
 _IMPL_RE = re.compile(r"Using \[([^\]]*)\] all-reduce backends")
-_MTP_RE = re.compile(r"Detected MTP model")
+# "Detected MTP model" comes from the built-in-draft path; the external-draft
+# path on v0.27.1 announces itself only via the runner's drafter load.
+_MTP_RE = re.compile(r"Detected MTP model|Loading drafter model")
 _NUM_SPEC_RE = re.compile(r"num_spec_tokens=(\d+)")
 _DRAFT_LAYER_RE = re.compile(r"Gemma4 MTP: draft layer \d+")
 

@@ -181,3 +181,25 @@ PCIe-only pair (`interconnect: PXB`), so its all-reduce conclusions stand.
 12. **Reproduce the topology, do not simulate it.** A configuration flag that
     approximates hardware is not the hardware. If the venue cannot be matched,
     refuse the run rather than substituting a proxy and reporting a verdict.
+
+## The probes that had never met hardware (2026-08-11)
+
+### A probe that has never touched a real engine is a hypothesis
+
+Hardened B1 and B5 both landed on 2026-08-06 — *after* that day's re-gate —
+so the v0.27.1 gate was their first contact with a live engine, and both
+failed for reasons that had nothing to do with the release. B1 starved:
+reasoning consumed its whole 256-token completion budget, so it inspected
+0/100 constrained outputs (the payload it exists to inspect only begins after
+`</think>`). B5 was aimed at a capability the fleet does not have: the gate's
+Gemma checkpoint ships `audio_config: null` — the FP8 export strips the audio
+tower — so every `input_audio` request 400s on every release, correctly.
+
+The dry run caught neither, because the mock answers whatever shape the probe
+hopes for. Preflight proves orchestration, not aim.
+
+13. **First-run a new probe on hardware before trusting its verdict.** Until a
+    probe has produced its expected pass AND its expected failure against a
+    real engine at least once, treat what it says about a release as a claim
+    about the probe. Instrument probes so a null measurement explains itself
+    (B1 now tallies response shapes; B5 records rejection bodies).

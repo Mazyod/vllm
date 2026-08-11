@@ -187,7 +187,13 @@ def test_b1_fails_when_it_inspected_nothing():
     ("statuses", "healthy", "expected"),
     [
         ([200, 200, 200], True, True),
+        # The fleet's Gemma checkpoint has no audio tower (audio_config: null),
+        # so a clean rejection is its correct steady state — survival is the
+        # assertion, not acceptance.
+        ([400, 400, 400], True, True),
+        ([200, 400, 200], True, True),
         ([200, 500, 200], True, False),
+        ([400, 400, 400], False, False),
         ([200, 200, 200], False, False),
         ([200, 0, 200], False, False),
         ([], True, False),
