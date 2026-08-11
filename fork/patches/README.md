@@ -30,10 +30,11 @@ how the image is built) live in the top-level [`FORK.md`](../../FORK.md).
 ## Index
 
 The series is **empty** as of `v0.27.1`: the release absorbed every patch the
-fork carried. Ancestry (the first retirement witness) was verified 2026-08-11
-against the tag; the second witness is the release gate firing traffic through
-the patchless candidate before anything is promoted — see
-`fork/bench/LESSONS.md` rules 8–11 for why one witness is not enough.
+fork carried, and both retirement witnesses agreed on 2026-08-11 — ancestry
+verified against the tag, and the release gate passed every probe firing real
+traffic through the patchless candidate (baseline:
+`fork/bench/baselines/v0.27.1-20260811.json`). See `fork/bench/LESSONS.md`
+rules 8–11 for why one witness is not enough.
 
 Retired at `v0.27.1` (patch files and notes live in git history at the
 `fork/bump-v0.27.1` merge):

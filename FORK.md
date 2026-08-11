@@ -62,11 +62,16 @@ fork alignment
 carried (0001 [#47953](https://github.com/vllm-project/vllm/pull/47953),
 0002 [#44993](https://github.com/vllm-project/vllm/pull/44993),
 0003 [#49302](https://github.com/vllm-project/vllm/pull/49302)); the image is
-now the upstream release plus the audio extra, nothing else. The retirement
-record and the filing convention for the next patch live in
-[`fork/patches/README.md`](fork/patches/README.md) — every patch ships with
-full context (impact, root cause, a **reproduce case**, validation, ruled-out
-theories) as a note under [`fork/patches/notes/`](fork/patches/notes/).
+the upstream release plus the audio extra plus **one dependency pin**:
+`transformers==5.14.1` in
+[`fork/docker/Dockerfile.audio`](fork/docker/Dockerfile.audio), because the
+stock `v0.27.1` image ships transformers 5.15.0 and cannot boot Gemma-4 at
+all. The pin's exit criterion (upstream `70b84f0bcb`, #49797) is recorded
+beside it, per R3. The retirement record and the filing convention for the
+next patch live in [`fork/patches/README.md`](fork/patches/README.md) — every
+patch ships with full context (impact, root cause, a **reproduce case**,
+validation, ruled-out theories) as a note under
+[`fork/patches/notes/`](fork/patches/notes/).
 
 ## The model: deterministic tag + patches on top
 
