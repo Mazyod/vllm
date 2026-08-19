@@ -8,11 +8,17 @@ mock, so nothing about the flow is discovered on a machine that bills by the
 second.
 """
 
+import dataclasses
+import hashlib
+import json
 import os
+import re
 import signal
 import subprocess
 import threading
+import uuid
 from collections.abc import Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
@@ -20,15 +26,20 @@ from fork.bench import profiles
 from fork.bench.mock import MockConfig, serve
 from fork.bench.perf import has_nvlink, machine_fingerprint, write_baseline
 from fork.bench.proc import run_argv
-from fork.bench.profiles import Profile
+from fork.bench.profiles import Profile, ProfileStore
 from fork.bench.receipts import ProbeResult
 from fork.bench.runner import (
+    BENCH_ROOT,
     PATCH_DIR,
     append_result,
     build_docker_command,
     build_local_command,
     build_local_env,
+    config_source_path,
+    docker_config_path,
     evaluate,
+    local_config_path,
+    replica_gpus,
     replica_ports,
     wait_for_health,
 )
@@ -44,6 +55,180 @@ _BASE_PORT = 8000
 # Room for every replica a profile can ask for, so two profiles in one phase
 # never contend for a port.
 _PORT_STRIDE = 8
+
+
+@dataclass(frozen=True)
+class _RunContext:
+    out_dir: Path
+    store: ProfileStore
+    engine_version: str | None
+
+
+_SECRET_ENV_NAME_MARKERS = (
+    "TOKEN",
+    "SECRET",
+    "PASSWORD",
+    "PASSWD",
+    "CREDENTIAL",
+    "APIKEY",
+    "PRIVATEKEY",
+    "ACCESSKEY",
+    "SESSIONKEY",
+    "AUTH",
+    "BEARER",
+)
+# Whole words that make a name secret-bearing on their own, for spellings the
+# contiguous markers above cannot span.
+_SECRET_ENV_NAME_WORDS = frozenset({"KEY", "KEYS", "PASS", "SIGNATURE"})
+
+
+def _is_secret_env_name(key: str) -> bool:
+    """Return whether an environment name is likely to carry a secret.
+
+    Matches both the run-together spellings (`apiKey`) and names whose parts
+    are separated by something the marker list cannot span (`PRIVATE_RSA_KEY`,
+    `API_V2_KEY`). Over-redaction is the safe direction: a receipt that omits
+    a benign variable is a smaller loss than one that records a credential.
+
+    Args:
+        key: Environment variable name.
+
+    Returns:
+        True when the name should be redacted from a receipt.
+    """
+    upper = key.upper()
+    normalized = "".join(character for character in upper if character.isalnum())
+    if any(marker in normalized for marker in _SECRET_ENV_NAME_MARKERS):
+        return True
+    parts = re.split(r"[^A-Z0-9]+", upper)
+    return any(part in _SECRET_ENV_NAME_WORDS for part in parts)
+
+
+def _selected_env(profile: Profile, replica: int) -> dict[str, str]:
+    selected = {
+        "CUDA_VISIBLE_DEVICES": ",".join(
+            str(index) for index in replica_gpus(profile, replica)
+        ),
+        **dict(profile.env),
+    }
+    return {
+        key: value for key, value in selected.items() if not _is_secret_env_name(key)
+    }
+
+
+def _append_launch_receipt(path: Path, body: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(body, sort_keys=True) + "\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+
+
+def _record_launch(
+    context: _RunContext | None,
+    profile: Profile,
+    replica: int,
+    config_path: str,
+    argv: Sequence[str],
+    image: str,
+) -> str:
+    launch_id = uuid.uuid4().hex
+    if context is None:
+        return launch_id
+    source_path = config_source_path(profile)
+    _append_launch_receipt(
+        context.out_dir / "launches.jsonl",
+        {
+            "launch_id": launch_id,
+            "profile_id": profile.id,
+            "replica": replica,
+            "config_path": config_path,
+            "config_repo_path": source_path.relative_to(profiles.REPO_ROOT).as_posix(),
+            "config_sha256": hashlib.sha256(source_path.read_bytes()).hexdigest(),
+            "fleet_path": context.store.fleet_path.relative_to(
+                profiles.REPO_ROOT
+            ).as_posix(),
+            "fleet_sha256": hashlib.sha256(
+                context.store.fleet_path.read_bytes()
+            ).hexdigest(),
+            "argv": _redact_argv(argv),
+            "env": _selected_env(profile, replica),
+            "image": image,
+            "engine_version": context.engine_version,
+        },
+    )
+    return launch_id
+
+
+def _redact_argv(argv: Sequence[str]) -> list[str]:
+    """Remove secret-bearing Docker environment arguments from a receipt."""
+    redacted: list[str] = []
+    index = 0
+    while index < len(argv):
+        token = argv[index]
+        if token in ("-e", "--env") and index + 1 < len(argv):
+            key = argv[index + 1].partition("=")[0]
+            if _is_secret_env_name(key):
+                index += 2
+                continue
+        redacted.append(token)
+        index += 1
+    return redacted
+
+
+def _launch_config_identity(path: Path) -> dict:
+    """Build result identity solely from the bytes recorded before launch."""
+    receipts = [
+        json.loads(line)
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    if not receipts:
+        raise RuntimeError("no launch receipts; result identity is unavailable")
+
+    fleet_identities = {
+        (receipt["fleet_path"], receipt["fleet_sha256"]) for receipt in receipts
+    }
+    if len(fleet_identities) != 1:
+        raise RuntimeError(
+            f"fleet configuration changed between launches: {sorted(fleet_identities)}"
+        )
+    fleet_path, fleet_sha256 = fleet_identities.pop()
+
+    engine_hashes: dict[str, set[str]] = {}
+    profile_identities: dict[str, set[tuple[str, str]]] = {}
+    for receipt in receipts:
+        config_path = receipt["config_repo_path"]
+        config_sha256 = receipt["config_sha256"]
+        engine_hashes.setdefault(config_path, set()).add(config_sha256)
+        profile_identities.setdefault(receipt["profile_id"], set()).add(
+            (config_path, config_sha256)
+        )
+
+    for config_path, hashes in engine_hashes.items():
+        if len(hashes) != 1:
+            raise RuntimeError(
+                "engine configuration changed between launches for "
+                f"{config_path}: {sorted(hashes)}"
+            )
+
+    profiles_identity = {}
+    for profile_id, identities in profile_identities.items():
+        if len(identities) != 1:
+            raise RuntimeError(
+                f"engine configuration changed between {profile_id} launches: "
+                f"{sorted(identities)}"
+            )
+        config_path, config_sha256 = identities.pop()
+        profiles_identity[profile_id] = {
+            "path": config_path,
+            "sha256": config_sha256,
+        }
+
+    return {
+        "fleet": {"path": fleet_path, "sha256": fleet_sha256},
+        "profiles": profiles_identity,
+    }
 
 
 def _fallback_fixture(profile: Profile) -> str:
@@ -71,7 +256,7 @@ class Launcher(Protocol):
 
     def launch(
         self, profile: Profile, image: str, port: int, replica: int = 0
-    ) -> tuple[list[str], str | None]:
+    ) -> tuple[list[str], str | None, str]:
         """Start one of a profile's servers.
 
         Args:
@@ -81,7 +266,8 @@ class Launcher(Protocol):
             replica: Zero-based replica index.
 
         Returns:
-            Boot-log lines, and a base URL or None if it never served.
+            Boot-log lines, a base URL or None if it never served, and the
+            launch id.
         """
 
 
@@ -95,6 +281,16 @@ class DryRunLauncher:
     def __init__(self, fail_profiles: set[str] | None = None) -> None:
         self.fail_profiles = fail_profiles or set()
         self._servers: list = []
+        self._run_context: _RunContext | None = None
+
+    def configure_run(
+        self,
+        out_dir: Path,
+        store: ProfileStore,
+        engine_version: str | None = None,
+    ) -> None:
+        """Set receipt identity for this dry run."""
+        self._run_context = _RunContext(out_dir, store, engine_version)
 
     def _fixture(self, profile: Profile) -> list[str]:
         candidate = _FIXTURES / f"{profile.id}.log"
@@ -104,13 +300,22 @@ class DryRunLauncher:
 
     def launch(
         self, profile: Profile, image: str, port: int, replica: int = 0
-    ) -> tuple[list[str], str | None]:
+    ) -> tuple[list[str], str | None, str]:
         lines = self._fixture(profile)
+        argv = build_local_command(profile, port)
+        launch_id = _record_launch(
+            self._run_context,
+            profile,
+            replica,
+            local_config_path(profile),
+            argv,
+            image,
+        )
         if profile.expect == "boot_crash" or profile.id in self.fail_profiles:
-            return lines, None
+            return lines, None, launch_id
         server = serve(MockConfig(served_model=profile.served_name))
         self._servers.append(server)
-        return lines, server.__enter__()
+        return lines, server.__enter__(), launch_id
 
     def shutdown(self) -> None:
         """Stop every mock started since the last shutdown."""
@@ -129,6 +334,22 @@ class ProcessLauncher:
 
     def __init__(self) -> None:
         self._running: list[tuple[subprocess.Popen, threading.Thread]] = []
+        self._run_context: _RunContext | None = None
+        self.engine_version: str | None = None
+
+    def configure_run(
+        self,
+        out_dir: Path,
+        store: ProfileStore,
+        engine_version: str | None = None,
+    ) -> None:
+        """Set the output and configuration identity for launch receipts."""
+        self.engine_version = engine_version or self.engine_version
+        self._run_context = _RunContext(out_dir, store, self.engine_version)
+
+    def resolved_config_path(self, profile: Profile) -> str:
+        """Return the engine path visible to this launcher."""
+        return local_config_path(profile)
 
     def build(
         self, profile: Profile, image: str, port: int, replica: int = 0
@@ -177,7 +398,7 @@ class ProcessLauncher:
 
     def launch(
         self, profile: Profile, image: str, port: int, replica: int = 0
-    ) -> tuple[list[str], str | None]:
+    ) -> tuple[list[str], str | None, str]:
         """Start one replica and watch it until it serves or dies.
 
         The log is drained on a background thread rather than read after the
@@ -195,11 +416,20 @@ class ProcessLauncher:
             replica: Zero-based replica index.
 
         Returns:
-            Boot-log lines, and a base URL or None if it never served.
+            Boot-log lines, a base URL or None if it never served, and the
+            launch id.
         """
         if replica == 0:
             self.prepare(profile)
         command, env = self.build(profile, image, port, replica)
+        launch_id = _record_launch(
+            self._run_context,
+            profile,
+            replica,
+            self.resolved_config_path(profile),
+            command,
+            image,
+        )
         process = subprocess.Popen(
             command,
             stdout=subprocess.PIPE,
@@ -232,7 +462,7 @@ class ProcessLauncher:
         # The live list, not a copy. The drain thread keeps appending while the
         # probes run, and what an engine says as it dies is the only evidence
         # of why it died.
-        return lines, base_url if served else None
+        return lines, base_url if served else None, launch_id
 
     def shutdown(self) -> None:
         """Stop every server started since the last shutdown, and mean it.
@@ -263,6 +493,34 @@ class ProcessLauncher:
 class DockerLauncher(ProcessLauncher):
     """Runs the image in a container. Needs a docker daemon on the host."""
 
+    def resolved_config_path(self, profile: Profile) -> str:
+        """Return the engine path visible through the container mount."""
+        return docker_config_path(profile)
+
+    def validate_configs(self, store: ProfileStore, image: str) -> str:
+        """Run real-parser validation inside the engine image."""
+        bench_mount = f"{BENCH_ROOT}:/opt/fork/bench:ro"
+        output = run_argv(
+            [
+                "docker",
+                "run",
+                "--rm",
+                "-v",
+                bench_mount,
+                "-w",
+                "/opt",
+                "--entrypoint",
+                "python",
+                image,
+                "-m",
+                "fork.bench.config_validation",
+                "--tag",
+                store.tag,
+            ]
+        )
+        self.engine_version = output.strip().splitlines()[-1]
+        return self.engine_version
+
     def prepare(self, profile: Profile) -> None:
         """No host-side state to set: build_docker_command embeds the reverts
         in the container's launch command, and every container starts from the
@@ -285,6 +543,13 @@ class LocalLauncher(ProcessLauncher):
     the whole patch series before launching. A container launcher gets a clean
     filesystem for free; here it has to be established.
     """
+
+    def validate_configs(self, store: ProfileStore, image: str) -> str:
+        """Run real-parser validation in the installed engine environment."""
+        from fork.bench.config_validation import validate_store
+
+        self.engine_version = validate_store(store)
+        return self.engine_version
 
     def prepare(self, profile: Profile) -> None:
         """Set the installed patch series to what this profile is testing.
@@ -322,6 +587,7 @@ def run_phase(
     image: str,
     launcher: Launcher,
     out_dir: Path,
+    profile_store: ProfileStore | None = None,
 ) -> list[ProbeResult]:
     """Run every profile in a phase and stream the results.
 
@@ -330,20 +596,29 @@ def run_phase(
         image: Image reference.
         launcher: How to bring servers up.
         out_dir: Directory results are streamed into.
+        profile_store: Tag-selected profiles, defaulting to v0.27.1.
 
     Returns:
         Every probe result produced by this phase.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
+    store = profile_store or profiles.DEFAULT_STORE
+    configure = getattr(launcher, "configure_run", None)
+    if configure is not None:
+        configure(out_dir, store, getattr(launcher, "engine_version", None))
     results: list[ProbeResult] = []
     stream = out_dir / "results.jsonl"
-    for index, profile in enumerate(profiles.for_phase(phase)):
+    for index, profile in enumerate(store.for_phase(phase)):
         live_logs: list[Sequence[str]] = []
         base_urls: list[str] = []
+        launch_ids: list[str] = []
         for replica, port in enumerate(
             replica_ports(_BASE_PORT + index * _PORT_STRIDE, profile.replicas)
         ):
-            replica_lines, base_url = launcher.launch(profile, image, port, replica)
+            outcome = launcher.launch(profile, image, port, replica)
+            replica_lines, base_url = outcome[:2]
+            if len(outcome) == 3:
+                launch_ids.append(outcome[2])
             live_logs.append(replica_lines)
             if base_url is not None:
                 base_urls.append(base_url)
@@ -359,6 +634,7 @@ def run_phase(
             for result in evaluate(
                 profile, boot_log, served, base_urls if served else []
             ):
+                result = dataclasses.replace(result, launch_ids=tuple(launch_ids))
                 append_result(stream, result)
                 results.append(result)
         finally:
@@ -407,7 +683,11 @@ TOPOLOGY_NVLINK = "nvlink"
 TOPOLOGY_UNKNOWN = "unknown"
 
 
-def classify_topology(phases: tuple[int, ...], nvlink: bool | None) -> str:
+def classify_topology(
+    phases: tuple[int, ...],
+    nvlink: bool | None,
+    profile_store: ProfileStore | None = None,
+) -> str:
     """Decide whether this machine can answer the all-reduce question at all.
 
     Production is PCIe-attached H200s with no NVLink, and the bug class the
@@ -423,14 +703,16 @@ def classify_topology(phases: tuple[int, ...], nvlink: bool | None) -> str:
     Args:
         phases: Phases about to run.
         nvlink: Whether the GPUs share an NVLink, or None if unknown.
+        profile_store: Tag-selected profiles, defaulting to v0.27.1.
 
     Returns:
         One of TOPOLOGY_NATIVE, TOPOLOGY_NVLINK or TOPOLOGY_UNKNOWN.
     """
+    store = profile_store or profiles.DEFAULT_STORE
     tp2_scheduled = any(
         profile.tensor_parallel_size >= 2
         for phase in phases
-        for profile in profiles.for_phase(phase)
+        for profile in store.for_phase(phase)
     )
     if not tp2_scheduled or nvlink is False:
         return TOPOLOGY_NATIVE
@@ -458,11 +740,18 @@ def run_gate(
     Returns:
         0 when the gate passed, non-zero otherwise.
     """
+    store = profiles.load(tag)
+    validator = getattr(launcher, "validate_configs", None)
+    engine_version = validator(store, image) if validator is not None else None
+
     out_dir.mkdir(parents=True, exist_ok=True)
+    configure = getattr(launcher, "configure_run", None)
+    if configure is not None:
+        configure(out_dir, store, engine_version)
     fingerprint = machine_fingerprint()
 
     if not isinstance(launcher, DryRunLauncher):
-        topology = classify_topology(phases, has_nvlink())
+        topology = classify_topology(phases, has_nvlink(), store)
         fingerprint["all_reduce_path"] = topology
         if topology in (TOPOLOGY_UNKNOWN, TOPOLOGY_NVLINK):
             reason = (
@@ -486,7 +775,7 @@ def run_gate(
 
     results: list[ProbeResult] = []
     for phase in phases:
-        results.extend(run_phase(phase, image, launcher, out_dir))
+        results.extend(run_phase(phase, image, launcher, out_dir, store))
 
     # The dry run must not shell out; without git the verdicts fall back to
     # "retirement unconfirmed", which is the honest reading of a fixture run.
@@ -500,8 +789,24 @@ def run_gate(
         if result.probe_id.startswith("P"):
             perf.setdefault(result.profile_id, {}).update(result.data)
 
+    config_identity = _launch_config_identity(out_dir / "launches.jsonl")
     (out_dir / "report.md").write_text(
-        build_report(tag, fingerprint, results, verdicts, perf), encoding="utf-8"
+        build_report(
+            tag,
+            fingerprint,
+            results,
+            verdicts,
+            perf,
+            config_identity,
+            store,
+        ),
+        encoding="utf-8",
     )
-    write_baseline(out_dir / "baseline.json", tag, fingerprint, perf)
-    return exit_code(results, verdicts)
+    write_baseline(
+        out_dir / "baseline.json",
+        tag,
+        fingerprint,
+        perf,
+        config_identity,
+    )
+    return exit_code(results, verdicts, store)

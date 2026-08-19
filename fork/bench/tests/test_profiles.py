@@ -4,6 +4,7 @@
 """Profile matrix invariants."""
 
 import pytest
+import yaml
 
 from fork.bench import profiles
 
@@ -29,18 +30,19 @@ def test_tp2_profiles_carry_both_all_reduce_flags_unless_testing_their_absence()
     for profile in profiles.PROFILES:
         if profile.tensor_parallel_size < 2 or profile.id.endswith("-noflags"):
             continue
-        joined = " ".join(profile.extra_args)
-        assert "--disable-custom-all-reduce" in joined, profile.id
-        assert "fuse_allreduce_rms" in joined, profile.id
+        engine = profiles.engine_settings(profile)
+        assert engine["disable-custom-all-reduce"] is True, profile.id
+        pass_config = engine["compilation-config"]["pass_config"]
+        assert pass_config["fuse_allreduce_rms"] is False, profile.id
 
 
 def test_noflags_profiles_omit_both_all_reduce_flags():
     for profile in profiles.PROFILES:
         if not profile.id.endswith("-noflags"):
             continue
-        joined = " ".join(profile.extra_args)
-        assert "--disable-custom-all-reduce" not in joined, profile.id
-        assert "fuse_allreduce_rms" not in joined, profile.id
+        engine = profiles.engine_settings(profile)
+        assert "disable-custom-all-reduce" not in engine, profile.id
+        assert "compilation-config" not in engine, profile.id
 
 
 def test_reverted_patches_exist_in_the_series():
@@ -86,3 +88,47 @@ def test_for_phase_returns_only_that_phase():
         selected = profiles.for_phase(phase)
         assert selected
         assert all(p.phase == phase for p in selected)
+
+
+@pytest.mark.parametrize(
+    "tag", ("", ".", "..", "../v0.27.1", "nested/v0.27.1", "nested\\v0.27.1")
+)
+def test_load_rejects_tags_that_are_not_plain_directory_names(tag):
+    with pytest.raises(ValueError, match="plain directory name"):
+        profiles.load(tag)
+
+
+def test_load_rejects_a_symlinked_engine_path(tmp_path, monkeypatch):
+    config_root = tmp_path / "configs"
+    release_dir = config_root / "vtest"
+    release_dir.mkdir(parents=True)
+    target = release_dir / "engine-target.yaml"
+    target.write_text(
+        "model: example/model\nserved-model-name: example\ntensor-parallel-size: 1\n",
+        encoding="utf-8",
+    )
+    (release_dir / "engine.yaml").symlink_to(target.name)
+    fleet = {
+        "profiles": {
+            "example": {
+                "engine": "engine.yaml",
+                "phase": 2,
+                "gpus": [0],
+                "replicas": 1,
+                "env": {},
+                "revert_patches": [],
+                "probes": [],
+                "expect": "serves",
+                "expect_boot_evidence": {},
+                "expect_attention_backend": "",
+                "gating": True,
+                "control_for": None,
+                "venue": "gate",
+            }
+        }
+    }
+    (release_dir / "fleet.yaml").write_text(yaml.safe_dump(fleet), encoding="utf-8")
+    monkeypatch.setattr(profiles, "CONFIG_ROOT", config_root)
+
+    with pytest.raises(ValueError, match="must not be a symlink"):
+        profiles.load("vtest")

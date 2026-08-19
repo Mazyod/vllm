@@ -23,11 +23,12 @@ DRY_RUN_DIR="$(mktemp -d)"
 trap 'rm -rf "$DRY_RUN_DIR"' EXIT
 
 echo ">> running the fork/bench suite"
-uv run --no-project --with pytest --with httpx -- pytest fork/bench/tests -q
+uv run --no-project --with pytest --with httpx --with pyyaml -- \
+  pytest fork/bench/tests -q
 
 echo ">> dry-running the full gate against fixtures and the mock"
-uv run --no-project --with httpx -- python -m fork.bench \
-  --tag dry-run --out "$DRY_RUN_DIR" --dry-run
+uv run --no-project --with httpx --with pyyaml -- python -m fork.bench \
+  --tag v0.27.1 --out "$DRY_RUN_DIR" --dry-run
 test -f "$DRY_RUN_DIR/report.md"
 test -f "$DRY_RUN_DIR/baseline.json"
 

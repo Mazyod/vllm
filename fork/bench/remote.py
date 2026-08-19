@@ -166,6 +166,7 @@ def start_gate_command(
     phases: Sequence[int],
     out_name: str = "run",
     models: Sequence[str] = (),
+    image: str = "",
 ) -> str:
     """Build the shell command that starts the gate and lets go of it.
 
@@ -182,6 +183,8 @@ def start_gate_command(
         out_name: Directory under workdir to write results into.
         models: Checkpoints to stage before the gate starts. A download that
             fails stops there rather than serving a model that never arrived.
+        image: Image reference the rented box booted, recorded in receipts.
+            The local launcher does not use it to start the engine.
 
     Returns:
         A single shell command.
@@ -192,6 +195,7 @@ def start_gate_command(
             f"--tag {shlex.quote(tag)}",
             f"--out {shlex.quote(out_name)}",
             "--launcher local",
+            *([f"--image {shlex.quote(image)}"] if image else []),
             *(f"--phase {int(phase)}" for phase in phases),
         ]
     )

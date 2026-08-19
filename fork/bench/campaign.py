@@ -40,9 +40,8 @@ RUN_DIR = "run"
 GATE_UNFINISHED = 124
 DEFAULT_GATE_DEADLINE_S = 75 * 60
 
-# Preference order. The exact production topology first; an NVLink board is a
-# workable fallback because the gate detects the link and runs the forced-PCIe
-# arm, which is the path production takes anyway.
+# Preference order. The exact production topology comes first. The SXM fallback
+# may still be refused by the topology gate; the campaign does not re-rent.
 FALLBACK_REQUIREMENTS = (
     Requirements(gpu_name="H100_PCIE"),
     Requirements(gpu_name="H100_SXM"),
@@ -126,6 +125,7 @@ def run_campaign(
     provider = provider if provider is not None else VastCli()
     requirements = requirements or FALLBACK_REQUIREMENTS
     out_dir = Path(out_dir)
+    profile_store = profiles.load(tag)
 
     wanted = (
         [requirements] if isinstance(requirements, Requirements) else list(requirements)
@@ -162,7 +162,8 @@ def run_campaign(
                         WORKDIR,
                         phases,
                         RUN_DIR,
-                        models=profiles.models_for(phases),
+                        models=profile_store.models_for(phases),
+                        image=image,
                     ),
                 )
             )

@@ -239,6 +239,7 @@ def write_baseline(
     tag: str,
     fingerprint: Mapping[str, str],
     perf: Mapping[str, dict[str, Any]],
+    config_identity: Mapping[str, Any] | None = None,
 ) -> None:
     """Record a run's performance numbers as a trend entry.
 
@@ -247,9 +248,15 @@ def write_baseline(
         tag: Upstream release tag.
         fingerprint: Machine identity for this run.
         perf: Profile id to measurements.
+        config_identity: Fleet and engine paths plus SHA-256 identities.
     """
     path.parent.mkdir(parents=True, exist_ok=True)
-    body = {"tag": tag, "machine": dict(fingerprint), "perf": dict(perf)}
+    body = {
+        "tag": tag,
+        "machine": dict(fingerprint),
+        "config": dict(config_identity or {}),
+        "perf": dict(perf),
+    }
     path.write_text(json.dumps(body, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 

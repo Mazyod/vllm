@@ -19,6 +19,9 @@ from fork.bench.receipts import ProbeResult, parse_boot_log, receipt_probe
 
 PATCH_DIR = "/opt/fork/patches"
 _REVERT_SCRIPT = "/opt/fork/bench/revert-patch.sh"
+BENCH_ROOT = Path(__file__).resolve().parent
+CONFIG_ROOT = BENCH_ROOT / "configs"
+_DOCKER_CONFIG_ROOT = Path("/opt/fork/bench/configs")
 _B1_COUNT = 100
 _B2_COUNT = 60
 # Fired concurrently, so this is a batch width rather than a volume. Wide
@@ -28,12 +31,34 @@ _B5_COUNT = 12
 _DEFAULT_COUNT = 8
 
 
-def build_serve_command(profile: Profile, port: int) -> list[str]:
+def config_source_path(profile: Profile) -> Path:
+    """Return the module-rooted engine file whose bytes will be launched."""
+    relative = profile.engine_config.resolve(strict=True).relative_to(CONFIG_ROOT)
+    return (CONFIG_ROOT / relative).resolve(strict=True)
+
+
+def local_config_path(profile: Profile) -> str:
+    """Return the absolute config path used by a local engine process."""
+    return str(config_source_path(profile))
+
+
+def docker_config_path(profile: Profile) -> str:
+    """Return the config path visible through the read-only docker mount."""
+    relative = config_source_path(profile).relative_to(CONFIG_ROOT)
+    return str(_DOCKER_CONFIG_ROOT / relative)
+
+
+def build_serve_command(
+    profile: Profile,
+    port: int,
+    config_path: str | None = None,
+) -> list[str]:
     """Build the vllm serve invocation for a profile.
 
     Args:
         profile: Configuration under test.
         port: Port the server should bind.
+        config_path: Launcher-resolved engine YAML path. Defaults to local.
 
     Returns:
         Argument vector.
@@ -41,16 +66,12 @@ def build_serve_command(profile: Profile, port: int) -> list[str]:
     return [
         "vllm",
         "serve",
-        profile.model,
-        "--served-model-name",
-        profile.served_name,
+        "--config",
+        config_path or local_config_path(profile),
         "--host",
         "0.0.0.0",
         "--port",
         str(port),
-        "--tensor-parallel-size",
-        str(profile.tensor_parallel_size),
-        *profile.extra_args,
     ]
 
 
@@ -169,14 +190,16 @@ def build_docker_command(
         f"{shlex.quote(_REVERT_SCRIPT)} {shlex.quote(PATCH_DIR)} {shlex.quote(name)}"
         for name in profile.revert_patches
     ]
-    inner.append(shlex.join(build_serve_command(profile, port)))
+    inner.append(
+        shlex.join(build_serve_command(profile, port, docker_config_path(profile)))
+    )
 
     command = ["docker", "run", "--rm", "--gpus", "all", "-p", f"{port}:{port}"]
     for key, value in env_pairs.items():
         command += ["-e", f"{key}={value}"]
     command += [
         "-v",
-        f"{Path.cwd() / 'fork' / 'bench'}:/opt/fork/bench:ro",
+        f"{BENCH_ROOT}:/opt/fork/bench:ro",
         "--entrypoint",
         "bash",
         image,

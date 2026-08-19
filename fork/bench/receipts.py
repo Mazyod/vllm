@@ -91,6 +91,7 @@ class ProbeResult:
         passed: Whether the probe's pass condition held.
         detail: Human-readable one-line explanation.
         data: Structured values worth keeping in the report.
+        launch_ids: Server launches this result was derived from.
     """
 
     probe_id: str
@@ -98,6 +99,7 @@ class ProbeResult:
     passed: bool
     detail: str
     data: dict[str, Any] = field(default_factory=dict)
+    launch_ids: tuple[str, ...] = ()
 
 
 def _split_impls(raw: str) -> tuple[str, ...]:

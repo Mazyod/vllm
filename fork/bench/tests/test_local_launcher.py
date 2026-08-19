@@ -13,24 +13,39 @@ from pathlib import Path
 
 from fork.bench import profiles
 from fork.bench.gate import LocalLauncher
-from fork.bench.runner import build_local_command, build_local_env
+from fork.bench.runner import (
+    build_local_command,
+    build_local_env,
+)
 
 
 def _profile(profile_id: str):
     return profiles.get(profile_id)
 
 
-def test_the_command_serves_the_profiles_model():
-    argv = build_local_command(_profile("gemma-full"), port=8000)
-    assert "vllm" in argv[0] or argv[0].endswith("vllm")
-    assert _profile("gemma-full").model in argv
+def test_the_command_serves_the_profiles_committed_config():
+    profile = _profile("gemma-full")
+    argv = build_local_command(profile, port=8000)
+    expected = (profiles.BENCH_ROOT / "configs/v0.27.1/engine/gemma-tp1.yaml").resolve()
+    assert argv[0] == "vllm"
+    assert Path(argv[argv.index("--config") + 1]).samefile(expected)
+    assert profiles.engine_settings(profile)["model"] == (
+        "RedHatAI/gemma-4-31B-it-FP8-block"
+    )
 
 
-def test_the_command_carries_the_profiles_engine_flags():
-    argv = build_local_command(_profile("gemma-tp2"), port=8000)
-    assert "--tensor-parallel-size" in argv
-    assert argv[argv.index("--tensor-parallel-size") + 1] == "2"
-    assert "--disable-custom-all-reduce" in argv
+def test_the_local_config_path_is_independent_of_the_callers_cwd(tmp_path, monkeypatch):
+    profile = _profile("gemma-full")
+    monkeypatch.chdir(tmp_path)
+    config_path = Path(build_local_command(profile, port=8000)[3])
+    assert config_path.is_absolute()
+    assert config_path.samefile(profile.engine_config)
+
+
+def test_the_config_it_points_at_carries_the_profiles_engine_flags():
+    engine = profiles.engine_settings(_profile("gemma-tp2"))
+    assert engine["tensor-parallel-size"] == 2
+    assert engine["disable-custom-all-reduce"] is True
 
 
 def test_the_engine_is_launched_with_no_shell_in_between():
@@ -85,7 +100,7 @@ def test_a_launcher_keeps_the_log_of_an_engine_that_died(monkeypatch):
     )
     monkeypatch.setattr("fork.bench.gate.LocalLauncher.prepare", lambda self, p: None)
     launcher = LocalLauncher()
-    lines, base_url = launcher.launch(_profile("gemma-full"), "", 8000)
+    lines, base_url, _ = launcher.launch(_profile("gemma-full"), "", 8000)
     assert base_url is None
     assert "boot line one" in lines
     assert "boot line two" in lines

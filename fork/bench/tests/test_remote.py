@@ -93,6 +93,13 @@ def test_the_gate_is_told_it_is_on_the_machine_under_test():
     assert "--launcher local" in command
 
 
+def test_the_gate_is_told_which_image_booted_the_rented_box():
+    command = start_gate_command(
+        "v0.27.1", "/workspace", phases=(4,), image="registry/image:release"
+    )
+    assert "--image registry/image:release" in command
+
+
 def test_the_gate_is_told_which_release_and_phases():
     command = start_gate_command("v0.27.0", "/workspace", phases=(2, 4))
     assert "--tag v0.27.0" in command

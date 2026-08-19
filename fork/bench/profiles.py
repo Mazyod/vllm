@@ -1,39 +1,25 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
 
-"""Engine configurations under test, as data.
+"""Tag-scoped engine configurations and their gate metadata."""
 
-Each profile is one server launch. Adding a configuration for a new release
-should be an entry here plus, at most, one probe function.
-"""
-
+import hashlib
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
+
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-
-GEMMA_MODEL = "RedHatAI/gemma-4-31B-it-FP8-block"
-GEMMA_DRAFT = "google/gemma-4-31B-it-assistant"
-GEMMA_SERVED = "gemma-4-31b"
-QWEN_MODEL = "Qwen/Qwen3.6-27B-FP8"
-QWEN_SERVED = "qwen3.6-27b"
+BENCH_ROOT = Path(__file__).resolve().parent
+CONFIG_ROOT = BENCH_ROOT / "configs"
+DEFAULT_TAG = "v0.27.1"
 
 # Patches with no leave-one-out arm, and why. test_static holds the series to
 # this: every patch in fork/patches/series is either exercised leave-one-out
-# by some profile or waived here with a reason. Empty while the series is
-# empty (v0.27.1 absorbed everything); the retired minus-arms live in git
-# history at the fork/bump-v0.27.1 merge for the next patch author to crib.
+# by some profile or waived here with a reason.
 LEAVE_ONE_OUT_WAIVERS: dict[str, str] = {}
-
-_V1 = {"VLLM_USE_V2_MODEL_RUNNER": "0", "VLLM_LOGGING_LEVEL": "INFO"}
-_V2 = {"VLLM_USE_V2_MODEL_RUNNER": "1", "VLLM_LOGGING_LEVEL": "INFO"}
-
-_AR_FLAGS = (
-    "--disable-custom-all-reduce",
-    "--compilation-config",
-    '{"pass_config":{"fuse_allreduce_rms":false}}',
-)
 
 
 @dataclass(frozen=True)
@@ -42,50 +28,35 @@ class Profile:
 
     Attributes:
         id: Stable identifier used in results and reports.
-        model: Hugging Face model id for the target.
-        draft: Speculative draft model id, or None when the draft is built in.
-        served_name: Value passed to --served-model-name.
-        tensor_parallel_size: Value passed to --tensor-parallel-size.
-        gpu_indices: GPUs to expose via CUDA_VISIBLE_DEVICES.
-        replicas: Servers to run for this profile. Above one, gpu_indices is
-            split between them, so two TP1 replicas on the same pair of GPUs
-            can be compared against one TP2 server on the same box.
+        model: Target model id, derived from the engine YAML.
+        served_name: API model name, derived from the engine YAML.
+        phase: Runbook phase this profile belongs to.
+        engine_config: Absolute path to the committed engine YAML.
+        draft: External speculative model id derived from engine YAML, if any.
+        tensor_parallel_size: Engine YAML tensor-parallel size.
+        gpu_indices: GPUs exposed through CUDA_VISIBLE_DEVICES.
+        replicas: Number of servers launched for this profile.
         env: Environment overrides for the server process.
-        extra_args: Additional vllm serve arguments.
         revert_patches: Patch filenames to revert before launch.
         probes: Probe ids to run against this server.
         expect: Either "serves" or "boot_crash".
-        expect_boot_evidence: BootEvidence attribute name to the value the
-            boot log must prove, checked by probe R6. A leave-one-out profile
-            declares the reverted behaviour's log signature here, so a revert
-            that never reached the running engine fails loudly instead of
-            producing a verdict about code that was not tested.
-        expect_attention_backend: Backend the engine must select. Gemma's is
-            load-bearing — the V1 pin exists to keep the sliding-window path on
-            TRITON_ATTN. Qwen is a hybrid Mamba model that legitimately selects
-            another; its value records what v0.26.0 chose so a change is
-            visible rather than assumed wrong.
-        control_for: Profile this one is a same-box control against. Identical
-            except for one variable, so the difference in their numbers is
-            attributable to that variable rather than to the hardware.
-        gating: Whether a probe failure here should fail the release gate.
-            True only for configurations the image actually ships. Leave-one-out
-            boots, negative probes, and exploratory configurations are
-            diagnostic: they are meant to fail, or their outcome is an open
-            question, so neither can block a release.
-        phase: Runbook phase this profile belongs to.
+        expect_boot_evidence: BootEvidence values checked by R6.
+        expect_attention_backend: Backend the engine must select.
+        gating: Whether a probe failure should fail the release gate.
+        control_for: Same-box baseline profile for this control.
+        venue: Launch venue. Gate profiles are always "gate".
     """
 
     id: str
     model: str
     served_name: str
     phase: int
+    engine_config: Path = Path()
     draft: str | None = None
     tensor_parallel_size: int = 1
     gpu_indices: tuple[int, ...] = (0,)
     replicas: int = 1
     env: Mapping[str, str] = field(default_factory=dict)
-    extra_args: tuple[str, ...] = ()
     revert_patches: tuple[str, ...] = ()
     probes: tuple[str, ...] = ()
     expect: str = "serves"
@@ -93,285 +64,211 @@ class Profile:
     expect_attention_backend: str = ""
     gating: bool = True
     control_for: str | None = None
+    venue: str = "gate"
 
 
-def _gemma_spec(num_tokens: int = 4) -> tuple[str, ...]:
-    config = (
-        f'{{"method":"mtp","model":"{GEMMA_DRAFT}",'
-        f'"num_speculative_tokens":{num_tokens}}}'
+@dataclass(frozen=True)
+class ProfileStore:
+    """All gate profiles and manual records for one release tag."""
+
+    tag: str
+    fleet_path: Path
+    profiles: tuple[Profile, ...]
+    manual: Mapping[str, Mapping[str, Any]]
+
+    def get(self, profile_id: str) -> Profile:
+        """Return one gate profile by id.
+
+        Args:
+            profile_id: Stable profile identifier.
+
+        Returns:
+            Matching gate profile.
+
+        Raises:
+            KeyError: If the id is absent or belongs to the manual section.
+        """
+        for profile in self.profiles:
+            if profile.id == profile_id:
+                return profile
+        raise KeyError(profile_id)
+
+    def for_phase(self, phase: int) -> tuple[Profile, ...]:
+        """Return the gate profiles in one runbook phase."""
+        return tuple(profile for profile in self.profiles if profile.phase == phase)
+
+    def models_for(self, phases: Sequence[int]) -> tuple[str, ...]:
+        """Return every target and external draft needed by the phases."""
+        seen: dict[str, None] = {}
+        for phase in phases:
+            for profile in self.for_phase(phase):
+                seen.setdefault(profile.model, None)
+                if profile.draft:
+                    seen.setdefault(profile.draft, None)
+        return tuple(seen)
+
+    def engine_paths(self) -> tuple[Path, ...]:
+        """Return every gate and manual engine file, without duplicates."""
+        paths = {profile.engine_config for profile in self.profiles}
+        release_dir = self.fleet_path.parent
+        for entry in self.manual.values():
+            paths.add(_resolve_engine_path(release_dir, entry["engine"]))
+        return tuple(sorted(paths))
+
+    def config_identity(self) -> dict[str, Any]:
+        """Return the committed configuration bytes that identify this run."""
+        return {
+            "fleet": {
+                "path": _repo_relative(self.fleet_path),
+                "sha256": _sha256(self.fleet_path),
+            },
+            "profiles": {
+                profile.id: {
+                    "path": _repo_relative(profile.engine_config),
+                    "sha256": _sha256(profile.engine_config),
+                }
+                for profile in self.profiles
+            },
+        }
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _repo_relative(path: Path) -> str:
+    return path.relative_to(REPO_ROOT).as_posix()
+
+
+def _resolve_engine_path(release_dir: Path, value: Any) -> Path:
+    if not isinstance(value, str):
+        raise TypeError(f"engine path must be a string, got {value!r}")
+    relative = Path(value)
+    if relative.is_absolute():
+        raise ValueError(f"engine path must be release-relative: {value}")
+    unresolved = release_dir / relative
+    if unresolved.is_symlink():
+        raise ValueError(f"engine path must not be a symlink: {value}")
+    resolved = unresolved.resolve(strict=True)
+    if not resolved.is_relative_to(release_dir.resolve()):
+        raise ValueError(f"engine path escapes {release_dir}: {value}")
+    return resolved
+
+
+def _mapping(value: Any, label: str) -> Mapping[str, Any]:
+    if not isinstance(value, Mapping):
+        raise TypeError(f"{label} must be a mapping")
+    return value
+
+
+def _load_profile(
+    profile_id: str,
+    entry: Mapping[str, Any],
+    release_dir: Path,
+) -> Profile:
+    engine_path = _resolve_engine_path(release_dir, entry["engine"])
+    engine = _mapping(
+        yaml.safe_load(engine_path.read_text(encoding="utf-8")),
+        str(engine_path),
     )
-    return ("--speculative-config", config)
+    speculative = engine.get("speculative-config")
+    draft = speculative.get("model") if isinstance(speculative, Mapping) else None
+    return Profile(
+        id=profile_id,
+        model=str(engine["model"]),
+        served_name=str(engine["served-model-name"]),
+        phase=int(entry["phase"]),
+        engine_config=engine_path,
+        draft=str(draft) if draft is not None else None,
+        tensor_parallel_size=int(engine["tensor-parallel-size"]),
+        gpu_indices=tuple(int(index) for index in entry["gpus"]),
+        replicas=int(entry["replicas"]),
+        env={str(key): str(value) for key, value in entry["env"].items()},
+        revert_patches=tuple(str(value) for value in entry["revert_patches"]),
+        probes=tuple(str(value) for value in entry["probes"]),
+        expect=str(entry["expect"]),
+        expect_boot_evidence=dict(entry["expect_boot_evidence"]),
+        expect_attention_backend=str(entry["expect_attention_backend"]),
+        gating=bool(entry["gating"]),
+        control_for=entry["control_for"],
+        venue=str(entry["venue"]),
+    )
 
 
-_QWEN_SPEC = ("--speculative-config", '{"method":"mtp","num_speculative_tokens":2}')
+def engine_settings(profile: Profile) -> Mapping[str, Any]:
+    """Return the engine settings a profile launches.
 
-_GEMMA_BASE = (
-    "--reasoning-parser",
-    "gemma4",
-    "--tool-call-parser",
-    "gemma4",
-    "--enable-auto-tool-choice",
-    "--kv-cache-dtype",
-    "fp8",
-    "--enable-prefix-caching",
-    "--max-model-len",
-    "8192",
-    *_gemma_spec(),
-)
+    Args:
+        profile: Configuration under test.
 
-_QWEN_BASE = (
-    "--reasoning-parser",
-    "qwen3",
-    "--tool-call-parser",
-    "qwen3_coder",
-    "--enable-auto-tool-choice",
-    "--kv-cache-dtype",
-    "fp8",
-    "--no-enable-prefix-caching",
-    "--max-model-len",
-    "8192",
-    # Pinned, not defaulted. Qwen is a hybrid model whose Mamba cache bounds
-    # the batch: the engine default of 1024 exceeds the blocks available on a
-    # single GPU and fails the boot. Pinning also keeps the throughput numbers
-    # comparable across releases that change the default.
-    "--max-num-seqs",
-    "256",
-    *_QWEN_SPEC,
-)
+    Returns:
+        The committed YAML exactly as `vllm serve --config` reads it.
+    """
+    return _mapping(
+        yaml.safe_load(profile.engine_config.read_text(encoding="utf-8")),
+        str(profile.engine_config),
+    )
 
 
-# Same-box controls. Each changes exactly one variable from _GEMMA_BASE so the
-# difference in numbers is attributable to that variable.
-_GEMMA_NO_SPEC = tuple(
-    arg
-    for index, arg in enumerate(_GEMMA_BASE)
-    if arg != "--speculative-config"
-    and _GEMMA_BASE[index - 1] != "--speculative-config"
-)
-_GEMMA_KV_AUTO = tuple(
-    "auto" if index and _GEMMA_BASE[index - 1] == "--kv-cache-dtype" else arg
-    for index, arg in enumerate(_GEMMA_BASE)
-)
+def load(tag: str) -> ProfileStore:
+    """Load the exact fleet selected by a release tag.
 
-PROFILES: tuple[Profile, ...] = (
-    Profile(
-        id="gemma-full",
-        model=GEMMA_MODEL,
-        served_name=GEMMA_SERVED,
-        phase=2,
-        draft=GEMMA_DRAFT,
-        gpu_indices=(0,),
-        env=_V1,
-        extra_args=_GEMMA_BASE,
-        probes=("R1", "R2", "R4", "R5", "B1", "B3", "B4", "B5"),
-        expect_attention_backend="TRITON_ATTN",
-    ),
-    # No leave-one-out arms while the series is empty. When a patch returns,
-    # bake the v0.26.0 misretirement lessons back in: every arm carries a
-    # traffic probe (a boot-only receipt is blind to failures that moved past
-    # boot), and R6 asserts the reverted behaviour's log signature so a revert
-    # that never reached the engine cannot produce a verdict. The retired arms
-    # are in git history at the fork/bump-v0.27.1 merge.
-    Profile(
-        id="gemma-v2-kvfp8",
-        model=GEMMA_MODEL,
-        served_name=GEMMA_SERVED,
-        phase=2,
-        draft=GEMMA_DRAFT,
-        gpu_indices=(0,),
-        env=_V2,
-        extra_args=_GEMMA_BASE,
-        probes=("R5",),
-        expect="boot_crash",
-        gating=False,
-    ),
-    Profile(
-        id="gemma-v2-spec-kv-dtype",
-        model=GEMMA_MODEL,
-        served_name=GEMMA_SERVED,
-        phase=2,
-        draft=GEMMA_DRAFT,
-        gpu_indices=(0,),
-        env=_V2,
-        extra_args=(
-            "--reasoning-parser",
-            "gemma4",
-            "--tool-call-parser",
-            "gemma4",
-            "--enable-auto-tool-choice",
-            "--kv-cache-dtype",
-            "fp8",
-            "--enable-prefix-caching",
-            "--max-model-len",
-            "8192",
-            "--speculative-config",
-            (
-                f'{{"method":"mtp","model":"{GEMMA_DRAFT}",'
-                f'"num_speculative_tokens":4,"kv_cache_dtype":"auto"}}'
-            ),
-        ),
-        probes=("R5",),
-        gating=False,
-    ),
-    Profile(
-        id="qwen-full",
-        model=QWEN_MODEL,
-        served_name=QWEN_SERVED,
-        phase=2,
-        gpu_indices=(1,),
-        env=_V1,
-        extra_args=_QWEN_BASE,
-        probes=("R2", "R4", "R5", "B2", "B3", "B4"),
-        expect_attention_backend="FLASH_ATTN",
-    ),
-    Profile(
-        id="gemma-perf",
-        model=GEMMA_MODEL,
-        served_name=GEMMA_SERVED,
-        phase=3,
-        draft=GEMMA_DRAFT,
-        tensor_parallel_size=2,
-        gpu_indices=(0, 1),
-        env=_V1,
-        extra_args=_GEMMA_BASE + _AR_FLAGS,
-        probes=("P1", "P2", "P3", "P4"),
-    ),
-    Profile(
-        id="qwen-perf",
-        model=QWEN_MODEL,
-        served_name=QWEN_SERVED,
-        phase=3,
-        tensor_parallel_size=2,
-        gpu_indices=(0, 1),
-        env=_V1,
-        extra_args=_QWEN_BASE + _AR_FLAGS,
-        probes=("P1", "P2", "P3", "P4"),
-    ),
-    Profile(
-        id="gemma-perf-nospec",
-        model=GEMMA_MODEL,
-        served_name=GEMMA_SERVED,
-        phase=3,
-        tensor_parallel_size=2,
-        gpu_indices=(0, 1),
-        env=_V1,
-        extra_args=_GEMMA_NO_SPEC + _AR_FLAGS,
-        probes=("P1", "P2", "P3"),
-        gating=False,
-        control_for="gemma-perf",
-    ),
-    Profile(
-        id="gemma-perf-tp1x2",
-        model=GEMMA_MODEL,
-        served_name=GEMMA_SERVED,
-        phase=3,
-        draft=GEMMA_DRAFT,
-        tensor_parallel_size=1,
-        gpu_indices=(0, 1),
-        replicas=2,
-        env=_V1,
-        extra_args=_GEMMA_BASE,
-        probes=("P1", "P2", "P3"),
-        gating=False,
-        control_for="gemma-perf",
-    ),
-    Profile(
-        id="gemma-perf-kvauto",
-        model=GEMMA_MODEL,
-        served_name=GEMMA_SERVED,
-        phase=3,
-        draft=GEMMA_DRAFT,
-        tensor_parallel_size=2,
-        gpu_indices=(0, 1),
-        env=_V1,
-        extra_args=_GEMMA_KV_AUTO + _AR_FLAGS,
-        probes=("P1", "P2", "P3", "P4"),
-        gating=False,
-        control_for="gemma-perf",
-    ),
-    Profile(
-        id="gemma-tp2",
-        model=GEMMA_MODEL,
-        served_name=GEMMA_SERVED,
-        phase=4,
-        draft=GEMMA_DRAFT,
-        tensor_parallel_size=2,
-        gpu_indices=(0, 1),
-        env=_V1,
-        extra_args=_GEMMA_BASE + _AR_FLAGS,
-        probes=("R1", "R2", "R3", "R4", "R5", "B1", "B3", "B4", "B5"),
-        expect_attention_backend="TRITON_ATTN",
-    ),
-    Profile(
-        id="qwen-tp2",
-        model=QWEN_MODEL,
-        served_name=QWEN_SERVED,
-        phase=4,
-        tensor_parallel_size=2,
-        gpu_indices=(0, 1),
-        env=_V1,
-        extra_args=_QWEN_BASE + _AR_FLAGS,
-        probes=("R2", "R3", "R4", "R5", "B2", "B3", "B4"),
-        expect_attention_backend="FLASH_ATTN",
-    ),
-    Profile(
-        id="qwen-tp2-noflags",
-        model=QWEN_MODEL,
-        served_name=QWEN_SERVED,
-        phase=4,
-        tensor_parallel_size=2,
-        gpu_indices=(0, 1),
-        env=_V1,
-        extra_args=_QWEN_BASE,
-        probes=("R5",),
-        expect="boot_crash",
-        gating=False,
-    ),
-)
+    Args:
+        tag: Release directory name under configs/.
 
-_BY_ID = {profile.id: profile for profile in PROFILES}
+    Returns:
+        Parsed profile store.
+
+    Raises:
+        ValueError: If the tag is not a plain directory name.
+        FileNotFoundError: If the tag has no fleet manifest.
+    """
+    if (
+        not tag
+        or tag in {".", ".."}
+        or Path(tag).name != tag
+        or "/" in tag
+        or "\\" in tag
+    ):
+        raise ValueError(f"configuration tag must be a plain directory name: {tag!r}")
+    fleet_path = CONFIG_ROOT / tag / "fleet.yaml"
+    if not fleet_path.is_file():
+        raise FileNotFoundError(
+            f"no benchmark configuration for {tag}: expected {fleet_path}"
+        )
+    body = _mapping(
+        yaml.safe_load(fleet_path.read_text(encoding="utf-8")),
+        str(fleet_path),
+    )
+    profile_entries = _mapping(body.get("profiles"), "fleet profiles")
+    manual_entries = _mapping(body.get("manual", {}), "fleet manual entries")
+    loaded = tuple(
+        _load_profile(profile_id, _mapping(entry, profile_id), fleet_path.parent)
+        for profile_id, entry in profile_entries.items()
+    )
+    return ProfileStore(tag, fleet_path.resolve(), loaded, manual_entries)
+
+
+DEFAULT_STORE = load(DEFAULT_TAG)
+PROFILES = DEFAULT_STORE.profiles
+
+GEMMA_MODEL = DEFAULT_STORE.get("gemma-full").model
+GEMMA_DRAFT = DEFAULT_STORE.get("gemma-full").draft or ""
+GEMMA_SERVED = DEFAULT_STORE.get("gemma-full").served_name
+QWEN_MODEL = DEFAULT_STORE.get("qwen-full").model
+QWEN_SERVED = DEFAULT_STORE.get("qwen-full").served_name
 
 
 def get(profile_id: str) -> Profile:
-    """Return the profile with this id.
-
-    Args:
-        profile_id: Stable profile identifier.
-
-    Returns:
-        The matching profile.
-
-    Raises:
-        KeyError: If no profile has this id.
-    """
-    return _BY_ID[profile_id]
+    """Return a profile from the default v0.27.1 store."""
+    return DEFAULT_STORE.get(profile_id)
 
 
 def models_for(phases: Sequence[int]) -> tuple[str, ...]:
-    """Return every checkpoint the given phases need, target and draft alike.
-
-    Args:
-        phases: Runbook phases about to run.
-
-    Returns:
-        Distinct model ids, in the order they are first needed.
-    """
-    seen: dict[str, None] = {}
-    for phase in phases:
-        for profile in for_phase(phase):
-            seen.setdefault(profile.model, None)
-            if profile.draft:
-                seen.setdefault(profile.draft, None)
-    return tuple(seen)
+    """Return models required by default-store phases."""
+    return DEFAULT_STORE.models_for(phases)
 
 
 def for_phase(phase: int) -> tuple[Profile, ...]:
-    """Return every profile belonging to a runbook phase.
-
-    Args:
-        phase: Runbook phase number.
-
-    Returns:
-        Profiles in declaration order.
-    """
-    return tuple(p for p in PROFILES if p.phase == phase)
+    """Return default-store profiles in one phase."""
+    return DEFAULT_STORE.for_phase(phase)

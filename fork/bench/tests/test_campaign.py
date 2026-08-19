@@ -70,10 +70,12 @@ class FakeShell:
 
     def __init__(self, exit_code="0", fail_on=None):
         self.events: list[str] = []
+        self.commands: list[list[str]] = []
         self.exit_code = exit_code
         self.fail_on = fail_on
 
     def __call__(self, argv):
+        self.commands.append(list(argv))
         joined = " ".join(argv)
         if argv[0] == "rsync":
             kind = "collect" if ":" in argv[-2] else "push"
@@ -91,7 +93,7 @@ class FakeShell:
 
 def _campaign(provider, shell, out_dir, **kwargs):
     return run_campaign(
-        tag="v0.27.0",
+        tag="v0.27.1",
         image="img:tag",
         out_dir=out_dir,
         provider=provider,
@@ -149,7 +151,7 @@ def test_a_campaign_labels_the_instance_with_the_release_under_test(tmp_path):
     """The label is what lets a stray be found and destroyed later."""
     provider = FakeProvider()
     _campaign(provider, FakeShell("0"), tmp_path)
-    assert provider.labels == ["fork-bench-v0.27.0"]
+    assert provider.labels == ["fork-bench-v0.27.1"]
 
 
 def test_a_campaign_never_writes_the_instance_key_to_disk(tmp_path):
@@ -171,10 +173,19 @@ def test_a_campaign_records_what_it_rented(tmp_path):
     assert "3.0" in rental
 
 
+def test_a_campaign_passes_the_boot_image_to_the_on_box_gate(tmp_path):
+    shell = FakeShell("0")
+    _campaign(FakeProvider(), shell, tmp_path)
+    start = next(
+        command for command in shell.commands if "gate.exit" in " ".join(command)
+    )
+    assert "--image img:tag" in " ".join(start)
+
+
 def test_renting_from_the_command_line_needs_an_image(tmp_path):
     """Nothing to boot means nothing to test; fail before the meter starts."""
     with pytest.raises(SystemExit):
-        main(["--tag", "v0.27.0", "--out", str(tmp_path), "--rent"])
+        main(["--tag", "v0.27.1", "--out", str(tmp_path), "--rent"])
 
 
 def test_renting_from_the_command_line_passes_the_run_through(tmp_path, monkeypatch):
@@ -188,7 +199,7 @@ def test_renting_from_the_command_line_passes_the_run_through(tmp_path, monkeypa
     main(
         [
             "--tag",
-            "v0.27.0",
+            "v0.27.1",
             "--image",
             "img:tag",
             "--out",
@@ -198,7 +209,7 @@ def test_renting_from_the_command_line_passes_the_run_through(tmp_path, monkeypa
             "--rent",
         ]
     )
-    assert captured["tag"] == "v0.27.0"
+    assert captured["tag"] == "v0.27.1"
     assert captured["image"] == "img:tag"
     assert tuple(captured["phases"]) == (4,)
 
@@ -211,7 +222,7 @@ def test_the_cap_bounds_what_a_run_can_cost(tmp_path, monkeypatch):
     main(
         [
             "--tag",
-            "v0.27.0",
+            "v0.27.1",
             "--image",
             "i",
             "--out",
@@ -233,7 +244,7 @@ def test_the_gate_gives_up_before_the_reaper_fires(tmp_path, monkeypatch):
     main(
         [
             "--tag",
-            "v0.27.0",
+            "v0.27.1",
             "--image",
             "i",
             "--out",
@@ -251,7 +262,7 @@ def test_a_cap_too_short_to_collect_results_is_refused(tmp_path):
         main(
             [
                 "--tag",
-                "v0.27.0",
+                "v0.27.1",
                 "--image",
                 "i",
                 "--out",
@@ -270,5 +281,5 @@ def test_renting_hands_the_box_the_token_it_needs(tmp_path, monkeypatch):
         "fork.bench.campaign.run_campaign", lambda **kw: captured.update(kw) or 0
     )
     monkeypatch.setenv("HF_TOKEN", "from-the-environment")
-    main(["--tag", "v0.27.0", "--image", "i", "--out", str(tmp_path), "--rent"])
+    main(["--tag", "v0.27.1", "--image", "i", "--out", str(tmp_path), "--rent"])
     assert captured["env"]["HF_TOKEN"] == "from-the-environment"

@@ -14,7 +14,10 @@ from fork.bench.runner import (
     append_result,
     build_docker_command,
     build_serve_command,
+    config_source_path,
+    docker_config_path,
     evaluate,
+    local_config_path,
     wait_for_health,
 )
 
@@ -29,6 +32,7 @@ _WITH_REVERT = Profile(
     model="org/model",
     served_name="model",
     phase=2,
+    engine_config=profiles.get("gemma-full").engine_config,
     revert_patches=("0001-synthetic.patch",),
     probes=("R5",),
     expect="boot_crash",
@@ -36,28 +40,57 @@ _WITH_REVERT = Profile(
 )
 
 
-def test_serve_command_names_the_model_and_the_served_name():
-    command = build_serve_command(profiles.get("gemma-full"), 8000)
-    assert command[:2] == ["vllm", "serve"]
-    assert profiles.GEMMA_MODEL in command
-    assert "--served-model-name" in command
+def test_serve_command_reads_the_committed_config_and_nothing_else():
+    """Parity: the engine is told the file, never a synthesized argument."""
+    profile = profiles.get("gemma-full")
+    command = build_serve_command(profile, 8000)
+    assert command == [
+        "vllm",
+        "serve",
+        "--config",
+        local_config_path(profile),
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+    ]
 
 
-def test_serve_command_carries_the_speculative_config():
-    command = " ".join(build_serve_command(profiles.get("gemma-full"), 8000))
-    assert '"method":"mtp"' in command
-    assert profiles.GEMMA_DRAFT in command
+def test_the_config_it_points_at_names_the_model_and_the_served_name():
+    engine = profiles.engine_settings(profiles.get("gemma-full"))
+    assert engine["model"] == "RedHatAI/gemma-4-31B-it-FP8-block"
+    assert engine["served-model-name"] == "gemma-4-31b"
 
 
-def test_serve_command_sets_tensor_parallel_size_for_tp2():
-    command = build_serve_command(profiles.get("gemma-tp2"), 8000)
-    index = command.index("--tensor-parallel-size")
-    assert command[index + 1] == "2"
+def test_the_config_it_points_at_carries_the_speculative_config():
+    engine = profiles.engine_settings(profiles.get("gemma-full"))
+    assert engine["speculative-config"]["method"] == "mtp"
+    assert engine["speculative-config"]["model"] == ("google/gemma-4-31B-it-assistant")
+
+
+def test_the_config_it_points_at_sets_tensor_parallel_size_for_tp2():
+    engine = profiles.engine_settings(profiles.get("gemma-tp2"))
+    assert engine["tensor-parallel-size"] == 2
 
 
 def test_docker_command_pins_the_visible_gpus():
     command = " ".join(build_docker_command(profiles.get("qwen-full"), "img:tag", 8001))
     assert "CUDA_VISIBLE_DEVICES=1" in command
+
+
+def test_docker_mount_and_hashed_config_are_the_same_file(tmp_path, monkeypatch):
+    profile = profiles.get("gemma-full")
+    monkeypatch.chdir(tmp_path)
+    command = build_docker_command(profile, "img:tag", 8000)
+    mount = command[command.index("-v") + 1]
+    source, destination, mode = mount.split(":")
+    assert destination == "/opt/fork/bench"
+    assert mode == "ro"
+    assert Path(source).samefile(profiles.BENCH_ROOT)
+
+    container_relative = Path(docker_config_path(profile)).relative_to(destination)
+    mounted_file = Path(source) / container_relative
+    assert mounted_file.samefile(config_source_path(profile))
 
 
 def test_docker_command_reverts_the_patch_under_test_before_serving():

@@ -7,6 +7,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from fork.bench import profiles
+from fork.bench.profiles import ProfileStore
 from fork.bench.receipts import ProbeResult
 
 PATCH_STILL_REQUIRED = "still required"
@@ -121,6 +122,7 @@ def derive_patch_verdicts(
 
 def compare_controls(
     perf: Mapping[str, dict[str, Any]],
+    profile_store: ProfileStore | None = None,
 ) -> list[tuple[str, str, str, float, float, float]]:
     """Difference each same-box control against the profile it controls for.
 
@@ -131,13 +133,15 @@ def compare_controls(
 
     Args:
         perf: Profile id to measurements.
+        profile_store: Tag-selected profiles, defaulting to v0.27.1.
 
     Returns:
         Tuples of control id, baseline id, metric, baseline value, control
         value, and percent change, for every metric the pair share.
     """
     rows: list[tuple[str, str, str, float, float, float]] = []
-    for profile in profiles.PROFILES:
+    store = profile_store or profiles.DEFAULT_STORE
+    for profile in store.profiles:
         baseline_id = profile.control_for
         if not baseline_id:
             continue
@@ -169,7 +173,7 @@ def compare_controls(
     return rows
 
 
-def _gates(profile_id: str) -> bool:
+def _gates(profile_id: str, profile_store: ProfileStore | None = None) -> bool:
     """Report whether a failure on this profile should fail the gate.
 
     An unrecognised id gates: a result nothing declares is a harness bug, and
@@ -182,7 +186,7 @@ def _gates(profile_id: str) -> bool:
         True when a failure here is a release blocker.
     """
     try:
-        return profiles.get(profile_id).gating
+        return (profile_store or profiles.DEFAULT_STORE).get(profile_id).gating
     except KeyError:
         return True
 
@@ -190,12 +194,14 @@ def _gates(profile_id: str) -> bool:
 def exit_code(
     results: Sequence[ProbeResult],
     verdicts: Mapping[str, str],
+    profile_store: ProfileStore | None = None,
 ) -> int:
     """Compute the process exit code.
 
     Args:
         results: Every probe result from the run.
         verdicts: Patch id to verdict.
+        profile_store: Tag-selected profiles, defaulting to v0.27.1.
 
     Returns:
         0 when the gate passed, 1 otherwise.
@@ -203,7 +209,7 @@ def exit_code(
     if any(verdict in _FATAL_VERDICTS for verdict in verdicts.values()):
         return 1
     for result in results:
-        if not result.passed and _gates(result.profile_id):
+        if not result.passed and _gates(result.profile_id, profile_store):
             return 1
     return 0
 
@@ -214,6 +220,8 @@ def build_report(
     results: Sequence[ProbeResult],
     verdicts: Mapping[str, str],
     perf: Mapping[str, dict[str, Any]],
+    config_identity: Mapping[str, Any] | None = None,
+    profile_store: ProfileStore | None = None,
 ) -> str:
     """Render the run as a Markdown report.
 
@@ -223,11 +231,29 @@ def build_report(
         results: Every probe result.
         verdicts: Patch id to verdict.
         perf: Profile id to performance measurements.
+        config_identity: Fleet and engine paths plus SHA-256 identities.
+        profile_store: Tag-selected profiles, defaulting to v0.27.1.
 
     Returns:
         The report body.
     """
     lines = [f"# Release gate: {tag}", ""]
+
+    if config_identity:
+        fleet = config_identity["fleet"]
+        lines += [
+            "## Configuration",
+            "",
+            f"Fleet: `{fleet['path']}` (`sha256:{fleet['sha256']}`)",
+            "",
+            "| profile | engine config | sha256 |",
+            "|---|---|---|",
+        ]
+        for profile_id, identity in config_identity["profiles"].items():
+            lines.append(
+                f"| {profile_id} | `{identity['path']}` | `{identity['sha256']}` |"
+            )
+        lines.append("")
 
     if fingerprint:
         lines += ["## Machine", "", "| field | value |", "|---|---|"]
@@ -254,7 +280,7 @@ def build_report(
     for result in results:
         if result.passed:
             status = "pass"
-        elif _gates(result.profile_id):
+        elif _gates(result.profile_id, profile_store):
             status = "**FAIL**"
         else:
             status = "fail (as expected)"
@@ -275,7 +301,7 @@ def build_report(
                 lines.append(f"| {profile_id} | {metric} | {value} |")
         lines.append("")
 
-        controls = compare_controls(perf)
+        controls = compare_controls(perf, profile_store)
         if controls:
             lines += [
                 "## Same-box controls (one variable changed)",

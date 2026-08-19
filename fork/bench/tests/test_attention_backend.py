@@ -59,4 +59,5 @@ def test_the_qwen_profiles_pin_the_batch_size():
     """
     for profile in profiles.PROFILES:
         if profile.model == profiles.QWEN_MODEL:
-            assert "--max-num-seqs" in profile.extra_args, profile.id
+            engine = profiles.engine_settings(profile)
+            assert engine["max-num-seqs"] == 256, profile.id
