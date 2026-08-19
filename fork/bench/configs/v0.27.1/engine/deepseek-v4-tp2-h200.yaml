@@ -1,0 +1,12 @@
+# venue: manual; status: validated on a 2xH200 SXM pair on 2026-08-11.
+# The measured DeepSeek-V4 Flash checkpoint.
+model: deepseek-ai/DeepSeek-V4-Flash-0731
+# The on-prem server spans the two H200 GPUs.
+tensor-parallel-size: 2
+# fp8_ds_mla rejects auto, so FP8 KV cache is mandatory.
+kv-cache-dtype: fp8
+# PIECEWISE avoids the v0.27.x DeepGEMM SM90 OOB in FULL decode capture.
+# It also avoids decode-FULL replay corruption (#51181/#51318/#51182).
+compilation-config:
+  cudagraph_mode: PIECEWISE
+# DSpark speculative decoding is intentionally off; no speculative-config is set.

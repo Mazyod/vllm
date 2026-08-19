@@ -1,0 +1,23 @@
+# The checkpoint whose v0.27.1 Gemma path is under test.
+model: RedHatAI/gemma-4-31B-it-FP8-block
+# Stable API name used by every Gemma probe and client.
+served-model-name: gemma-4-31b
+# One GPU is used by full and replicated-TP1 controls.
+tensor-parallel-size: 1
+# Preserve Gemma-4 reasoning content in OpenAI responses.
+reasoning-parser: gemma4
+# Parse Gemma-4 native tool calls.
+tool-call-parser: gemma4
+# Let the model select tools without a forced tool choice.
+enable-auto-tool-choice: true
+# FP8 ships; v0.27.1 sustained decode was 169.6 vs 167.5 tok/s with auto.
+kv-cache-dtype: fp8
+# Gemma ships with prefix caching on; probes preserve the deployment value.
+enable-prefix-caching: true
+# Bound the measured context independently of model defaults.
+max-model-len: 8192
+# MTP measured 169.6 vs 70.6 tok/s (~2.4x), at 0.53-0.55 acceptance.
+speculative-config:
+  method: mtp
+  model: google/gemma-4-31B-it-assistant
+  num_speculative_tokens: 4

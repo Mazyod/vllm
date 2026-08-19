@@ -1,0 +1,25 @@
+# The checkpoint used to isolate the V2 speculative KV-cache fix.
+model: RedHatAI/gemma-4-31B-it-FP8-block
+# Keep the API identity identical to the V1 Gemma profile.
+served-model-name: gemma-4-31b
+# The diagnostic V2 arm runs on one GPU.
+tensor-parallel-size: 1
+# Preserve Gemma-4 reasoning content in OpenAI responses.
+reasoning-parser: gemma4
+# Parse Gemma-4 native tool calls.
+tool-call-parser: gemma4
+# Let the model select tools without a forced tool choice.
+enable-auto-tool-choice: true
+# Exercise the target model's FP8 KV-cache path.
+kv-cache-dtype: fp8
+# Gemma ships with prefix caching on; this arm preserves that value.
+enable-prefix-caching: true
+# Match the other Gemma arms' measured context cap.
+max-model-len: 8192
+# MTP measured 169.6 vs 70.6 tok/s (~2.4x), at 0.53-0.55 acceptance.
+# This arm isolates automatic KV dtype inside the V2 draft configuration.
+speculative-config:
+  method: mtp
+  model: google/gemma-4-31B-it-assistant
+  num_speculative_tokens: 4
+  kv_cache_dtype: auto
