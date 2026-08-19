@@ -73,6 +73,13 @@ patch ships with full context (impact, root cause, a **reproduce case**,
 validation, ruled-out theories) as a note under
 [`fork/patches/notes/`](fork/patches/notes/).
 
+**Every configuration we serve is a committed file.** The exact YAML each
+benchmarked configuration ran — and the one to deploy on-prem — lives per
+release under [`fork/bench/configs/`](fork/bench/configs/), indexed by
+[`CATALOG.md`](fork/bench/configs/CATALOG.md); the gate launches
+`vllm serve --config` against those bytes and records their digest in every
+result, so a number always names the configuration that produced it.
+
 ## The model: deterministic tag + patches on top
 
 vLLM is a monster to build from source, so we do **not** compile it. Instead:
@@ -118,6 +125,12 @@ fork/scripts/refresh-patches.sh v0.27.1   # skip if the series emptied
 #    .github/workflows/build-vllm-audio.yml -> DEFAULT_BASE_TAG
 #    fork/docker/Dockerfile.audio           -> ARG BASE_TAG (what check-alignment reads)
 fork/scripts/check-alignment.sh
+
+# 2b. Create the release's engine configurations. Copy the previous release's
+#    fleet.yaml and engine/*.yaml into fork/bench/configs/<tag>/ (never its
+#    results/), then re-justify every flag against the new release. The gate
+#    refuses --tag <tag> until that directory exists.
+#    Schema and freeze rule: fork/bench/configs/README.md
 
 # 3. Review, commit, push. A push builds a CANDIDATE (:<tag>-cand-<sha>) and
 #    never moves :latest. Gate the candidate (fork/bench/RUNBOOK.md), then
