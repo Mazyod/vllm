@@ -6,6 +6,8 @@ target configurations need?
 
 - [DESIGN.md](DESIGN.md) — what it measures and why.
 - [RUNBOOK.md](RUNBOOK.md) — the session protocol.
+- [configs/README.md](configs/README.md) — the configuration contract.
+- [configs/CATALOG.md](configs/CATALOG.md) — configurations and recorded runs.
 
 ## Quick start
 
@@ -14,8 +16,8 @@ disk with nothing left running:
 
 ```bash
 export HF_TOKEN=...
-uv run --no-project --with httpx -- python -m fork.bench \
-  --tag v0.27.0 --image <IMAGE> --out runs/v0.27.0 --phase 4 --rent
+uv run --no-project --with httpx --with pyyaml -- python -m fork.bench \
+  --tag v0.27.1 --image <IMAGE> --out runs/v0.27.1 --phase 4 --rent
 ```
 
 `--rent` spends money. Run the free checks below first — they prove the whole
@@ -31,16 +33,17 @@ bash fork/bench/preflight.sh
 # phase 0: has upstream absorbed any patch yet?
 uv run --no-project -- python -c \
   "from pathlib import Path; from fork.bench.static import brief; \
-   print(brief('v0.27.0', Path('.')))"
+   print(brief('v0.27.1', Path('.')))"
 
 # the gate itself, replaying fixtures against the mock
-uv run --no-project --with httpx -- python -m fork.bench \
-  --tag v0.27.0 --out runs/dry --dry-run
+uv run --no-project --with httpx --with pyyaml -- python -m fork.bench \
+  --tag v0.27.1 --out runs/dry --dry-run
 ```
 
 `uv run` needs `--no-project` here. Without it uv resolves the vLLM project
-itself, which this tooling never imports and which cannot resolve on a machine
-with no CUDA wheel.
+itself, which the local CPU path does not need and which cannot resolve on a
+machine with no CUDA wheel. Gate commands need `--with pyyaml` to load the
+tag-selected configuration store.
 
 This directory is developer tooling. It is never copied into the image.
 

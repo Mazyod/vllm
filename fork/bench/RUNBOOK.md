@@ -5,9 +5,11 @@ hold before the next begins. Deviate only to triage a failure, and record what
 was done. See [DESIGN.md](DESIGN.md) for why each probe exists and
 [LESSONS.md](LESSONS.md) for what the first hardware session cost to learn.
 
-Every Python command uses `uv run --no-project`. Without the flag `uv` tries to
-resolve vLLM itself, which this tooling never needs and which fails outright on
-a machine with no CUDA wheel.
+Every local Python command uses `uv run --no-project`. Without the flag `uv`
+tries to resolve vLLM itself, which this tooling never needs and which fails
+outright on a machine with no CUDA wheel. Gate commands also include `--with
+pyyaml` because selecting `--tag` loads that release's YAML configuration
+store; commands that issue requests add `--with httpx` as well.
 
 ## Phase 0 — static (free, local)
 
@@ -36,14 +38,16 @@ If you only have time for one thing, run the shipping topology on a rented box:
 
 ```bash
 export HF_TOKEN=...   # gated checkpoints do not download without it
-uv run --no-project --with httpx -- python -m fork.bench \
+uv run --no-project --with httpx --with pyyaml -- python -m fork.bench \
   --tag <TAG> --image <IMAGE> --out runs/<TAG> --phase 4 --rent
 ```
 
-`--rent` is phases 1 and 5 done for you: it searches for an on-demand offer
-matching the shipping topology, rents it, arms the reaper before anything else,
-pushes this tree onto the box, runs the gate there, brings the results back, and
-destroys the instance — confirming with the provider that it is gone.
+`--rent` is phases 1 and 5 done for you: it searches its preference list once,
+rents one instance, arms the reaper before anything else, pushes this tree onto
+the box, runs the gate there, brings the results back, and destroys the instance
+— confirming with the provider that it is gone. PCIe is preferred, but the
+fallback requirements also admit H100 SXM. The topology gate may refuse that
+box; the campaign collects the refusal and destroys it, but does not re-hunt.
 
 Phase 4 itself is TP2 with the all-reduce workarounds on, carrying the full
 receipt and behavioural probe set, plus the N3 arm with the workarounds off. It
@@ -64,9 +68,23 @@ you finishing by hand, and because the guarantees are worth knowing.
 2. Rent it. Arm the reaper immediately, before anything else — it owns teardown
    on a hard cap regardless of what the driver is doing.
 3. Run `nvidia-smi topo -m` and classify the GPU0-GPU1 link.
-4. **Gate:** a `NV*` link means the box cannot answer the all-reduce question
-   natively. Run the forced-PCIe arm on it rather than re-hunting.
+4. **Gate:** a `NV*` link disqualifies the box; disabling peer access on an
+   NVLink pair does not reproduce the deployment topology. In an automated
+   `--rent` run the gate refuses the box and the campaign collects and destroys
+   it. Re-hunting is the operator's next move: start another `--rent` run (or
+   rent a confirmed PCIe-only pair manually). One campaign never re-rents.
 5. Stage both models' weights in parallel.
+6. Before any engine launch, validate the committed files with the installed
+   release's real parser:
+
+   ```bash
+   cd /workspace/bench
+   python3 -m fork.bench.config_validation --tag <TAG>
+   ```
+
+   **Gate:** the command prints the installed release version. A version
+   mismatch or parser rejection stops the run. The local and docker launchers
+   perform this validation automatically before topology checks or launches.
 
 The instance is booted *from* the image under test, so there is no daemon to
 hand a container to. On the box the gate runs with `--launcher local`, which
@@ -86,7 +104,7 @@ Run every phase 2 profile. GPU 0 takes the Gemma profiles, GPU 1 the Qwen ones.
 These are pass/fail and not timing-sensitive, so running both at once is free.
 
 ```bash
-uv run --no-project --with httpx -- python -m fork.bench \
+uv run --no-project --with httpx --with pyyaml -- python -m fork.bench \
   --tag <TAG> --image <IMAGE> --out runs/<TAG> --phase 2
 ```
 
@@ -124,6 +142,21 @@ box contend for CPU and PCIe and will understate throughput.
 | a probe hangs past its deadline | capture partial results, continue |
 | the instance dies mid-run | report what streamed, with an explicit truncation note |
 | the reaper fires | the session is over; whatever streamed is the result |
+
+## Changing a configuration
+
+The procedure and both layer schemas are in
+[`configs/README.md`](configs/README.md). Change engine behavior only in the
+release's `engine/*.yaml`; change scheduling, environment, or probe assignment
+only in `fleet.yaml`. This separation keeps the file named by a measurement
+identical to the file vLLM consumed.
+
+An engine file is immutable after `launches.jsonl` has recorded it. Put a later
+change in a new release directory, update the parity witness and
+[`configs/CATALOG.md`](configs/CATALOG.md), then run the CPU preflight. Validate
+the new directory on a box running that exact vLLM release before spending on
+the full gate. Local gate commands need `--with pyyaml`; an omitted dependency
+is a tooling failure, not a configuration finding.
 
 ## Developing the harness itself
 

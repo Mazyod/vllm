@@ -170,10 +170,11 @@ So the "not wasted" optimisation was a way to spend an hour and produce a green
 run about a machine nobody deploys on. Nothing caught it, because the run would
 have looked exactly like a good one: same probes, same receipts, same report.
 
-An NVLink pair is now disqualifying. The gate refuses, says why, and the
-instance gets destroyed and re-hunted. `NCCL_P2P_DISABLE` appears nowhere in
-`fork/bench`, and a test asserts it stays that way — the convenience is easy to
-re-invent precisely because it sounds thrifty.
+An NVLink pair is now disqualifying. The gate refuses and says why; the
+campaign destroys its single rental, and the operator re-hunts in a new run.
+`NCCL_P2P_DISABLE` appears nowhere in `fork/bench`, and a test asserts it stays
+that way — the convenience is easy to re-invent precisely because it sounds
+thrifty.
 
 The July run that this correction post-dates was, by luck, on a genuinely
 PCIe-only pair (`interconnect: PXB`), so its all-reduce conclusions stand.
@@ -203,3 +204,6 @@ hopes for. Preflight proves orchestration, not aim.
     real engine at least once, treat what it says about a release as a claim
     about the probe. Instrument probes so a null measurement explains itself
     (B1 now tallies response shapes; B5 records rejection bodies).
+14. **A configuration that is not the file the engine read is a claim, not a
+    record.** Launch from the committed file and carry its digest into the
+    result.

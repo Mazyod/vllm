@@ -99,22 +99,17 @@ there is no docker daemon to hand a container to. On the box the gate runs with
 ordinary two-GPU rental is enough; requiring a full VM would narrow the offer
 pool for no gain.
 
-**Configurations.** The two the image is built to serve. **TP2 is the shipping
-topology**, so those profiles carry the full probe set — receipts, behavioural
-and performance. The single-GPU profiles exist to isolate patch relevance
-leave-one-out, where one GPU per model runs the matrix in half the time:
+**Configurations.** The release-scoped source of truth is
+[`configs/`](configs/README.md): engine YAML is the file `vllm serve --config`
+reads, while `fleet.yaml` assigns that argument set to a phase, environment,
+GPU set, replica count, and probes. The [catalog](configs/CATALOG.md) identifies
+which files ship, isolate controls and negatives, or run off-gate.
 
-| | GPU 0 | GPU 1 |
-| --- | --- | --- |
-| model | `RedHatAI/gemma-4-31B-it-FP8-block` | `Qwen/Qwen3.6-27B-FP8` |
-| draft | `google/gemma-4-31B-it-assistant`, MTP `n=4` | built-in MTP, `n=2` |
-| runner | V1 (`VLLM_USE_V2_MODEL_RUNNER=0`) | V1 |
-| kv cache | fp8 | fp8 |
-| prefix caching | on | off |
-| parsers | `gemma4` reasoning + tool call | `qwen3` reasoning, `qwen3_coder` tool call |
-
-Both fit a single 80 GB Hopper, so the real block-FP8 quantization path and real
-model scale are both exercised.
+**TP2 is the shipping topology**, so those profiles carry the full receipt,
+behavioural, and performance set. Single-GPU profiles isolate patch relevance
+or compare two replicas against the same two-GPU budget. Keeping the engine
+arguments out of this document prevents a prose copy from becoming a second,
+unmeasured configuration.
 
 Budget: one box, roughly 75-90 minutes, per the phase table below.
 
@@ -309,7 +304,8 @@ never finishes, and a transfer that never lands.
 fork/bench/
   DESIGN.md           # this file
   RUNBOOK.md          # session protocol: phases, preconditions, abort conditions
-  profiles.py         # engine configurations as data
+  configs/            # release-scoped engine YAML, fleet metadata, and results
+  profiles.py         # load one tag's configuration store
   receipts.py         # boot-log parsing and receipt probes
   behaviour.py        # request-level probes
   perf.py             # measurement, and a profile's servers as one fleet
@@ -325,13 +321,27 @@ fork/bench/
   baselines/          # per-tag performance trend records
 ```
 
-`profiles.py` is data: image, model, draft, engine args, environment, which
-patches to revert, and which probes apply. Adding a configuration for the next
-release is an entry plus, at most, one probe function.
+`profiles.py` derives profile identity from the engine file and combines it
+with the non-engine metadata in `fleet.yaml`. The store's
+[`README.md`](configs/README.md) defines how to add or change a configuration.
 
 **Results stream to disk as they are produced.** A run that collects everything
 at the end loses everything when the box dies, and a rented box can vanish
 mid-run.
+
+`launches.jsonl` is written before each server process starts. One line records
+the launch id, profile id, replica, launcher-resolved config path, engine and
+fleet SHA-256, argv with token-like Docker environment entries omitted,
+selected non-secret environment, image reference, and installed engine version
+when known. It survives a boot crash and states which bytes the process was
+asked to read.
+
+Every probe line in `results.jsonl` carries the launch ids of the replicas it
+observed. `baseline.json` stores `config.fleet` and `config.profiles`, each with
+the committed path and SHA-256; `report.md` renders the same fleet identity and
+the per-profile engine identities derived from launch receipts rather than by
+re-reading the files. The path makes the configuration readable, and the
+launch-time digest makes later byte drift visible without rewriting history.
 
 **Exit non-zero** on any patch verdict of *broken* or *now harmful*, any
 full-series correctness probe failing, or any unexpected crash signature. A
