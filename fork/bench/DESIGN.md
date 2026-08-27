@@ -154,9 +154,10 @@ Each patch yields a 2×2 that feeds FORK.md's drop-then-rebase step directly:
 | fails | fails | **broken on this tag** | rebase before shipping |
 | passes | fails | **now harmful** | drop urgently |
 
-Each patch note under [`../patches/notes/`](../patches/notes/) already carries a
-"Reproduce" section describing exactly this check in prose. The gate makes those
-sections executable.
+Each patch note under `../patches/notes/` carries a "Reproduce" section
+describing exactly this check in prose, and the gate makes those sections
+executable. (That directory is absent while the series is empty — it comes
+back with the next patch. See [`../patches/README.md`](../patches/README.md).)
 
 ## Probes
 

@@ -27,8 +27,8 @@ non-event.
 **R2 — One patch, one concrete goal, traceable to upstream.** A patch backports
 exactly one upstream PR, or serves one narrowly-stated fork need. It touches the
 fewest files that achieve that goal and ships with a note under
-[`fork/patches/notes/`](fork/patches/notes/). No omnibus patches, no drive-by
-edits riding along, no local "improvements" to vLLM.
+`fork/patches/notes/`. No omnibus patches, no drive-by edits riding along, no
+local "improvements" to vLLM.
 
 **R3 — Every divergence carries an exit criterion.** A patch records the
 upstream commit that will retire it; a declared deletion records why it is
@@ -40,20 +40,28 @@ default; growing it is the exception that needs an argument.
 
 R1 is enforced mechanically, not by good intentions:
 [`fork/scripts/check-alignment.sh`](fork/scripts/check-alignment.sh) measures the
-real divergence from the merge-base with `upstream/main` and fails on anything
-the ledger does not declare. It runs on every pull request
+real divergence from the base **tag** the image is built from — read from
+`fork/docker/Dockerfile.audio`, so there is one pin and not two — and fails on
+anything the ledger does not declare. Measuring from the merge-base with
+`upstream/main` would be wrong: a release tag is cut aside from `main`, so
+upstream's own release-branch work would show up as fork modifications. It runs
+on every pull request
 ([`fork-alignment.yml`](.github/workflows/fork-alignment.yml)) and as a gate on
 the image build, so a drifted fork can neither merge nor ship.
 
 ```console
 $ fork/scripts/check-alignment.sh
 fork alignment
-  upstream base : c233d90aa (merge-base with upstream/main)
+  upstream base : v0.27.1 (6e448d0ea9)
   ledger        : fork/alignment.ledger
 
-  added     12 files, declared                                   OK
-  deleted   6 files, declared                                    OK
+  added     92 files, declared                                   OK
+  deleted   9 files, declared                                    OK
   modified  0 upstream files                                     OK
+
+  note: HEAD is 361 commits behind upstream/main — merge it on the next release sync
+
+Aligned: divergence from v0.27.1 is exactly what the ledger declares.
 ```
 
 ## What we add
@@ -70,8 +78,9 @@ all. The pin's exit criterion (upstream `70b84f0bcb`, #49797) is recorded
 beside it, per R3. The retirement record and the filing convention for the
 next patch live in [`fork/patches/README.md`](fork/patches/README.md) — every
 patch ships with full context (impact, root cause, a **reproduce case**,
-validation, ruled-out theories) as a note under
-[`fork/patches/notes/`](fork/patches/notes/).
+validation, ruled-out theories) as a note under `fork/patches/notes/` — a
+directory that does not exist while the series is empty, and is recreated by the
+next patch.
 
 **Every configuration we serve is a committed file.** The exact YAML each
 benchmarked configuration ran — and the one to deploy on-prem — lives per
@@ -177,7 +186,7 @@ git apply --check fork/patches/<patch-file>
 ## The image
 
 - **Registry / name:** `docker.io/openimage/vllm-openai-audio`
-- **Tags:** the upstream base tag (e.g. `v0.26.0`) and `latest`.
+- **Tags:** the upstream base tag (currently `v0.27.1`) and `latest`.
 - **Drop-in:** entrypoint is inherited from `vllm/vllm-openai`, so it replaces
   the stock image directly.
 - **CI:** [`build-vllm-audio.yml`](.github/workflows/build-vllm-audio.yml) —
