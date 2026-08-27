@@ -59,10 +59,14 @@ fork alignment
   deleted   9 files, declared                                    OK
   modified  0 upstream files                                     OK
 
-  note: HEAD is 361 commits behind upstream/main — merge it on the next release sync
+  note: HEAD is N commits behind upstream/main — merge it on the next release sync
 
 Aligned: divergence from v0.27.1 is exactly what the ledger declares.
 ```
+
+That trailing `note:` is informational, not a failure: the fork deliberately
+sits on a release tag, so it is *always* behind `main`, and `N` moves every time
+you fetch. Only the three `added`/`deleted`/`modified` lines gate anything.
 
 ## What we add
 
