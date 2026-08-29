@@ -14,6 +14,17 @@
 # created, so it needs no file, no id, and no cooperation from the driver. It
 # matches this run's machines and nothing else on the account.
 #
+# It reports what it actually watched, because an empty sweep is ambiguous: a
+# label nobody ever carried sweeps exactly like a box that was torn down
+# cleanly, and a mistyped label would otherwise log a healthy-looking success
+# while the real machine billed on. So it polls for the label throughout, and
+# exits:
+#
+#   0  it watched an instance and that instance is now gone
+#   1  it watched an instance and could not confirm it is gone - act on this
+#   2  no instance ever carried this label, so it guarded nothing - check the
+#      label; nothing was verified about the account
+#
 # Usage: fork/bench/watchdog.sh <label> <driver-pid> [cap-s] [grace-s] [poll-s]
 #
 # Arm it detached, so it outlives the shell that started it:
@@ -41,6 +52,17 @@ say() { echo "[$(date -Is)] watchdog: $*"; }
 # Reuses the gate's own provider adapter rather than re-deriving the response
 # shapes. Reading a live instance as gone is the mistake that already cost a
 # session, and that parsing is pinned by tests in this tree.
+observe_label() {
+  FORK_BENCH_LABEL="$LABEL" python3 -c '
+import os
+
+from fork.bench.vast import VastCli
+
+label = os.environ["FORK_BENCH_LABEL"]
+print(sum(1 for instance in VastCli().instances() if instance.label == label))
+'
+}
+
 sweep_label() {
   FORK_BENCH_LABEL="$LABEL" python3 -c '
 import os
@@ -62,12 +84,28 @@ say "armed: label=$LABEL driver=$DRIVER_PID cap=${CAP_S}s grace=${GRACE_S}s"
 started=$(date +%s)
 driver_gone_at=0
 sweeps=0
+seen=0
+announced_wait=0
 
 while :; do
   now=$(date +%s)
-  reason=""
 
+  # Polled every round, not only when a sweep is due: an empty sweep is
+  # ambiguous on its own, and this is what tells "the box I was watching is
+  # gone" apart from "no box ever carried this name".
+  case "$(observe_label)" in
+  '' | *[!0-9]*) ;; # the account could not be read; believe nothing
+  0) ;;
+  *)
+    [ "$seen" -eq 0 ] && say "watching an instance labelled $LABEL"
+    seen=1
+    ;;
+  esac
+
+  capped=0
+  reason=""
   if [ "$((now - started))" -ge "$CAP_S" ]; then
+    capped=1
     reason="hard cap of ${CAP_S}s"
   elif kill -0 "$DRIVER_PID" 2>/dev/null; then
     driver_gone_at=0
@@ -81,12 +119,28 @@ while :; do
     fi
   fi
 
+  if [ -n "$reason" ] && [ "$seen" -eq 0 ] && [ "$capped" -eq 0 ]; then
+    # Arming before the rental exists is the normal case, so a trigger with
+    # nothing yet to watch is not evidence that there is nothing to watch.
+    # Keep going: the cap is what ends this, not a guess.
+    if [ "$announced_wait" -eq 0 ]; then
+      say "no instance labelled $LABEL yet; watching until the cap"
+      announced_wait=1
+    fi
+    reason=""
+  fi
+
   if [ -n "$reason" ]; then
     sweeps=$((sweeps + 1))
     say "sweeping $LABEL ($reason)"
     if sweep_label; then
-      say "done: nothing labelled $LABEL is running"
-      exit 0
+      if [ "$seen" -eq 1 ]; then
+        say "done: $LABEL is torn down"
+        exit 0
+      fi
+      say "NOTHING WATCHED: no instance ever carried $LABEL." \
+        "Check the label against the run, and check the account by hand."
+      exit 2
     fi
     if [ "$sweeps" -ge "$MAX_SWEEPS" ]; then
       say "GIVING UP after $sweeps sweeps: destroy $LABEL by hand"

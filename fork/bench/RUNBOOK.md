@@ -53,10 +53,18 @@ with the driver, and it stands down before teardown runs. On 2026-08-29 a
 leaving a 2xH100 billing at $4.04/hr with nothing watching it — no thread, no
 file, no id. `fork/bench/watchdog.sh` keys on the instance **label**, which the
 machine carries from the moment it is created, so it needs no file to exist and
-covers the rental from its first second. It sweeps that label when the driver
+watches the rental from its first second. It sweeps that label when the driver
 has been gone for the grace period (default five minutes) or when its cap
-(default 9900s) elapses, confirms the sweep against the provider, and writes
-`GIVING UP` to its log in the one case that still needs a human.
+(default 9900s) elapses, and confirms the sweep against the provider.
+
+**Read its last line, not its exit alone.** An empty sweep means nothing on its
+own — a label nobody ever carried sweeps exactly like a box that was torn down
+cleanly — so it polls for the label throughout and says which it saw:
+`done: <label> is torn down` (exit 0) means it watched a machine and that
+machine is gone; `GIVING UP` (exit 1) means it watched one and could not
+confirm; `NOTHING WATCHED` (exit 2) means no instance ever carried that label,
+so **nothing was guarded and nothing about the account was verified** — check
+the label you armed it with against the one the run used.
 
 ### The token trap
 
@@ -230,7 +238,10 @@ push fixes onto it:
 
    `$$` is this shell: close it and the box goes with it after the grace period,
    and the cap takes it regardless. Arm it before or after the rental — it reads
-   no file and needs no instance id, so there is no window it cannot cover.
+   no file and needs no instance id, so the window between creating a box and
+   recording its id is covered too. It cannot cover a label that never matches:
+   armed against the wrong name it guards nothing, waits out its cap rather
+   than declaring a teardown it never did, and exits 2 saying so.
 
 2. Push the tree and run one phase at a time:
 

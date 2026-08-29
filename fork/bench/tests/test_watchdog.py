@@ -63,10 +63,10 @@ def account(tmp_path):
     return state, binaries
 
 
-def _watch(account, driver_pid, cap="0", grace="0", poll="0", timeout=30):
+def _watch(account, driver_pid, cap="0", grace="0", poll="0", timeout=30, label=LABEL):
     state, binaries = account
     return subprocess.run(
-        ["bash", str(SCRIPT), LABEL, str(driver_pid), cap, grace, poll],
+        ["bash", str(SCRIPT), label, str(driver_pid), cap, grace, poll],
         capture_output=True,
         text=True,
         timeout=timeout,
@@ -111,3 +111,43 @@ def test_a_live_driver_keeps_its_box(account):
     with pytest.raises(subprocess.TimeoutExpired):
         _watch(account, os.getpid(), cap="600", grace="600", poll="1", timeout=3)
     assert LABEL in _labels(state)
+
+
+def test_a_label_nobody_carries_is_not_reported_as_a_teardown(account):
+    """An empty sweep means nothing on its own; a typo must not read as success.
+
+    The label is hand-substituted into the arming command, so getting it wrong
+    is a live risk — and a watchdog that answers "all clean" for a name it
+    never saw would leave the real box billing behind a green log.
+    """
+    state, _ = account
+    result = _watch(account, os.getpid(), cap="0", label="fork-bench-typo")
+    assert result.returncode == 2, result.stdout + result.stderr
+    assert "NOTHING WATCHED" in result.stdout
+    assert sorted(_labels(state)) == [LABEL, "someone-else"]
+
+
+def test_watching_a_box_and_watching_nothing_read_differently(account):
+    """The two outcomes must not share a line in the log."""
+    watched = _watch(account, os.getpid(), cap="0")
+    nothing = _watch(account, os.getpid(), cap="0", label="fork-bench-typo")
+    assert watched.returncode != nothing.returncode
+    assert watched.stdout.splitlines()[-1] != nothing.stdout.splitlines()[-1]
+
+
+def test_a_trigger_before_the_box_exists_keeps_watching(account):
+    """Armed before the rental, an early trigger has nothing to conclude from."""
+    state, _ = account
+    dead = subprocess.Popen(["true"])
+    dead.wait()
+    with pytest.raises(subprocess.TimeoutExpired):
+        _watch(
+            account,
+            dead.pid,
+            cap="600",
+            grace="0",
+            poll="1",
+            timeout=3,
+            label="fork-bench-not-yet",
+        )
+    assert sorted(_labels(state)) == [LABEL, "someone-else"]

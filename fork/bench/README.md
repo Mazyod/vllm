@@ -26,9 +26,10 @@ wait "$driver"
 ```
 
 The watchdog is the reaper that survives the driver being killed: it matches on
-the instance label, so it needs no file and covers the rental from its first
-second. [RUNBOOK.md](RUNBOOK.md) § The quick check says what it cost to learn
-that the in-process one is not enough.
+the instance label, so it needs no file and watches the rental from its first
+second. Read its last log line — it distinguishes a box it tore down from a
+label it never saw. [RUNBOOK.md](RUNBOOK.md) § The quick check says what it
+cost to learn that the in-process one is not enough.
 
 `--rent` spends money. Run the free checks below first — they prove the whole
 orchestration against fixtures and a mock, so nothing about it is discovered on
