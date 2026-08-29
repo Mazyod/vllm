@@ -28,7 +28,7 @@ uv run --no-project --with pytest --with httpx --with pyyaml -- \
 
 echo ">> dry-running the full gate against fixtures and the mock"
 uv run --no-project --with httpx --with pyyaml -- python -m fork.bench \
-  --tag v0.27.1 --out "$DRY_RUN_DIR" --dry-run
+  --tag v0.28.0 --out "$DRY_RUN_DIR" --dry-run
 test -f "$DRY_RUN_DIR/report.md"
 test -f "$DRY_RUN_DIR/baseline.json"
 

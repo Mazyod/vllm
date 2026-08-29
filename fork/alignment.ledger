@@ -35,3 +35,4 @@ del  .github/workflows/stale.yml                 permanent  upstream stale bot; 
 del  .github/workflows/notify-ci-authorized.yml  permanent  upstream CI-command bot (arrived v0.27.x); no upstream PR flow here
 del  .github/workflows/record-ci-approval.yml    permanent  upstream CI-command bot (arrived v0.27.x); no upstream PR flow here
 del  .github/workflows/run-ci-command.yml        permanent  upstream CI-command bot (arrived v0.27.x); no upstream PR flow here
+del  .github/workflows/buf.yml                   permanent  upstream protobuf schema publish (arrived v0.28.0); no Buf registry here

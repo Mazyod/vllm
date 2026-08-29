@@ -21,21 +21,12 @@
 # BASE_TAG MUST be a real upstream release tag (e.g. v0.26.0). The patch series
 # is generated against that tag; bumping BASE_TAG without refreshing the series
 # (fork/scripts/refresh-patches.sh) will fail the build by design.
-ARG BASE_TAG=v0.27.1
+ARG BASE_TAG=v0.28.0
 FROM vllm/vllm-openai:${BASE_TAG}
 
 # `pip show` reads metadata WITHOUT importing vllm, so this stays fast and needs
 # no GPU/CUDA at build time.
 RUN pip install --no-cache-dir "vllm[audio]==$(pip show vllm | awk '/^Version:/ {print $2}')"
-
-# The stock v0.27.1 image ships transformers 5.15.0 (released the day before
-# the image was built, inside vLLM's unbounded `transformers>=5.5.3`), whose
-# heterogeneous-config machinery makes Gemma-4 fail engine-config parsing with
-# AmbiguousGlobalPerLayerAttributeError — the 2026-08-11 gate run proved no
-# Gemma profile can even boot. 5.14.1 is the release v0.27.1 was developed
-# against. Drop this pin when the base image contains upstream 70b84f0bcb
-# (#49797, the vLLM-side fix): git merge-base --is-ancestor 70b84f0bcb <tag>
-RUN pip install --no-cache-dir "transformers==5.14.1"
 
 # Apply the fork patches LAST so they win even if the step above touched vLLM.
 COPY fork/patches /opt/fork/patches

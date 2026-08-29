@@ -140,3 +140,28 @@ def test_expect_boot_evidence_names_are_real_boot_evidence_fields():
     for profile in profiles.PROFILES:
         unknown = set(profile.expect_boot_evidence) - known
         assert not unknown, f"{profile.id} expects unknown evidence: {unknown}"
+
+
+def test_the_three_release_pins_name_one_tag():
+    """Dockerfile ARG, workflow DEFAULT_BASE_TAG and profiles.DEFAULT_TAG must
+    agree, or the gate validates a release nobody is shipping."""
+    import re
+
+    from fork.bench import profiles
+
+    docker = re.search(
+        r"^ARG BASE_TAG=(\S+)",
+        (REPO_ROOT / "fork/docker/Dockerfile.audio").read_text(encoding="utf-8"),
+        re.M,
+    ).group(1)
+    workflow = re.search(
+        r"^\s*DEFAULT_BASE_TAG:\s*(\S+)",
+        (REPO_ROOT / ".github/workflows/build-vllm-audio.yml").read_text(
+            encoding="utf-8"
+        ),
+        re.M,
+    ).group(1)
+    preflight = (REPO_ROOT / "fork/bench/preflight.sh").read_text(encoding="utf-8")
+
+    assert docker == workflow == profiles.DEFAULT_TAG
+    assert f"--tag {profiles.DEFAULT_TAG}" in preflight
