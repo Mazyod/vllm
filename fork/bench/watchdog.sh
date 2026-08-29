@@ -24,6 +24,7 @@
 #   1  it watched an instance and could not confirm it is gone - act on this
 #   2  no instance ever carried this label, so it guarded nothing - check the
 #      label; nothing was verified about the account
+#   3  it refused to arm, and never watched at all - the message says why
 #
 # Usage: fork/bench/watchdog.sh <label> <driver-pid> [cap-s] [grace-s] [poll-s]
 #
@@ -48,6 +49,19 @@ MAX_SWEEPS=5
 cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
 
 say() { echo "[$(date -Is)] watchdog: $*"; }
+
+# The pid an operator can capture is not always the process doing the work.
+# After `uv run ... &`, `$!` is uv's pid and the gate runs as its child -
+# measured 2026-08-29: killing uv left the gate running while `kill -0 $!`
+# already reported it gone, which is this watch's main trigger misfiring on a
+# live run. Matching a process group with that id as well keeps the watch on
+# the whole run. The plain pid test comes first because a shell without job
+# control leaves the job in the shell's group, where no group of that id
+# exists.
+driver_alive() {
+  kill -0 "$DRIVER_PID" 2>/dev/null && return 0
+  kill -0 -- "-$DRIVER_PID" 2>/dev/null
+}
 
 # Reuses the gate's own provider adapter rather than re-deriving the response
 # shapes. Reading a live instance as gone is the mistake that already cost a
@@ -80,6 +94,36 @@ sys.exit(1 if remaining else 0)
 '
 }
 
+# Everything below refuses rather than arming a watch that cannot work. A
+# watchdog that looks armed and never fires is worse than none: it is the
+# reason nobody checks.
+for seconds in "$CAP_S" "$GRACE_S" "$POLL_S"; do
+  case "$seconds" in
+  '' | *[!0-9]*)
+    say "REFUSING TO ARM: '$seconds' is not a whole number of seconds." \
+      "A cap that never compares true is a rental with no upper bound."
+    exit 3
+    ;;
+  esac
+done
+
+if ! driver_alive; then
+  say "REFUSING TO ARM: nothing is running as pid or process group" \
+    "$DRIVER_PID. Hand over the pid of the run to watch - against a dead" \
+    "one this fires immediately and destroys whatever it finds. To clean up" \
+    "after a run that has already died, use the sweep in RUNBOOK.md phase 1."
+  exit 3
+fi
+
+case "$(observe_label)" in
+'' | *[!0-9]*)
+  say "REFUSING TO ARM: cannot read the account." \
+    "python3 must import fork.bench and vastai must be on PATH and logged" \
+    "in, or this can never destroy anything it is watching for."
+  exit 3
+  ;;
+esac
+
 say "armed: label=$LABEL driver=$DRIVER_PID cap=${CAP_S}s grace=${GRACE_S}s"
 started=$(date +%s)
 driver_gone_at=0
@@ -107,7 +151,7 @@ while :; do
   if [ "$((now - started))" -ge "$CAP_S" ]; then
     capped=1
     reason="hard cap of ${CAP_S}s"
-  elif kill -0 "$DRIVER_PID" 2>/dev/null; then
+  elif driver_alive; then
     driver_gone_at=0
   else
     if [ "$driver_gone_at" -eq 0 ]; then

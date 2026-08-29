@@ -255,6 +255,31 @@ def test_a_gate_that_will_not_start_does_not_quote_the_token(tmp_path):
     assert "HF_TOKEN" in str(raised.value)
 
 
+def test_a_token_needing_quotes_is_redacted_too(tmp_path):
+    """Quoted into the command, the raw value never appears to be matched."""
+    with pytest.raises(RuntimeError) as raised:
+        _campaign(
+            FakeProvider(),
+            FakeShell("0", fail_on="start"),
+            tmp_path,
+            env={"HF_TOKEN": "hf_ab'cd"},
+        )
+    assert "hf_ab" not in str(raised.value)
+
+
+def test_an_interrupt_during_collection_does_not_hide_the_run_failure(tmp_path):
+    """The narrower catch let exactly this reintroduce the defect."""
+
+    class Interrupting(FakeShell):
+        def __call__(self, argv):
+            if argv[0] == "rsync" and ":" in argv[-2]:
+                raise KeyboardInterrupt
+            return super().__call__(argv)
+
+    with pytest.raises(RuntimeError, match="push failed"):
+        _campaign(FakeProvider(), Interrupting("0", fail_on="push"), tmp_path)
+
+
 def test_a_campaign_passes_the_boot_image_to_the_on_box_gate(tmp_path):
     shell = FakeShell("0")
     _campaign(FakeProvider(), shell, tmp_path)

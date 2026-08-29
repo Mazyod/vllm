@@ -39,6 +39,7 @@ If you only have time for one thing, run the shipping topology on a rented box:
 ```bash
 # No HF_TOKEN. The fleet's checkpoints are public; set one only for a gated
 # checkpoint, and see "The token trap" below before you do.
+set -m   # give the run its own process group; see below for why it matters
 uv run --no-project --with httpx --with pyyaml -- python -m fork.bench \
   --tag <TAG> --image <IMAGE> --out runs/<TAG> --phase 4 --rent &
 driver=$!
@@ -46,6 +47,15 @@ nohup fork/bench/watchdog.sh "fork-bench-<TAG>" "$driver" \
   >>/tmp/fork-bench-watchdog.log 2>&1 &
 wait "$driver"
 ```
+
+`$!` is **`uv`'s** pid, not the gate's: `uv run` starts the gate as a child and
+waits for it. Measured on 2026-08-29 — kill `uv` and the gate keeps running
+while `kill -0 $!` already reports it gone, which is the watchdog's main
+trigger firing on a live run. `set -m` puts the job in its own process group so
+the watchdog can match the whole run rather than its launcher; it is already
+the default in an interactive shell and matters when this is pasted into a
+script. The watchdog checks the pid *and* the group, so it is correct either
+way, and it refuses to arm at all against a pid that is not running.
 
 The watchdog is not optional. The reaper inside the driver is a thread: it dies
 with the driver, and it stands down before teardown runs. On 2026-08-29 a

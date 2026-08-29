@@ -17,6 +17,7 @@ disk with nothing left running:
 ```bash
 # No HF_TOKEN: the fleet's checkpoints are public, and setting one used to
 # change how the box was created. See RUNBOOK.md § The token trap.
+set -m   # $! is uv's pid, not the gate's; this makes it lead the run's group
 uv run --no-project --with httpx --with pyyaml -- python -m fork.bench \
   --tag v0.28.0 --image <IMAGE> --out runs/v0.28.0 --phase 4 --rent &
 driver=$!

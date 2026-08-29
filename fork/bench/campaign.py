@@ -10,6 +10,7 @@ where the gate fails or never finishes.
 """
 
 import json
+import shlex
 import time
 from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
@@ -120,7 +121,7 @@ def _record_rental(out_dir: Path, tag: str, rental, endpoint: Endpoint) -> None:
 def _start_gate(
     shell: Callable[[Sequence[str]], str],
     endpoint: Endpoint,
-    command: str,
+    build: Callable[[Mapping[str, str]], str],
     env: Mapping[str, str],
 ) -> None:
     """Start the gate without letting a failure quote the secrets it carries.
@@ -129,10 +130,16 @@ def _start_gate(
     reports a failure by quoting the whole argument vector. Unredacted that
     would put a model-hub token in a traceback and in whatever collected it.
 
+    The failed command is replaced with the same command built over placeholder
+    values rather than edited. A secret is quoted twice on its way into this
+    string - once into the export, once into `bash -lc` - so it does not appear
+    literally and cannot be reliably matched. Rebuilding it cannot miss.
+
     Args:
         shell: Injection point for ssh.
         endpoint: Machine to start the gate on.
-        command: The remote command, secrets included.
+        build: Builds the remote command from an environment mapping. Called
+            twice: once for real, once with the values replaced.
         env: Variables whose values must not survive into an error.
 
     Raises:
@@ -140,10 +147,13 @@ def _start_gate(
             replaced. The original is suppressed rather than chained, because a
             chained cause is printed too.
     """
+    command = build(env)
     try:
         shell(ssh_command(endpoint, command))
     except RuntimeError as error:
-        raise RuntimeError(_redacted(str(error), env)) from None
+        withheld = build(dict.fromkeys(env, "<redacted>"))
+        message = str(error).replace(command, withheld)
+        raise RuntimeError(_redacted(message, env)) from None
 
 
 def _redacted(message: str, env: Mapping[str, str]) -> str:
@@ -153,6 +163,11 @@ def _redacted(message: str, env: Mapping[str, str]) -> str:
     already been interpolated into a shell command by this point, so the name
     it arrived under is no longer next to it.
 
+    Both the raw value and its shell-quoted form are matched. A value needing
+    quotes does not appear literally in the command it was quoted into -
+    `hf_ab'cd` is written `'hf_ab'"'"'cd'` - so matching the raw form alone
+    leaves exactly the credentials that are unusual enough to be memorable.
+
     Args:
         message: Text that may quote a secret.
         env: Variables whose values are secret.
@@ -161,14 +176,16 @@ def _redacted(message: str, env: Mapping[str, str]) -> str:
         The message with each value replaced.
     """
     for value in env.values():
-        if value:
-            message = message.replace(value, "<redacted>")
+        if not value:
+            continue
+        for form in (shlex.quote(value), value):
+            message = message.replace(form, "<redacted>")
     return message
 
 
 def _collect(
     shell: Callable[[Sequence[str]], str], endpoint: Endpoint, out_dir: Path
-) -> Exception | None:
+) -> BaseException | None:
     """Bring the run directory home, reporting a failure rather than raising it.
 
     Collection runs on every path out of the run, including the ones already
@@ -181,17 +198,21 @@ def _collect(
         endpoint: Machine to fetch from.
         out_dir: Local destination.
 
+    It catches BaseException, matching the handler that captures the in-flight
+    exception: anything narrower and a Ctrl-C landing during the transfer would
+    replace the reason the run failed, which is the defect this exists to fix.
+
     Returns:
         The failure, or None when the results came back.
     """
     try:
         shell(collect_command(endpoint, WORKDIR, str(out_dir)))
-    except Exception as error:
+    except BaseException as error:
         return error
     return None
 
 
-def _record_uncollected(out_dir: Path, error: Exception) -> None:
+def _record_uncollected(out_dir: Path, error: BaseException) -> None:
     """Leave the collection failure where the run directory is read.
 
     Args:
@@ -290,14 +311,14 @@ def run_campaign(
             _start_gate(
                 shell,
                 endpoint,
-                start_gate_command(
+                lambda values: start_gate_command(
                     tag,
                     WORKDIR,
                     phases,
                     RUN_DIR,
                     models=profile_store.models_for(phases),
                     image=image,
-                    env=env or {},
+                    env=values,
                 ),
                 env or {},
             )
