@@ -52,34 +52,44 @@ the image build, so a drifted fork can neither merge nor ship.
 ```console
 $ fork/scripts/check-alignment.sh
 fork alignment
-  upstream base : v0.27.1 (6e448d0ea9)
+  upstream base : v0.28.0 (2cf0a6915c)
   ledger        : fork/alignment.ledger
 
-  added     92 files, declared                                   OK
-  deleted   9 files, declared                                    OK
+  added     N files, declared                                    OK
+  deleted   N files, declared                                    OK
   modified  0 upstream files                                     OK
 
   note: HEAD is N commits behind upstream/main — merge it on the next release sync
 
-Aligned: divergence from v0.27.1 is exactly what the ledger declares.
+Aligned: divergence from v0.28.0 is exactly what the ledger declares.
 ```
 
-That trailing `note:` is informational, not a failure: the fork deliberately
-sits on a release tag, so it is *always* behind `main`, and `N` moves every time
-you fetch. Only the three `added`/`deleted`/`modified` lines gate anything.
+The three `N`s are placeholders for counts that move: `added` and `deleted`
+change whenever the fork gains or drops a file, and the behind-count changes on
+every `git fetch` — the fork deliberately sits on a release tag, so it is
+*always* behind `main`. That makes the trailing `note:` informational, not a
+failure. Only the `added`/`deleted`/`modified` lines gate anything, and of those
+only the `modified` count is fixed at `0`: any other value is undeclared
+divergence.
 
 ## What we add
 
 **The patch series is currently empty.** `v0.27.1` absorbed everything the fork
 carried (0001 [#47953](https://github.com/vllm-project/vllm/pull/47953),
 0002 [#44993](https://github.com/vllm-project/vllm/pull/44993),
-0003 [#49302](https://github.com/vllm-project/vllm/pull/49302)); the image is
-the upstream release plus the audio extra plus **one dependency pin**:
+0003 [#49302](https://github.com/vllm-project/vllm/pull/49302)). It also
+carried a fourth divergence for one release: a dependency pin,
 `transformers==5.14.1` in
 [`fork/docker/Dockerfile.audio`](fork/docker/Dockerfile.audio), because the
-stock `v0.27.1` image ships transformers 5.15.0 and cannot boot Gemma-4 at
-all. The pin's exit criterion (upstream `70b84f0bcb`, #49797) is recorded
-beside it, per R3. The retirement record and the filing convention for the
+stock `v0.27.1` image shipped transformers 5.15.0 and could not boot Gemma-4
+at all. That pin's exit criterion (upstream `70b84f0bcb`, #49797) landed
+upstream and the pin was retired in `v0.28.0`. **The image now adds no
+Python package, no version pin, and no source patch beyond `vllm[audio]`
+itself** — the patch-application scaffolding (the OS `patch` package,
+`/opt/fork/patches`, `apply-patches.sh`) still ships in every build and
+stays inert while the series is empty; it is not gone, just idle. Notice
+if a package, pin, or patch shows up here that isn't `vllm[audio]`. The
+retirement record and the filing convention for the
 next patch live in [`fork/patches/README.md`](fork/patches/README.md) — every
 patch ships with full context (impact, root cause, a **reproduce case**,
 validation, ruled-out theories) as a note under `fork/patches/notes/` — a
@@ -113,7 +123,7 @@ Two things are deliberately decoupled:
   upstream `main`.
 - **The image** is built from a pinned release tag — `DEFAULT_BASE_TAG` in
   [`.github/workflows/build-vllm-audio.yml`](.github/workflows/build-vllm-audio.yml),
-  currently **`v0.27.1`**.
+  currently **`v0.28.0`**.
 
 The patch files in `fork/patches/` are generated against that exact tag, which
 is why they apply with no fuzz. If a patch ever fails to apply, the image build
@@ -190,7 +200,7 @@ git apply --check fork/patches/<patch-file>
 ## The image
 
 - **Registry / name:** `docker.io/openimage/vllm-openai-audio`
-- **Tags:** the upstream base tag (currently `v0.27.1`) and `latest`.
+- **Tags:** the upstream base tag (currently `v0.28.0`) and `latest`.
 - **Drop-in:** entrypoint is inherited from `vllm/vllm-openai`, so it replaces
   the stock image directly.
 - **CI:** [`build-vllm-audio.yml`](.github/workflows/build-vllm-audio.yml) —

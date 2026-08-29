@@ -46,7 +46,7 @@ env:
   IMAGE_NAME: docker.io/openimage/vllm-openai-audio
   # Deterministic upstream release the patch series is generated against.
   # Bump this in lockstep with fork/scripts/refresh-patches.sh on each release.
-  DEFAULT_BASE_TAG: v0.27.1
+  DEFAULT_BASE_TAG: v0.28.0
 
 jobs:
   # ---------------------------------------------------------------------------

@@ -596,7 +596,7 @@ def run_phase(
         image: Image reference.
         launcher: How to bring servers up.
         out_dir: Directory results are streamed into.
-        profile_store: Tag-selected profiles, defaulting to v0.27.1.
+        profile_store: Tag-selected profiles, defaulting to the current tag.
 
     Returns:
         Every probe result produced by this phase.
@@ -703,7 +703,7 @@ def classify_topology(
     Args:
         phases: Phases about to run.
         nvlink: Whether the GPUs share an NVLink, or None if unknown.
-        profile_store: Tag-selected profiles, defaulting to v0.27.1.
+        profile_store: Tag-selected profiles, defaulting to the current tag.
 
     Returns:
         One of TOPOLOGY_NATIVE, TOPOLOGY_NVLINK or TOPOLOGY_UNKNOWN.

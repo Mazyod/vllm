@@ -344,10 +344,18 @@ the per-profile engine identities derived from launch receipts rather than by
 re-reading the files. The path makes the configuration readable, and the
 launch-time digest makes later byte drift visible without rewriting history.
 
-**Exit non-zero** on any patch verdict of *broken* or *now harmful*, any
-full-series correctness probe failing, or any unexpected crash signature. A
-*retired* verdict exits zero and is reported as an action item — it is good news
-that requires a change to the series.
+**Exit non-zero** on any patch verdict of *broken* or *now harmful*, or any
+probe failing on a gating profile — or on a profile the fleet does not declare
+at all, which fails closed because a result nothing declares is a harness bug.
+A *retired* verdict exits zero and is reported as an action item — it is good
+news that requires a change to the series.
+
+An outcome that contradicts a profile's declared `expect` — a negative arm that
+served, or a profile that promised to serve and did not — is **recorded, not
+gated**. `report.md` names it in an *Expectation mismatches* section beside the
+patch verdicts, carrying the R5 detail behind the finding; the exit code is
+unchanged. A first sighting on a new release is a finding to investigate, not a
+reason to fail the release.
 
 ## Error handling
 

@@ -1,5 +1,5 @@
 {
-  "_comment": "Frozen non-engine metadata for the twelve v0.27.1 profiles benchmarked on 2026-08-11; independent fleet parity oracle.",
+  "_comment": "Intended v0.28.0 non-engine metadata for the twelve gate profiles. Carried forward byte-identical from the v0.27.1 metadata frozen on 2026-08-11, because the v0.28.0 fleet review deliberately concluded no non-engine metadata needed to change; independent fleet parity oracle.",
   "profiles": {
     "gemma-full": {
       "phase": 2,

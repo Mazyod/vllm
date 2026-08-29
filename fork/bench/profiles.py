@@ -14,7 +14,7 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BENCH_ROOT = Path(__file__).resolve().parent
 CONFIG_ROOT = BENCH_ROOT / "configs"
-DEFAULT_TAG = "v0.27.1"
+DEFAULT_TAG = "v0.28.0"
 
 # Patches with no leave-one-out arm, and why. test_static holds the series to
 # this: every patch in fork/patches/series is either exercised leave-one-out
@@ -260,7 +260,7 @@ QWEN_SERVED = DEFAULT_STORE.get("qwen-full").served_name
 
 
 def get(profile_id: str) -> Profile:
-    """Return a profile from the default v0.27.1 store."""
+    """Return a profile from the default store (tag: DEFAULT_TAG)."""
     return DEFAULT_STORE.get(profile_id)
 
 

@@ -15,7 +15,7 @@ from fork.bench import profiles
 from fork.bench.runner import build_serve_command
 
 CONFIG_ROOT = profiles.REPO_ROOT / "fork" / "bench" / "configs"
-RELEASE = "v0.27.1"
+RELEASE = profiles.DEFAULT_TAG
 RELEASE_DIR = CONFIG_ROOT / RELEASE
 FLEET_PATH = RELEASE_DIR / "fleet.yaml"
 ENGINE_DIR = RELEASE_DIR / "engine"

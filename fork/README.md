@@ -69,8 +69,8 @@ against a new tag with `scripts/refresh-patches.sh <tag>`.
 ```bash
 # from the repo root
 docker build -f fork/docker/Dockerfile.audio \
-  --build-arg BASE_TAG=v0.27.1 \
-  -t openimage/vllm-openai-audio:v0.27.1 .
+  --build-arg BASE_TAG=v0.28.0 \
+  -t openimage/vllm-openai-audio:v0.28.0 .
 ```
 
 `BASE_TAG` defaults to the pin in `docker/Dockerfile.audio`, so passing it is

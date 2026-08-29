@@ -133,7 +133,7 @@ def compare_controls(
 
     Args:
         perf: Profile id to measurements.
-        profile_store: Tag-selected profiles, defaulting to v0.27.1.
+        profile_store: Tag-selected profiles, defaulting to the current tag.
 
     Returns:
         Tuples of control id, baseline id, metric, baseline value, control
@@ -173,6 +173,72 @@ def compare_controls(
     return rows
 
 
+def expectation_mismatches(
+    results: Sequence[ProbeResult],
+    profile_store: ProfileStore | None = None,
+) -> list[tuple[str, str, str, str]]:
+    """Find profiles whose boot outcome contradicts what fleet.yaml declared.
+
+    Both directions are findings. A negative arm that stops crashing renders as
+    an ordinary R5 pass, indistinguishable from a healthy profile, so the
+    workaround the arm exists to justify looks justified forever. A non-gating
+    profile that declared it would serve and then failed renders as "fail (as
+    expected)" in the probes table, when nothing about that failure was
+    expected.
+
+    R5 passing is unambiguous: the engine served, logged, and left no crash
+    signature. R5 failing is not — it also fires on an empty log, which is a
+    harness failure rather than a crash — so a failure is reported as the
+    receipt it is, with R5's own detail beside it rather than a guessed cause.
+
+    That asymmetry is why a declared boot_crash needs more than a failed R5 to
+    count as confirmed. Both negative arms carry R5 and no other probe, so
+    accepting any R5 failure as the crash would let a hang or an empty log
+    render as "fail (as expected)" with no mismatch row and a zero exit, and
+    the workaround the arm exists to justify would look justified off a
+    measurement that never happened. The crash signature the receipt carries is
+    the evidence; without it the row says so.
+
+    A profile with no R5 result is left out. Nothing was observed, so nothing
+    is claimed.
+
+    Args:
+        results: Every probe result from the run.
+        profile_store: Tag-selected profiles, defaulting to the current tag.
+
+    Returns:
+        Tuples of profile id, declared expectation, observed outcome, and the
+        R5 detail behind it, for the profiles where the two disagree.
+    """
+    store = profile_store or profiles.DEFAULT_STORE
+    receipts: dict[str, ProbeResult] = {}
+    for result in results:
+        if result.probe_id != "R5":
+            continue
+        kept = receipts.get(result.profile_id)
+        if kept is None or (kept.passed and not result.passed):
+            receipts[result.profile_id] = result
+
+    rows: list[tuple[str, str, str, str]] = []
+    for profile_id, receipt in sorted(receipts.items()):
+        try:
+            expected = store.get(profile_id).expect
+        except KeyError:
+            continue
+        if receipt.passed:
+            if expected == "serves":
+                continue
+            observed = "served"
+        elif expected == "boot_crash":
+            if receipt.data.get("crash_signature"):
+                continue
+            observed = "R5 failed (no crash signature)"
+        else:
+            observed = "R5 failed"
+        rows.append((profile_id, expected, observed, receipt.detail))
+    return rows
+
+
 def _gates(profile_id: str, profile_store: ProfileStore | None = None) -> bool:
     """Report whether a failure on this profile should fail the gate.
 
@@ -201,7 +267,7 @@ def exit_code(
     Args:
         results: Every probe result from the run.
         verdicts: Patch id to verdict.
-        profile_store: Tag-selected profiles, defaulting to v0.27.1.
+        profile_store: Tag-selected profiles, defaulting to the current tag.
 
     Returns:
         0 when the gate passed, 1 otherwise.
@@ -232,7 +298,7 @@ def build_report(
         verdicts: Patch id to verdict.
         perf: Profile id to performance measurements.
         config_identity: Fleet and engine paths plus SHA-256 identities.
-        profile_store: Tag-selected profiles, defaulting to v0.27.1.
+        profile_store: Tag-selected profiles, defaulting to the current tag.
 
     Returns:
         The report body.
@@ -269,6 +335,24 @@ def build_report(
         ]
         for patch, verdict in sorted(verdicts.items()):
             lines.append(f"| {patch} | **{verdict}** | {_ACTIONS[verdict]} |")
+        lines.append("")
+
+    mismatches = expectation_mismatches(results, profile_store)
+    if mismatches:
+        lines += [
+            "## Expectation mismatches (recorded, not gated)",
+            "",
+            "fleet.yaml declared one outcome and the run observed the other. A",
+            "negative arm that stopped crashing may mean the workaround it exists",
+            "to justify is retirable. A profile that promised to serve and did not",
+            "was never an expected failure, whatever the probes table calls a",
+            "non-gating one. Investigate before trusting either row.",
+            "",
+            "| profile | declared | observed | R5 detail |",
+            "|---|---|---|---|",
+        ]
+        for profile_id, expected, observed, detail in mismatches:
+            lines.append(f"| {profile_id} | {expected} | {observed} | {detail} |")
         lines.append("")
 
     lines += [
