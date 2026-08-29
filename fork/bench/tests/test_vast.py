@@ -15,12 +15,7 @@ import pytest
 from fork.bench.provision import InstanceSpec, Requirements
 from fork.bench.vast import VastCli
 
-SPEC = InstanceSpec(
-    image="img:tag",
-    disk_gb=200.0,
-    label="fork-bench-v0.27.0",
-    env={"HF_TOKEN": "secret"},
-)
+SPEC = InstanceSpec(image="img:tag", disk_gb=200.0, label="fork-bench-v0.27.0")
 
 # Captured from a real search on 2026-07-26. The field names are the payload's,
 # not the query grammar's: they differ, and guessing cost nothing here only
@@ -165,10 +160,19 @@ def test_create_labels_the_instance_so_a_stray_can_be_found():
     assert SPEC.label in cli.last
 
 
-def test_create_passes_env_in_the_providers_own_form():
+def test_create_never_hands_the_provider_an_environment():
+    """`--env` is one docker-run string, and it carries the port mappings.
+
+    The client's help calls it "env variables and port mapping options", so
+    passing only `-e` entries replaces the default and drops `-p 22:22`. That
+    hazard is documented rather than something this harness observed, and the
+    flag buys nothing: whatever the run needs is exported over ssh instead. So
+    this argv stays env-free.
+    """
     cli = FakeCli([json.dumps({"success": True, "new_contract": 100})])
     VastCli(cli).create(_offer(), SPEC)
-    assert "-e HF_TOKEN=secret" in cli.last
+    assert "--env" not in cli.last
+    assert "-e" not in cli.last
 
 
 def test_create_returns_the_contract_and_its_scoped_key():
@@ -267,7 +271,7 @@ def test_ssh_endpoint_parses_the_url_the_provider_prints():
     assert VastCli(cli).ssh_endpoint(100) == ("ssh5.example.net", 41234)
 
 
-def test_ssh_endpoint_raises_on_an_unparseable_answer():
+def test_ssh_endpoint_raises_on_an_unparsable_answer():
     cli = FakeCli(["error: instance not found"])
     with pytest.raises(RuntimeError):
         VastCli(cli).ssh_endpoint(100)

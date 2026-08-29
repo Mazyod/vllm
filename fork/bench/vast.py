@@ -155,6 +155,24 @@ class VastCli:
         No bid price is ever passed. An interruptible rental can be outbid
         part-way through, which truncates the run and voids its numbers.
 
+        **No `--env` is ever passed, and none ever should be.** The client's
+        own help calls it "env variables **and port mapping options**", and its
+        example is `--env '-e TZ=PDT -e XNAME=XX4 -p 22:22 -p 8080:8080'`: the
+        flag is one docker-run argument string that replaces the default rather
+        than adding to it, so passing only `-e` entries drops `-p 22:22` and
+        the instance runs with no published SSH port, while still reporting
+        `running`.
+
+        That hazard is documented, not observed. It is **not** the failure this
+        harness actually hit: every preserved driver log shows
+        `Permission denied (publickey)` — sshd answering and refusing the key —
+        including a run that passed no `--env` at all. A dropped port mapping
+        would refuse the connection instead. The two are still unexplained and
+        unfixed apart; see LESSONS.md. This flag is simply never passed, which
+        removes one documented way to lose a box and costs nothing: anything
+        the run needs in its environment is exported over ssh by
+        `start_gate_command`.
+
         Args:
             offer: Offer to rent.
             spec: What to put on the machine.
@@ -181,12 +199,6 @@ class VastCli:
             "--cancel-unavail",
             "--raw",
         ]
-        if spec.env:
-            argv += [
-                "--env",
-                " ".join(f"-e {key}={value}" for key, value in spec.env.items()),
-            ]
-
         parsed = json.loads(self._run(argv).strip() or "{}")
         if not parsed.get("success"):
             raise RuntimeError(

@@ -8,6 +8,11 @@ extend this harness will be tempted to make the same assumptions.
 The pattern is one sentence long: **anything not exercised against the real
 thing is a guess, and guesses about external systems are usually wrong.**
 
+<!-- markdownlint-disable MD029 -->
+<!-- The numbered rules below are one continuing sequence, cited by number
+     from code, commits and the runbook. They are identifiers, not list
+     ordinals, so the auto-fix must not renumber them. -->
+
 ## The expensive ones
 
 ### A live instance read as "gone", and teardown believed it
@@ -207,3 +212,88 @@ hopes for. Preflight proves orchestration, not aim.
 14. **A configuration that is not the file the engine read is a claim, not a
     record.** Launch from the committed file and carry its digest into the
     result.
+
+## The root cause that was named twice and held neither time (2026-08-29)
+
+### What was actually observed
+
+Seven ssh probes went out across two hosts and both endpoint modes. One reached
+a shell. Every preserved driver log — including a run with `HF_TOKEN` unset and
+therefore no `--env` anywhere — records the same signature:
+
+```text
+Permission denied (publickey).
+```
+
+Not one records a refused connection or a timeout. sshd was up on every box and
+refused the account key. **That failure is unexplained and unfixed.** It is the
+only thing the day established, and the single success is as likely to be noise
+as signal.
+
+### The first diagnosis: waiting longer
+
+The first fix was a bigger `wait_for_ssh` budget, because `Permission denied`
+after a fresh create reads like key propagation lag. It is a reasonable
+hypothesis and it was wrong: no budget outlasts a key that is not there. The
+retry is still correct for genuine lag and is kept, but it never addressed this.
+
+### The second diagnosis: `--env`
+
+`vast.py` passed `--env "-e HF_TOKEN=..."` to the create call whenever
+`spec.env` was non-empty, which was exactly when the operator had `HF_TOKEN`
+exported — which this runbook's own canonical command instructed. And `--env`
+is genuinely a trap: the client's help calls it "env variables **and port
+mapping options**", with the example
+`--env '-e TZ=PDT -e XNAME=XX4 -p 22:22 -p 8080:8080'`. It is one docker-run
+argument string that replaces the default, so passing only `-e` entries drops
+`-p 22:22` and the box runs with no published SSH port.
+
+An A/B appeared to confirm it — one probe without `--env` connected, one with
+it did not — and it was written up as the root cause. It is not. The logs
+disagree in the way that settles it: a dropped port mapping cannot produce
+`Permission denied (publickey)`, because there would be no sshd to answer. Both
+arms had failed for the same unexplained reason and the one success was noise;
+the A/B was confounded and never had the power to indict anything.
+
+What survives is worth keeping on its own terms. `--env` is a documented way to
+lose a box, the harness no longer passes it, `InstanceSpec` no longer has an
+`env` field for anyone to reach for, and the token travels over ssh instead —
+out of instance creation entirely, and outside the group whose output becomes
+`gate.log`. That is one hazard closed on documented grounds. It is not a
+diagnosis.
+
+### What the discriminator is
+
+- **Connection refused, or a timeout, with the instance `running`** — nothing
+  listening on the published port. The `--env` hazard looks like this.
+- **`Permission denied (publickey)`** — sshd is up and rejecting the key. This
+  is the open failure, and every observed one was this.
+
+Reading the signature first is the whole difference between the two, and it is
+what neither diagnosis did.
+
+### The amplifier
+
+The one gate that had ever worked, v0.27.1 on 2026-08-11, ran with `HF_TOKEN`
+unset — its `gate.log` still records the hub "sending unauthenticated
+requests". So the green run had been exercising the no-`--env` path while the
+documented procedure chose the other one, and nobody had evidence about the
+path the runbook actually told operators to take.
+
+15. **A creation flag that replaces rather than adds is a trap, and the docs
+    can be the thing that springs it.** Before passing an option to a provider,
+    read what the option is documented to contain — this one carried the port
+    mappings — and A/B the option itself, not the thing being configured with
+    it.
+16. **A run that passes because a variable happened to be unset has not been
+    tested.** When a documented step changes which code path executes, the
+    undocumented path is the one nobody has evidence about.
+17. **Name the signature before naming the cause.** Two root causes were
+    declared for this failure — propagation lag, then `--env` — and the error
+    text disproved both: `Permission denied (publickey)` is sshd answering, so
+    neither a longer wait nor a missing port mapping could produce it. Each was
+    reached by reasoning from a mechanism that *could* explain a symptom nobody
+    had read closely, and the second was confirmed by an A/B of two runs, which
+    is a sample that cannot distinguish a cause from noise. A fix that stands
+    on documented behaviour is worth shipping; it is still not a diagnosis, and
+    an investigation stays open until the observed signature is accounted for.

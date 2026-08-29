@@ -10,13 +10,29 @@ paying for a machine and learning nothing from it.
 
 import shlex
 import time
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
+from types import MappingProxyType
 
 from fork.bench.proc import run_argv
 
 DONE_MARKER = "gate.exit"
 GATE_LOG = "gate.log"
+
+# How long a rented box gets to accept its first login.
+#
+# Five minutes was tried first and was not enough: on 2026-08-29 an instance
+# refused for the whole budget while a hand-run login reached the same host
+# ninety seconds earlier with the same key. Fifteen is three times that, the
+# same size as the margin the run already reserves for teardown, and still
+# leaves the bulk of a ninety-minute rental — of which the boot wait can
+# already have spent twenty-five.
+#
+# It is a ceiling, not a schedule: waiting is paid for by the second, and a box
+# that will never receive its key costs the whole budget before saying so. Ship
+# the default, raise it deliberately with --ssh-deadline-minutes when a venue
+# is known to be slow.
+DEFAULT_SSH_DEADLINE_S = 15 * 60
 
 _SSH_OPTIONS = (
     "-o",
@@ -167,6 +183,7 @@ def start_gate_command(
     out_name: str = "run",
     models: Sequence[str] = (),
     image: str = "",
+    env: Mapping[str, str] = MappingProxyType({}),
 ) -> str:
     """Build the shell command that starts the gate and lets go of it.
 
@@ -175,6 +192,12 @@ def start_gate_command(
 
     The local launcher is not a choice here. A rented instance boots from the
     engine image itself and has no daemon to hand a container to.
+
+    This is also the only way anything reaches the box's environment. The
+    provider's create call takes one and it cannot be used: that argument also
+    declares the port mappings, so supplying it drops the published SSH port
+    (see `VastCli.create`). The exports sit outside the redirected group, so
+    nothing about them can land in the gate log even if a shell is tracing.
 
     Args:
         tag: Upstream release tag under test.
@@ -185,6 +208,9 @@ def start_gate_command(
             fails stops there rather than serving a model that never arrived.
         image: Image reference the rented box booted, recorded in receipts.
             The local launcher does not use it to start the engine.
+        env: Variables to export for the run, such as a model-hub token for a
+            gated checkpoint. Values travel in this command string, so this is
+            for a credential the run needs, not one it merely has.
 
     Returns:
         A single shell command.
@@ -201,12 +227,68 @@ def start_gate_command(
     )
     staging = stage_command(models)
     work = f"{staging} && {gate}" if staging else gate
+    exports = "".join(
+        f"export {key}={shlex.quote(value)}; " for key, value in env.items()
+    )
     body = (
         f"cd {shlex.quote(workdir)} && "
         f"rm -f {DONE_MARKER} && "
-        f"({_redirected(work, GATE_LOG)}; echo $? > {DONE_MARKER})"
+        f"({exports}{_redirected(work, GATE_LOG)}; echo $? > {DONE_MARKER})"
     )
     return f"nohup bash -lc {shlex.quote(body)} > /dev/null 2>&1 &"
+
+
+def wait_for_ssh(
+    endpoint: Endpoint,
+    deadline_s: float = DEFAULT_SSH_DEADLINE_S,
+    poll_s: float = 10.0,
+    run: Callable[[Sequence[str]], str] = run_argv,
+    clock: Callable[[], float] = time.monotonic,
+    sleep: Callable[[float], None] = time.sleep,
+) -> None:
+    """Poll the machine until it accepts a login.
+
+    "Running" is the provider's word for the container, not for the daemon
+    behind port 22: sshd may still be starting and the run's key may not have
+    reached the host yet. The provider's own banner says to try again after a
+    few seconds. Without this the very first command can abort a campaign whose
+    meter is already running, which is the most expensive way to fail.
+
+    Args:
+        endpoint: Machine to reach.
+        deadline_s: Seconds to keep trying.
+        poll_s: Delay between attempts.
+        run: Injection point for the shell.
+        clock: Injection point for the deadline.
+        sleep: Injection point for the delay.
+
+    Raises:
+        TimeoutError: If no attempt succeeded. The message carries how many
+            attempts were made, how far apart, how long that took, and what the
+            last one said — sixty refusals over fifteen minutes is a box that
+            never got its key, two is a budget that was too short for the
+            venue. A box that never answers is a box to give back, not one to
+            keep pushing a tree onto.
+    """
+    probe = ssh_command(endpoint, "true")
+    started = clock()
+    end = started + deadline_s
+    attempts = 0
+    while True:
+        attempts += 1
+        try:
+            run(probe)
+            return
+        except RuntimeError as error:
+            refusal = str(error)
+        now = clock()
+        if now >= end:
+            raise TimeoutError(
+                f"{endpoint.target} did not accept ssh: {attempts} attempts "
+                f"every {poll_s:g}s over {now - started:g}s "
+                f"(budget {deadline_s:g}s); last attempt: {refusal}"
+            )
+        sleep(poll_s)
 
 
 def wait_for_gate(

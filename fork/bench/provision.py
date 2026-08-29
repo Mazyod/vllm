@@ -184,20 +184,24 @@ def select_offer(offers: Sequence[Offer], requirements: Requirements) -> Offer:
 class InstanceSpec:
     """What to put on the rented machine.
 
+    There is deliberately no environment here. The provider's create call takes
+    one, and that argument is a single docker-run string carrying port mappings
+    as well as variables: supplying it replaces the default, so a spec that
+    named only variables would drop `-p 22:22` and leave the box running with
+    no published SSH port. What the run needs is exported over ssh instead; see
+    `VastCli.create` for the documented behaviour.
+
     Attributes:
         image: Image the instance boots.
         disk_gb: Disk to request.
         label: Run label. Every instance this run creates carries it, which is
             what lets a stray be identified and destroyed without touching
             anyone else's work.
-        env: Environment handed to the instance. Values reach the provider on a
-            command line, so this is not a place for a long-lived credential.
     """
 
     image: str
     disk_gb: float
     label: str
-    env: Mapping[str, str] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -426,6 +430,7 @@ def rent(
     boot_deadline_s: float = DEFAULT_BOOT_DEADLINE_S,
     poll_s: float = DEFAULT_POLL_S,
     settle_s: float = DEFAULT_SETTLE_S,
+    on_create: Callable[[int], None] | None = None,
 ) -> Iterator[Rental]:
     """Rent a machine for the duration of the block, then give it back.
 
@@ -443,6 +448,11 @@ def rent(
         boot_deadline_s: Seconds to wait for the instance to come up.
         poll_s: Delay between status reads.
         settle_s: Delay before retrying a destroy.
+        on_create: Told the instance id as soon as the provider hands it over,
+            before the boot is waited on. The reaper dies with this process, so
+            the caller uses this to leave a record something outside it can act
+            on — and the boot is the longest stretch where there is a machine
+            billing and no such record.
 
     Yields:
         The live rental.
@@ -466,6 +476,8 @@ def rent(
     reaper = Reaper(provider, new.id, cap_seconds)
     try:
         reaper.arm()
+        if on_create is not None:
+            on_create(new.id)
         instance = wait_until_running(provider, new.id, boot_deadline_s, poll_s)
         yield Rental(offer=offer, instance=instance, label=spec.label, key=new.key)
     finally:
