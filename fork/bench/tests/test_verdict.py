@@ -17,6 +17,7 @@ from fork.bench.verdict import (
     compare_controls,
     derive_patch_verdicts,
     exit_code,
+    expectation_mismatches,
     patch_verdict,
 )
 
@@ -154,6 +155,77 @@ def test_report_distinguishes_a_diagnostic_failure_from_a_gating_one():
     )
     assert "fail (as expected)" in report
     assert "**FAIL**" not in report
+
+
+def test_a_negative_arm_that_stopped_crashing_is_reported():
+    """N3 served on v0.27.1 and R5 rendered it as an ordinary pass. A negative
+    arm that stops failing means its workaround may be retirable, which is a
+    finding worth seeing rather than one to lose."""
+    results = [ProbeResult("R5", "qwen-tp2-noflags", True, "served=True")]
+    assert expectation_mismatches(results) == [
+        ("qwen-tp2-noflags", "boot_crash", "served")
+    ]
+
+
+def test_a_negative_arm_that_crashed_as_declared_is_not_a_mismatch():
+    results = [ProbeResult("R5", "qwen-tp2-noflags", False, "served=False")]
+    assert expectation_mismatches(results) == []
+
+
+def test_a_profile_that_served_as_declared_is_not_a_mismatch():
+    results = [ProbeResult("R5", "gemma-full", True, "served=True")]
+    assert expectation_mismatches(results) == []
+
+
+def test_a_profile_that_promised_to_serve_and_did_not_is_a_mismatch():
+    """N2 is not gating, so its failure renders as "fail (as expected)" — but
+    it declared serves, so the failure was not expected at all."""
+    results = [ProbeResult("R5", "gemma-v2-spec-kv-dtype", False, "served=False")]
+    assert expectation_mismatches(results) == [
+        ("gemma-v2-spec-kv-dtype", "serves", "did not serve")
+    ]
+
+
+def test_a_profile_with_no_boot_receipt_claims_nothing():
+    """Without R5 the outcome was never observed; guessing it would invent a
+    finding out of a profile the run never reached."""
+    results = [ProbeResult("B3", "qwen-tp2-noflags", True, "ok")]
+    assert expectation_mismatches(results) == []
+
+
+def test_an_undeclared_profile_makes_no_expectation_claim():
+    """exit_code already gates on it; there is no declared expect to contradict."""
+    results = [ProbeResult("R5", "not-a-declared-profile", True, "served=True")]
+    assert expectation_mismatches(results) == []
+
+
+def test_a_negative_arm_that_serves_does_not_fail_the_gate():
+    """A first sighting on a new release informs; it does not block."""
+    results = [ProbeResult("R5", "qwen-tp2-noflags", True, "served=True")]
+    assert exit_code(results, {}) == 0
+
+
+def test_report_names_a_negative_arm_that_stopped_crashing():
+    report = build_report(
+        "v0.28.0",
+        {},
+        [ProbeResult("R5", "qwen-tp2-noflags", True, "served=True")],
+        {},
+        {},
+    )
+    assert "Expectation mismatches" in report
+    assert "| qwen-tp2-noflags | boot_crash | served |" in report
+
+
+def test_report_omits_the_mismatch_section_when_every_prediction_held():
+    report = build_report(
+        "v0.28.0",
+        {},
+        [ProbeResult("R5", "qwen-tp2-noflags", False, "served=False")],
+        {},
+        {},
+    )
+    assert "Expectation mismatches" not in report
 
 
 def test_controls_are_differenced_against_the_profile_they_control_for():

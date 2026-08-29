@@ -173,6 +173,49 @@ def compare_controls(
     return rows
 
 
+def expectation_mismatches(
+    results: Sequence[ProbeResult],
+    profile_store: ProfileStore | None = None,
+) -> list[tuple[str, str, str]]:
+    """Find profiles whose boot outcome contradicts what fleet.yaml declared.
+
+    A negative arm that stops crashing renders as an ordinary R5 pass, which is
+    indistinguishable from a healthy profile — so the workaround the arm exists
+    to justify looks justified forever. R5 carries the whole answer: it passes
+    only when the engine served, logged, and left no crash signature.
+
+    A profile with no R5 result is left out. Nothing was observed, so nothing
+    is claimed.
+
+    Args:
+        results: Every probe result from the run.
+        profile_store: Tag-selected profiles, defaulting to the current tag.
+
+    Returns:
+        Tuples of profile id, declared expectation, and observed outcome, for
+        the profiles where the two disagree.
+    """
+    store = profile_store or profiles.DEFAULT_STORE
+    served_by_profile: dict[str, bool] = {}
+    for result in results:
+        if result.probe_id != "R5":
+            continue
+        served_by_profile[result.profile_id] = (
+            served_by_profile.get(result.profile_id, True) and result.passed
+        )
+
+    rows: list[tuple[str, str, str]] = []
+    for profile_id, served in sorted(served_by_profile.items()):
+        try:
+            expected = store.get(profile_id).expect
+        except KeyError:
+            continue
+        if expected == ("serves" if served else "boot_crash"):
+            continue
+        rows.append((profile_id, expected, "served" if served else "did not serve"))
+    return rows
+
+
 def _gates(profile_id: str, profile_store: ProfileStore | None = None) -> bool:
     """Report whether a failure on this profile should fail the gate.
 
@@ -269,6 +312,22 @@ def build_report(
         ]
         for patch, verdict in sorted(verdicts.items()):
             lines.append(f"| {patch} | **{verdict}** | {_ACTIONS[verdict]} |")
+        lines.append("")
+
+    mismatches = expectation_mismatches(results, profile_store)
+    if mismatches:
+        lines += [
+            "## Expectation mismatches (recorded, not gated)",
+            "",
+            "fleet.yaml declared one outcome and the run observed the other. A",
+            "negative arm that stopped crashing may mean the workaround it",
+            "exists to justify is retirable; investigate before trusting it.",
+            "",
+            "| profile | declared | observed |",
+            "|---|---|---|",
+        ]
+        for profile_id, expected, observed in mismatches:
+            lines.append(f"| {profile_id} | {expected} | {observed} |")
         lines.append("")
 
     lines += [
