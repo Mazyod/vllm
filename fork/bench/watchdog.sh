@@ -28,10 +28,20 @@
 #
 # Usage: fork/bench/watchdog.sh <label> <driver-pid> [cap-s] [grace-s] [poll-s]
 #
+# <driver-pid> is the run whose death should end the rental. Take care getting
+# it: after `uv run ... &`, `$!` is *uv's* pid, and uv runs the gate as a child
+# that outlives it. `set -m` puts the job in its own process group so this can
+# watch the whole run; it is the default in an interactive shell and matters
+# when the recipe is pasted into a script.
+#
 # Arm it detached, so it outlives the shell that started it:
 #
-#   nohup fork/bench/watchdog.sh fork-bench-<TAG> "$DRIVER" \
+#   set -m
+#   uv run ... -m fork.bench --tag <TAG> ... --rent &
+#   driver=$!
+#   nohup fork/bench/watchdog.sh fork-bench-<TAG> "$driver" \
 #     >>/tmp/fork-bench-watchdog.log 2>&1 &
+#   wait "$driver"
 #
 # No `set -e`: one failed provider call must cost a retry, not the watchdog.
 set -uo pipefail

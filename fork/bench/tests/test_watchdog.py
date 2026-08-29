@@ -210,3 +210,14 @@ def test_it_refuses_a_cap_it_could_never_compare(account):
     result = _watch(account, os.getpid(), cap="9000s", timeout=10)
     assert result.returncode == 3, result.stdout + result.stderr
     assert "not a whole number" in result.stdout
+
+
+def test_a_refused_arm_does_not_read_like_a_healthy_watch(account):
+    """A watch that can never fire must be told apart from one that worked."""
+    dead = subprocess.Popen(["true"])
+    dead.wait()
+    refused = _watch(account, dead.pid, cap="600")
+    healthy = _watch(account, os.getpid(), cap="0")
+    assert refused.returncode != healthy.returncode
+    assert refused.stdout.splitlines()[-1] != healthy.stdout.splitlines()[-1]
+    assert "armed:" not in refused.stdout
