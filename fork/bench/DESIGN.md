@@ -345,9 +345,10 @@ re-reading the files. The path makes the configuration readable, and the
 launch-time digest makes later byte drift visible without rewriting history.
 
 **Exit non-zero** on any patch verdict of *broken* or *now harmful*, or any
-probe failing on a gating profile. A *retired* verdict exits zero and is
-reported as an action item — it is good news that requires a change to the
-series.
+probe failing on a gating profile — or on a profile the fleet does not declare
+at all, which fails closed because a result nothing declares is a harness bug.
+A *retired* verdict exits zero and is reported as an action item — it is good
+news that requires a change to the series.
 
 An outcome that contradicts a profile's declared `expect` — a negative arm that
 served, or a profile that promised to serve and did not — is **recorded, not

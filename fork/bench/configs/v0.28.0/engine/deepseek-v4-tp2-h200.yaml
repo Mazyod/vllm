@@ -1,5 +1,8 @@
 # venue: manual; validated on a 2xH200 SXM pair on 2026-08-11 (v0.27.1).
-# UNVALIDATED on v0.28.0 pending re-validation (Task 9).
+# UNVALIDATED on v0.28.0: no run on this release has launched from this file.
+# The venue is manual and not in the gate fleet, so nothing else will --
+# re-validated only when a 2xH200 SXM launch boots and serves from it on
+# v0.28.0 and its numbers are re-measured against the 2026-08-11 run.
 # The measured DeepSeek-V4 Flash checkpoint.
 model: deepseek-ai/DeepSeek-V4-Flash-0731
 # The on-prem server spans the two H200 GPUs.

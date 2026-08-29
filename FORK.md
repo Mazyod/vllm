@@ -52,21 +52,25 @@ the image build, so a drifted fork can neither merge nor ship.
 ```console
 $ fork/scripts/check-alignment.sh
 fork alignment
-  upstream base : v0.27.1 (6e448d0ea9)
+  upstream base : v0.28.0 (2cf0a6915c)
   ledger        : fork/alignment.ledger
 
-  added     92 files, declared                                   OK
-  deleted   9 files, declared                                    OK
+  added     N files, declared                                    OK
+  deleted   N files, declared                                    OK
   modified  0 upstream files                                     OK
 
   note: HEAD is N commits behind upstream/main — merge it on the next release sync
 
-Aligned: divergence from v0.27.1 is exactly what the ledger declares.
+Aligned: divergence from v0.28.0 is exactly what the ledger declares.
 ```
 
-That trailing `note:` is informational, not a failure: the fork deliberately
-sits on a release tag, so it is *always* behind `main`, and `N` moves every time
-you fetch. Only the three `added`/`deleted`/`modified` lines gate anything.
+The three `N`s are placeholders for counts that move: `added` and `deleted`
+change whenever the fork gains or drops a file, and the behind-count changes on
+every `git fetch` — the fork deliberately sits on a release tag, so it is
+*always* behind `main`. That makes the trailing `note:` informational, not a
+failure. Only the `added`/`deleted`/`modified` lines gate anything, and of those
+only the `modified` count is fixed at `0`: any other value is undeclared
+divergence.
 
 ## What we add
 
