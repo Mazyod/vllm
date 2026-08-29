@@ -7,6 +7,8 @@ The ordering is the whole point: a run that destroys the box before fetching
 what it measured has spent the money and thrown away the answer.
 """
 
+import json
+
 import pytest
 
 from fork.bench.__main__ import main
@@ -31,12 +33,14 @@ class FakeProvider:
     Attributes:
         events: Lifecycle events, in the order they occurred.
         labels: Labels every created instance carried.
+        boot_status: Status the created instance reports from then on.
     """
 
-    def __init__(self):
+    def __init__(self, boot_status="running"):
         self.events: list[str] = []
         self.labels: list[str] = []
         self.live: dict[int, Instance] = {}
+        self.boot_status = boot_status
 
     def search_offers(self, requirements):
         return [OFFER]
@@ -44,7 +48,7 @@ class FakeProvider:
     def create(self, offer, spec):
         self.events.append("create")
         self.labels.append(spec.label)
-        self.live[100] = Instance(id=100, status="running", label=spec.label)
+        self.live[100] = Instance(id=100, status=self.boot_status, label=spec.label)
         return NewInstance(id=100, key="scoped-secret")
 
     def describe(self, instance_id):
@@ -68,11 +72,11 @@ class FakeShell:
         events: One event per invocation, named by the kind of command.
     """
 
-    def __init__(self, exit_code="0", fail_on=None):
+    def __init__(self, exit_code="0", fail_on=()):
         self.events: list[str] = []
         self.commands: list[list[str]] = []
         self.exit_code = exit_code
-        self.fail_on = fail_on
+        self.fail_on = {fail_on} if isinstance(fail_on, str) else set(fail_on)
 
     def __call__(self, argv):
         self.commands.append(list(argv))
@@ -83,10 +87,12 @@ class FakeShell:
             kind = "poll"
         elif "mkdir" in joined:
             kind = "mkdir"
+        elif argv[-1] == "true":
+            kind = "ready"
         else:
             kind = "start"
         self.events.append(kind)
-        if self.fail_on == kind:
+        if kind in self.fail_on:
             raise RuntimeError(f"{kind} failed")
         return self.exit_code if kind == "poll" else ""
 
@@ -171,6 +177,48 @@ def test_a_campaign_records_what_it_rented(tmp_path):
     rental = (tmp_path / "rental.json").read_text(encoding="utf-8")
     assert "H100_PCIE" in rental
     assert "3.0" in rental
+
+
+def test_a_campaign_records_the_instance_id_before_the_box_is_waited_on(tmp_path):
+    """A driver killed during boot must still leave a backstop something to read."""
+    provider = FakeProvider(boot_status="error")
+    with pytest.raises(RuntimeError):
+        _campaign(provider, FakeShell("0"), tmp_path)
+    record = json.loads((tmp_path / "rental.json").read_text(encoding="utf-8"))
+    assert record["instance_id"] == 100
+    assert record["label"] == "fork-bench-v0.27.1"
+
+
+def test_a_campaign_waits_for_ssh_before_it_uses_it(tmp_path):
+    """A box the provider calls running may still refuse the first login."""
+    shell = FakeShell("0")
+    _campaign(FakeProvider(), shell, tmp_path)
+    assert shell.events.index("ready") < shell.events.index("mkdir")
+
+
+def test_a_failing_collect_does_not_replace_the_reason_the_run_failed(tmp_path):
+    """An rsync error standing in front of the real cause hid two of them."""
+    provider = FakeProvider()
+    with pytest.raises(RuntimeError, match="push failed"):
+        _campaign(provider, FakeShell(fail_on=("push", "collect")), tmp_path)
+    assert "destroy" in provider.events
+    assert "collect failed" in (tmp_path / "collect-failed.txt").read_text(
+        encoding="utf-8"
+    )
+
+
+def test_a_run_that_could_not_be_collected_is_still_loud(tmp_path):
+    """Results left on a box that is about to be destroyed are not results."""
+    with pytest.raises(RuntimeError, match="collect failed"):
+        _campaign(FakeProvider(), FakeShell("0", fail_on="collect"), tmp_path)
+
+
+def test_a_collect_that_worked_clears_the_last_attempts_marker(tmp_path):
+    """Run directories are reused; a stale marker describes results that are here."""
+    with pytest.raises(RuntimeError):
+        _campaign(FakeProvider(), FakeShell("0", fail_on="collect"), tmp_path)
+    _campaign(FakeProvider(), FakeShell("0"), tmp_path)
+    assert not (tmp_path / "collect-failed.txt").exists()
 
 
 def test_a_campaign_passes_the_boot_image_to_the_on_box_gate(tmp_path):

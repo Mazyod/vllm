@@ -426,6 +426,7 @@ def rent(
     boot_deadline_s: float = DEFAULT_BOOT_DEADLINE_S,
     poll_s: float = DEFAULT_POLL_S,
     settle_s: float = DEFAULT_SETTLE_S,
+    on_create: Callable[[int], None] | None = None,
 ) -> Iterator[Rental]:
     """Rent a machine for the duration of the block, then give it back.
 
@@ -443,6 +444,11 @@ def rent(
         boot_deadline_s: Seconds to wait for the instance to come up.
         poll_s: Delay between status reads.
         settle_s: Delay before retrying a destroy.
+        on_create: Told the instance id as soon as the provider hands it over,
+            before the boot is waited on. The reaper dies with this process, so
+            the caller uses this to leave a record something outside it can act
+            on — and the boot is the longest stretch where there is a machine
+            billing and no such record.
 
     Yields:
         The live rental.
@@ -466,6 +472,8 @@ def rent(
     reaper = Reaper(provider, new.id, cap_seconds)
     try:
         reaper.arm()
+        if on_create is not None:
+            on_create(new.id)
         instance = wait_until_running(provider, new.id, boot_deadline_s, poll_s)
         yield Rental(offer=offer, instance=instance, label=spec.label, key=new.key)
     finally:

@@ -18,6 +18,12 @@ from fork.bench.proc import run_argv
 DONE_MARKER = "gate.exit"
 GATE_LOG = "gate.log"
 
+# Long enough for a key to propagate to a box the provider already calls
+# running, short enough that a host which never answers is refused with the
+# rental barely touched: five minutes is under a tenth of the reaper's cap and
+# well inside the margin the run keeps for collecting results.
+DEFAULT_SSH_DEADLINE_S = 5 * 60
+
 _SSH_OPTIONS = (
     "-o",
     "StrictHostKeyChecking=accept-new",
@@ -207,6 +213,51 @@ def start_gate_command(
         f"({_redirected(work, GATE_LOG)}; echo $? > {DONE_MARKER})"
     )
     return f"nohup bash -lc {shlex.quote(body)} > /dev/null 2>&1 &"
+
+
+def wait_for_ssh(
+    endpoint: Endpoint,
+    deadline_s: float = DEFAULT_SSH_DEADLINE_S,
+    poll_s: float = 10.0,
+    run: Callable[[Sequence[str]], str] = run_argv,
+    clock: Callable[[], float] = time.monotonic,
+    sleep: Callable[[float], None] = time.sleep,
+) -> None:
+    """Poll the machine until it accepts a login.
+
+    "Running" is the provider's word for the container, not for the daemon
+    behind port 22: sshd may still be starting and the run's key may not have
+    reached the host yet. The provider's own banner says to try again after a
+    few seconds. Without this the very first command can abort a campaign whose
+    meter is already running, which is the most expensive way to fail.
+
+    Args:
+        endpoint: Machine to reach.
+        deadline_s: Seconds to keep trying.
+        poll_s: Delay between attempts.
+        run: Injection point for the shell.
+        clock: Injection point for the deadline.
+        sleep: Injection point for the delay.
+
+    Raises:
+        TimeoutError: If no attempt succeeded, naming how long it waited and
+            what the last one said. A box that never answers is a box to give
+            back, not one to keep pushing a tree onto.
+    """
+    probe = ssh_command(endpoint, "true")
+    end = clock() + deadline_s
+    while True:
+        try:
+            run(probe)
+            return
+        except RuntimeError as error:
+            refusal = str(error)
+        if clock() >= end:
+            raise TimeoutError(
+                f"{endpoint.target} did not accept ssh within {deadline_s:g}s, "
+                f"last attempt: {refusal}"
+            )
+        sleep(poll_s)
 
 
 def wait_for_gate(

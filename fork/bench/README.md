@@ -17,8 +17,17 @@ disk with nothing left running:
 ```bash
 export HF_TOKEN=...
 uv run --no-project --with httpx --with pyyaml -- python -m fork.bench \
-  --tag v0.28.0 --image <IMAGE> --out runs/v0.28.0 --phase 4 --rent
+  --tag v0.28.0 --image <IMAGE> --out runs/v0.28.0 --phase 4 --rent &
+driver=$!
+nohup fork/bench/watchdog.sh fork-bench-v0.28.0 "$driver" \
+  >>/tmp/fork-bench-watchdog.log 2>&1 &
+wait "$driver"
 ```
+
+The watchdog is the reaper that survives the driver being killed: it matches on
+the instance label, so it needs no file and covers the rental from its first
+second. [RUNBOOK.md](RUNBOOK.md) § The quick check says what it cost to learn
+that the in-process one is not enough.
 
 `--rent` spends money. Run the free checks below first — they prove the whole
 orchestration against fixtures and a mock, so nothing about it is discovered on

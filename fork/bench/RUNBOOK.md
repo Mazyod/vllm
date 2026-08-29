@@ -39,8 +39,23 @@ If you only have time for one thing, run the shipping topology on a rented box:
 ```bash
 export HF_TOKEN=...   # gated checkpoints do not download without it
 uv run --no-project --with httpx --with pyyaml -- python -m fork.bench \
-  --tag <TAG> --image <IMAGE> --out runs/<TAG> --phase 4 --rent
+  --tag <TAG> --image <IMAGE> --out runs/<TAG> --phase 4 --rent &
+driver=$!
+nohup fork/bench/watchdog.sh "fork-bench-<TAG>" "$driver" \
+  >>/tmp/fork-bench-watchdog.log 2>&1 &
+wait "$driver"
 ```
+
+The watchdog is not optional. The reaper inside the driver is a thread: it dies
+with the driver, and it stands down before teardown runs. On 2026-08-29 a
+`--rent` driver was killed before it had written `runs/<TAG>/rental.json`,
+leaving a 2xH100 billing at $4.04/hr with nothing watching it — no thread, no
+file, no id. `fork/bench/watchdog.sh` keys on the instance **label**, which the
+machine carries from the moment it is created, so it needs no file to exist and
+covers the rental from its first second. It sweeps that label when the driver
+has been gone for the grace period (default five minutes) or when its cap
+(default 9900s) elapses, confirms the sweep against the provider, and writes
+`GIVING UP` to its log in the one case that still needs a human.
 
 `--rent` is phases 1 and 5 done for you: it searches its preference list once,
 rents one instance, arms the reaper before anything else, pushes this tree onto
@@ -66,7 +81,9 @@ you finishing by hand, and because the guarantees are worth knowing.
    directly mapped port. Never an interruptible bid — being outbid part-way
    truncates the run and voids its numbers.
 2. Rent it. Arm the reaper immediately, before anything else — it owns teardown
-   on a hard cap regardless of what the driver is doing.
+   on a hard cap regardless of what the driver is doing. The instance id is
+   written to `runs/<TAG>/rental.json` in the same breath, before the boot is
+   waited on, so nothing outside the driver has to guess what is billing.
 3. Run `nvidia-smi topo -m` and classify the GPU0-GPU1 link.
 4. **Gate:** a `NV*` link disqualifies the box; disabling peer access on an
    NVLink pair does not reproduce the deployment topology. In an automated
@@ -164,12 +181,19 @@ Renting per attempt re-downloads sixty gigabytes of weights every time. When
 iterating on the gate rather than gating a release, keep **one** box warm and
 push fixes onto it:
 
-1. Rent once, and arm a detached reaper so the cost is bounded whatever happens
-   to your shell:
+1. Rent once — under a label of your own, so the watchdog has something to match
+   — and arm it so the cost is bounded whatever happens to your shell:
 
    ```bash
-   nohup bash -c 'sleep 9000; vastai destroy instance <ID> -y' >/dev/null 2>&1 &
+   vastai create instance <OFFER> --image <IMAGE> --disk 200 \
+     --label fork-bench-dev --ssh --direct --cancel-unavail
+   nohup fork/bench/watchdog.sh fork-bench-dev $$ 9000 \
+     >>/tmp/fork-bench-watchdog.log 2>&1 &
    ```
+
+   `$$` is this shell: close it and the box goes with it after the grace period,
+   and the cap takes it regardless. Arm it before or after the rental — it reads
+   no file and needs no instance id, so there is no window it cannot cover.
 
 2. Push the tree and run one phase at a time:
 
