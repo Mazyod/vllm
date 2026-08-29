@@ -34,12 +34,14 @@ class FakeProvider:
     Attributes:
         events: Lifecycle events, in the order they occurred.
         labels: Labels every created instance carried.
+        specs: Everything it was asked to put on a machine.
         boot_status: Status the created instance reports from then on.
     """
 
     def __init__(self, boot_status="running"):
         self.events: list[str] = []
         self.labels: list[str] = []
+        self.specs: list = []
         self.live: dict[int, Instance] = {}
         self.boot_status = boot_status
 
@@ -49,6 +51,7 @@ class FakeProvider:
     def create(self, offer, spec):
         self.events.append("create")
         self.labels.append(spec.label)
+        self.specs.append(spec)
         self.live[100] = Instance(id=100, status=self.boot_status, label=spec.label)
         return NewInstance(id=100, key="scoped-secret")
 
@@ -84,17 +87,19 @@ class FakeShell:
         joined = " ".join(argv)
         if argv[0] == "rsync":
             kind = "collect" if ":" in argv[-2] else "push"
+        elif "nohup" in joined:
+            kind = "start"
         elif "gate.exit" in joined:
             kind = "poll"
         elif "mkdir" in joined:
             kind = "mkdir"
-        elif argv[-1] == "true":
-            kind = "ready"
         else:
-            kind = "start"
+            kind = "ready"
         self.events.append(kind)
         if kind in self.fail_on:
-            raise RuntimeError(f"{kind} failed")
+            # run_argv reports a failure by quoting the whole command, which
+            # is what makes redacting one a thing worth testing.
+            raise RuntimeError(f"{joined} exited 255: {kind} failed")
         return self.exit_code if kind == "poll" else ""
 
 
@@ -220,6 +225,34 @@ def test_a_collect_that_worked_clears_the_last_attempts_marker(tmp_path):
         _campaign(FakeProvider(), FakeShell("0", fail_on="collect"), tmp_path)
     _campaign(FakeProvider(), FakeShell("0"), tmp_path)
     assert not (tmp_path / "collect-failed.txt").exists()
+
+
+def test_a_campaign_gives_the_provider_no_environment_to_pass_on(tmp_path):
+    """Handing one to the create call costs ssh access to the box it creates."""
+    provider = FakeProvider()
+    _campaign(provider, FakeShell("0"), tmp_path, env={"HF_TOKEN": "shh"})
+    assert "shh" not in repr(provider.specs[0])
+
+
+def test_a_campaign_hands_the_token_to_the_gate_over_ssh(tmp_path):
+    """The gate still needs it to download a gated checkpoint."""
+    shell = FakeShell("0")
+    _campaign(FakeProvider(), shell, tmp_path, env={"HF_TOKEN": "shh"})
+    start = next(command for command in shell.commands if "nohup" in " ".join(command))
+    assert "export HF_TOKEN=shh" in " ".join(start)
+
+
+def test_a_gate_that_will_not_start_does_not_quote_the_token(tmp_path):
+    """The failure report is the whole command, and the command holds a secret."""
+    with pytest.raises(RuntimeError) as raised:
+        _campaign(
+            FakeProvider(),
+            FakeShell("0", fail_on="start"),
+            tmp_path,
+            env={"HF_TOKEN": "shh"},
+        )
+    assert "shh" not in str(raised.value)
+    assert "HF_TOKEN" in str(raised.value)
 
 
 def test_a_campaign_passes_the_boot_image_to_the_on_box_gate(tmp_path):

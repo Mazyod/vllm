@@ -37,7 +37,8 @@ store; commands that issue requests add `--with httpx` as well.
 If you only have time for one thing, run the shipping topology on a rented box:
 
 ```bash
-export HF_TOKEN=...   # gated checkpoints do not download without it
+# No HF_TOKEN. The fleet's checkpoints are public; set one only for a gated
+# checkpoint, and see "The token trap" below before you do.
 uv run --no-project --with httpx --with pyyaml -- python -m fork.bench \
   --tag <TAG> --image <IMAGE> --out runs/<TAG> --phase 4 --rent &
 driver=$!
@@ -56,6 +57,26 @@ covers the rental from its first second. It sweeps that label when the driver
 has been gone for the grace period (default five minutes) or when its cap
 (default 9900s) elapses, confirms the sweep against the provider, and writes
 `GIVING UP` to its log in the one case that still needs a human.
+
+### The token trap
+
+Until 2026-08-29 this command began `export HF_TOKEN=...`, and following it
+made every rental unreachable. `HF_TOKEN` being set is what made the harness
+pass `--env` to the provider's create call, and that flag **replaces** the
+container's default environment — which is what carries the provider's own SSH
+key setup. A/B on the same offer, same image, same account key, minutes apart:
+without `--env` the box accepted ssh at t=40s; with it, no login authenticated
+in 400s. The instance reports `running` either way, so it reads as a slow box
+rather than a broken one.
+
+The harness no longer passes `--env` at all, and a test holds that argv
+env-free. A token now travels in the gate's own ssh invocation, exported
+outside the group whose output becomes `gate.log`. Two things follow for you:
+the fleet's checkpoints are **public**, so a token buys nothing on an ordinary
+gate run — the 2026-08-11 v0.27.1 gate ran without one and its `gate.log`
+records the hub "sending unauthenticated requests"; and if you do gate a
+private checkpoint, the token is in a command line on the box for the life of
+the run, so use one scoped to that repository.
 
 `--rent` is phases 1 and 5 done for you: it searches its preference list once,
 rents one instance, arms the reaper before anything else, pushes this tree onto

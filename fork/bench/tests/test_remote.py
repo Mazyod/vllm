@@ -8,10 +8,14 @@ behind on a machine that is about to be destroyed: each is a way to pay for a
 run and learn nothing. The commands are pinned here so none of them happen.
 """
 
+import shlex
+import subprocess
+
 import pytest
 
 from fork.bench.remote import (
     DONE_MARKER,
+    GATE_LOG,
     Endpoint,
     collect_command,
     push_command,
@@ -126,6 +130,41 @@ def test_the_gate_is_told_which_release_and_phases():
     assert "--tag v0.27.0" in command
     assert "--phase 2" in command
     assert "--phase 4" in command
+
+
+def test_the_gate_is_given_the_environment_the_run_needs():
+    """The provider's create call cannot carry it: passing one costs ssh."""
+    command = start_gate_command(
+        "v0.27.0", "/workspace", phases=(4,), env={"HF_TOKEN": "shh"}
+    )
+    assert "export HF_TOKEN=shh" in command
+
+
+def test_the_environment_is_exported_outside_what_the_gate_log_captures():
+    """The log is collected, copied and read; a credential in it is spent."""
+    command = start_gate_command(
+        "v0.27.0", "/workspace", phases=(4,), env={"HF_TOKEN": "shh"}
+    )
+    captured = command[command.index("{") : command.index(GATE_LOG)]
+    assert "shh" not in captured
+
+
+def test_a_value_needing_quoting_survives_the_trip():
+    """A credential is opaque: the command cannot depend on what is in it."""
+    secret = "a b'c"
+    command = start_gate_command(
+        "v0.27.0", "/workspace", phases=(4,), env={"HF_TOKEN": secret}
+    )
+    body = shlex.split(command)[3]
+    start = body.index("export HF_TOKEN=")
+    statement = body[start : body.index("; ", start)]
+    echoed = subprocess.run(
+        ["bash", "-c", f'{statement}; printf %s "$HF_TOKEN"'],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert echoed.stdout == secret
 
 
 def test_a_refused_first_login_is_retried_until_the_box_accepts_it():

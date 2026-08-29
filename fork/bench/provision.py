@@ -184,20 +184,23 @@ def select_offer(offers: Sequence[Offer], requirements: Requirements) -> Offer:
 class InstanceSpec:
     """What to put on the rented machine.
 
+    There is deliberately no environment here. The provider's create call takes
+    one, and supplying it replaces the container's default environment — which
+    is what carries the provider's SSH key setup, so the box comes up running
+    and refuses every login. What the run needs is exported over ssh instead;
+    see `VastCli.create` for the A/B that established this.
+
     Attributes:
         image: Image the instance boots.
         disk_gb: Disk to request.
         label: Run label. Every instance this run creates carries it, which is
             what lets a stray be identified and destroyed without touching
             anyone else's work.
-        env: Environment handed to the instance. Values reach the provider on a
-            command line, so this is not a place for a long-lived credential.
     """
 
     image: str
     disk_gb: float
     label: str
-    env: Mapping[str, str] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)

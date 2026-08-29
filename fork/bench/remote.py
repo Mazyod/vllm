@@ -10,8 +10,9 @@ paying for a machine and learning nothing from it.
 
 import shlex
 import time
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
+from types import MappingProxyType
 
 from fork.bench.proc import run_argv
 
@@ -182,6 +183,7 @@ def start_gate_command(
     out_name: str = "run",
     models: Sequence[str] = (),
     image: str = "",
+    env: Mapping[str, str] = MappingProxyType({}),
 ) -> str:
     """Build the shell command that starts the gate and lets go of it.
 
@@ -190,6 +192,12 @@ def start_gate_command(
 
     The local launcher is not a choice here. A rented instance boots from the
     engine image itself and has no daemon to hand a container to.
+
+    This is also the only way anything reaches the box's environment. The
+    provider's create call takes one and it cannot be used: supplying it costs
+    SSH access entirely (see `VastCli.create`). The exports sit outside the
+    redirected group, so nothing about them can land in the gate log even if a
+    shell is tracing.
 
     Args:
         tag: Upstream release tag under test.
@@ -200,6 +208,9 @@ def start_gate_command(
             fails stops there rather than serving a model that never arrived.
         image: Image reference the rented box booted, recorded in receipts.
             The local launcher does not use it to start the engine.
+        env: Variables to export for the run, such as a model-hub token for a
+            gated checkpoint. Values travel in this command string, so this is
+            for a credential the run needs, not one it merely has.
 
     Returns:
         A single shell command.
@@ -216,10 +227,13 @@ def start_gate_command(
     )
     staging = stage_command(models)
     work = f"{staging} && {gate}" if staging else gate
+    exports = "".join(
+        f"export {key}={shlex.quote(value)}; " for key, value in env.items()
+    )
     body = (
         f"cd {shlex.quote(workdir)} && "
         f"rm -f {DONE_MARKER} && "
-        f"({_redirected(work, GATE_LOG)}; echo $? > {DONE_MARKER})"
+        f"({exports}{_redirected(work, GATE_LOG)}; echo $? > {DONE_MARKER})"
     )
     return f"nohup bash -lc {shlex.quote(body)} > /dev/null 2>&1 &"
 

@@ -139,19 +139,19 @@ trigger, so the never-gated unpatched rebuild republished the certified
 
 ## Rules added after the misretirement
 
-8. **Retirement needs both witnesses.** A leave-one-out pass retires a patch
+1. **Retirement needs both witnesses.** A leave-one-out pass retires a patch
    only when `upstream.map` ancestry independently confirms the fix is in the
    tag. Probe-passes-but-fix-absent renders "probe blind"; ancestry-unknown
    renders "retirement unconfirmed". Both keep the patch
    (`verdict.patch_verdict`).
-9. **A reverted engine must take traffic.** Every leave-one-out profile
+2. **A reverted engine must take traffic.** Every leave-one-out profile
    carries a B-probe; a boot receipt alone cannot see a failure that fires on
    the first real request (`test_static` enforces this).
-10. **A revert must leave a receipt in the engine's own log.** `R6` checks the
+3. **A revert must leave a receipt in the engine's own log.** `R6` checks the
     profile's `expect_boot_evidence` against what the booted engine actually
     logged, so a revert that never reached the running code fails the arm
     instead of informing a verdict.
-11. **Candidates are not releases.** Push-triggered image builds publish under
+4. **Candidates are not releases.** Push-triggered image builds publish under
     `<tag>-cand-<sha>` and never move `:latest` or republish a base tag;
     promotion is a deliberate dispatch after a gate run.
 
@@ -179,7 +179,7 @@ thrifty.
 The July run that this correction post-dates was, by luck, on a genuinely
 PCIe-only pair (`interconnect: PXB`), so its all-reduce conclusions stand.
 
-12. **Reproduce the topology, do not simulate it.** A configuration flag that
+1. **Reproduce the topology, do not simulate it.** A configuration flag that
     approximates hardware is not the hardware. If the venue cannot be matched,
     refuse the run rather than substituting a proxy and reporting a verdict.
 
@@ -199,11 +199,46 @@ tower — so every `input_audio` request 400s on every release, correctly.
 The dry run caught neither, because the mock answers whatever shape the probe
 hopes for. Preflight proves orchestration, not aim.
 
-13. **First-run a new probe on hardware before trusting its verdict.** Until a
+1. **First-run a new probe on hardware before trusting its verdict.** Until a
     probe has produced its expected pass AND its expected failure against a
     real engine at least once, treat what it says about a release as a claim
     about the probe. Instrument probes so a null measurement explains itself
     (B1 now tallies response shapes; B5 records rejection bodies).
-14. **A configuration that is not the file the engine read is a claim, not a
+2. **A configuration that is not the file the engine read is a claim, not a
     record.** Launch from the committed file and carry its digest into the
     result.
+
+## The trap the runbook told you to walk into (2026-08-29)
+
+### Setting a token cost SSH access to every box
+
+`vast.py` passed `--env "-e HF_TOKEN=..."` to the provider's create call
+whenever `spec.env` was non-empty, which was exactly when the operator had
+`HF_TOKEN` exported — which `RUNBOOK.md`'s own canonical command instructed.
+That flag **replaces** the container's default environment rather than adding
+to it, and the default is what carries the provider's SSH key setup. A/B on the
+same offer, same image, same account key, minutes apart: without `--env` the
+box accepted ssh at t=40s; with it, nothing authenticated in 400s.
+
+Every symptom pointed away from the cause. The instance reported `running`, the
+provider's client returned an address, and the failure was `Permission denied
+(publickey)` — which reads as key propagation lag, so the first fix attempted
+was a longer wait. No budget would ever have been long enough.
+
+The one run that worked, v0.27.1 on 2026-08-11, worked by accident: `HF_TOKEN`
+was unset that day, and its `gate.log` still records the hub "sending
+unauthenticated requests". A green run had been certifying a code path nobody
+had chosen.
+
+The token now travels in the gate's own ssh invocation, exported outside the
+group whose output becomes `gate.log`. `InstanceSpec` no longer has an `env`
+field at all: leaving the parameter in place would leave the flag one keyword
+argument away.
+
+1. **A creation flag that replaces rather than adds is a trap, and the docs
+    can be the thing that springs it.** Before passing an option to a provider,
+    establish whether it merges with the default or supplants it — and A/B the
+    option itself, not the thing you are trying to configure with it.
+2. **A run that passes because an environment variable happened to be unset
+    has not been tested.** If a documented step changes which code path
+    executes, the undocumented path is the one nobody has evidence about.

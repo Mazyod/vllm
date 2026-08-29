@@ -155,6 +155,16 @@ class VastCli:
         No bid price is ever passed. An interruptible rental can be outbid
         part-way through, which truncates the run and voids its numbers.
 
+        **No `--env` is ever passed, and none ever should be.** The flag
+        replaces the container's default environment rather than adding to it,
+        and that default is what carries the provider's own SSH key setup. A/B
+        on 2026-08-29, same offer 32306172, same image, same account key,
+        minutes apart: without `--env` the box accepted ssh at t=40s; with
+        `--env "-e HF_TOKEN=..."` it never authenticated in 400s. The instance
+        boots and reports running either way, so the loss shows up as a box
+        that refuses every login for the whole budget. Anything the run needs
+        in its environment is exported over ssh by `start_gate_command`.
+
         Args:
             offer: Offer to rent.
             spec: What to put on the machine.
@@ -181,12 +191,6 @@ class VastCli:
             "--cancel-unavail",
             "--raw",
         ]
-        if spec.env:
-            argv += [
-                "--env",
-                " ".join(f"-e {key}={value}" for key, value in spec.env.items()),
-            ]
-
         parsed = json.loads(self._run(argv).strip() or "{}")
         if not parsed.get("success"):
             raise RuntimeError(

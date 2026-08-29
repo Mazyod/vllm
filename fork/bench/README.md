@@ -15,7 +15,8 @@ One command answers "can this release ship", from no machine to results on
 disk with nothing left running:
 
 ```bash
-export HF_TOKEN=...
+# No HF_TOKEN: the fleet's checkpoints are public, and setting one used to
+# cost ssh access to the box. See RUNBOOK.md § The token trap.
 uv run --no-project --with httpx --with pyyaml -- python -m fork.bench \
   --tag v0.28.0 --image <IMAGE> --out runs/v0.28.0 --phase 4 --rent &
 driver=$!

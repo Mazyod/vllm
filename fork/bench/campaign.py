@@ -11,7 +11,7 @@ where the gate fails or never finishes.
 
 import json
 import time
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 
 from fork.bench import profiles
@@ -117,6 +117,55 @@ def _record_rental(out_dir: Path, tag: str, rental, endpoint: Endpoint) -> None:
     )
 
 
+def _start_gate(
+    shell: Callable[[Sequence[str]], str],
+    endpoint: Endpoint,
+    command: str,
+    env: Mapping[str, str],
+) -> None:
+    """Start the gate without letting a failure quote the secrets it carries.
+
+    This is the one command holding the run's credentials, and `run_argv`
+    reports a failure by quoting the whole argument vector. Unredacted that
+    would put a model-hub token in a traceback and in whatever collected it.
+
+    Args:
+        shell: Injection point for ssh.
+        endpoint: Machine to start the gate on.
+        command: The remote command, secrets included.
+        env: Variables whose values must not survive into an error.
+
+    Raises:
+        RuntimeError: If the gate would not start, with every secret value
+            replaced. The original is suppressed rather than chained, because a
+            chained cause is printed too.
+    """
+    try:
+        shell(ssh_command(endpoint, command))
+    except RuntimeError as error:
+        raise RuntimeError(_redacted(str(error), env)) from None
+
+
+def _redacted(message: str, env: Mapping[str, str]) -> str:
+    """Replace every secret value in a message with a placeholder.
+
+    Matching on the value rather than the name is deliberate: the secret has
+    already been interpolated into a shell command by this point, so the name
+    it arrived under is no longer next to it.
+
+    Args:
+        message: Text that may quote a secret.
+        env: Variables whose values are secret.
+
+    Returns:
+        The message with each value replaced.
+    """
+    for value in env.values():
+        if value:
+            message = message.replace(value, "<redacted>")
+    return message
+
+
 def _collect(
     shell: Callable[[Sequence[str]], str], endpoint: Endpoint, out_dir: Path
 ) -> Exception | None:
@@ -180,7 +229,9 @@ def run_campaign(
         phases: Runbook phases to run.
         provider: Rental provider, defaulting to the configured client.
         requirements: What the box must be, in preference order.
-        env: Environment the instance needs, such as a model-hub token.
+        env: Variables the run needs on the box, such as a model-hub token for
+            a gated checkpoint. Exported by the remote gate command, never
+            handed to the provider — see InstanceSpec.
         shell: Injection point for ssh and rsync.
         cap_seconds: Hard cap on the rental's life, enforced by the reaper.
         gate_deadline_s: Seconds to wait for the gate before giving up on it.
@@ -200,11 +251,12 @@ def run_campaign(
     wanted = (
         [requirements] if isinstance(requirements, Requirements) else list(requirements)
     )
+    # Nothing about the environment reaches the provider: its create call
+    # takes one, and passing it costs SSH access to the box it creates.
     spec = InstanceSpec(
         image=image,
         disk_gb=max(candidate.min_disk_gb for candidate in wanted),
         label=f"fork-bench-{tag}",
-        env=env or {},
     )
 
     with rent(
@@ -234,18 +286,19 @@ def run_campaign(
             # above it, and a fresh box has no workdir at all.
             shell(ssh_command(endpoint, f"mkdir -p {WORKDIR}"))
             shell(push_command(endpoint, str(REPO_ROOT / "fork"), f"{WORKDIR}/fork"))
-            shell(
-                ssh_command(
-                    endpoint,
-                    start_gate_command(
-                        tag,
-                        WORKDIR,
-                        phases,
-                        RUN_DIR,
-                        models=profile_store.models_for(phases),
-                        image=image,
-                    ),
-                )
+            _start_gate(
+                shell,
+                endpoint,
+                start_gate_command(
+                    tag,
+                    WORKDIR,
+                    phases,
+                    RUN_DIR,
+                    models=profile_store.models_for(phases),
+                    image=image,
+                    env=env or {},
+                ),
+                env or {},
             )
             try:
                 return wait_for_gate(
