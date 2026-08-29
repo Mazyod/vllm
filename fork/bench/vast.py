@@ -155,15 +155,21 @@ class VastCli:
         No bid price is ever passed. An interruptible rental can be outbid
         part-way through, which truncates the run and voids its numbers.
 
-        **No `--env` is ever passed, and none ever should be.** The flag
-        replaces the container's default environment rather than adding to it,
-        and that default is what carries the provider's own SSH key setup. A/B
-        on 2026-08-29, same offer 32306172, same image, same account key,
+        **No `--env` is ever passed, and none ever should be.** The client's
+        own help calls it "env variables **and port mapping options**", and its
+        example is `--env '-e TZ=PDT -e XNAME=XX4 -p 22:22 -p 8080:8080'`: the
+        flag is one docker-run argument string that replaces the default rather
+        than adding to it, so passing only `-e` entries drops `-p 22:22` and
+        the instance runs with no published SSH port. It still reports
+        `running`, so the loss reads as a slow box rather than a broken one.
+        A/B on 2026-08-29, same offer 32306172, same image, same account key,
         minutes apart: without `--env` the box accepted ssh at t=40s; with
-        `--env "-e HF_TOKEN=..."` it never authenticated in 400s. The instance
-        boots and reports running either way, so the loss shows up as a box
-        that refuses every login for the whole budget. Anything the run needs
-        in its environment is exported over ssh by `start_gate_command`.
+        `--env "-e HF_TOKEN=..."` nothing authenticated in 400s.
+
+        Not passing it is necessary, and is not known to be sufficient:
+        instances have also refused the account key with no `--env` involved
+        (see LESSONS.md). Anything the run needs in its environment is exported
+        over ssh by `start_gate_command`.
 
         Args:
             offer: Offer to rent.

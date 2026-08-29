@@ -185,10 +185,11 @@ class InstanceSpec:
     """What to put on the rented machine.
 
     There is deliberately no environment here. The provider's create call takes
-    one, and supplying it replaces the container's default environment — which
-    is what carries the provider's SSH key setup, so the box comes up running
-    and refuses every login. What the run needs is exported over ssh instead;
-    see `VastCli.create` for the A/B that established this.
+    one, and that argument is a single docker-run string carrying port mappings
+    as well as variables: supplying it replaces the default, so a spec that
+    named only variables would drop `-p 22:22` and leave the box running with
+    no published SSH port. What the run needs is exported over ssh instead; see
+    `VastCli.create` for the documented behaviour and the A/B.
 
     Attributes:
         image: Image the instance boots.

@@ -8,6 +8,11 @@ extend this harness will be tempted to make the same assumptions.
 The pattern is one sentence long: **anything not exercised against the real
 thing is a guess, and guesses about external systems are usually wrong.**
 
+<!-- markdownlint-disable MD029 -->
+<!-- The numbered rules below are one continuing sequence, cited by number
+     from code, commits and the runbook. They are identifiers, not list
+     ordinals, so the auto-fix must not renumber them. -->
+
 ## The expensive ones
 
 ### A live instance read as "gone", and teardown believed it
@@ -139,19 +144,19 @@ trigger, so the never-gated unpatched rebuild republished the certified
 
 ## Rules added after the misretirement
 
-1. **Retirement needs both witnesses.** A leave-one-out pass retires a patch
+8. **Retirement needs both witnesses.** A leave-one-out pass retires a patch
    only when `upstream.map` ancestry independently confirms the fix is in the
    tag. Probe-passes-but-fix-absent renders "probe blind"; ancestry-unknown
    renders "retirement unconfirmed". Both keep the patch
    (`verdict.patch_verdict`).
-2. **A reverted engine must take traffic.** Every leave-one-out profile
+9. **A reverted engine must take traffic.** Every leave-one-out profile
    carries a B-probe; a boot receipt alone cannot see a failure that fires on
    the first real request (`test_static` enforces this).
-3. **A revert must leave a receipt in the engine's own log.** `R6` checks the
+10. **A revert must leave a receipt in the engine's own log.** `R6` checks the
     profile's `expect_boot_evidence` against what the booted engine actually
     logged, so a revert that never reached the running code fails the arm
     instead of informing a verdict.
-4. **Candidates are not releases.** Push-triggered image builds publish under
+11. **Candidates are not releases.** Push-triggered image builds publish under
     `<tag>-cand-<sha>` and never move `:latest` or republish a base tag;
     promotion is a deliberate dispatch after a gate run.
 
@@ -179,7 +184,7 @@ thrifty.
 The July run that this correction post-dates was, by luck, on a genuinely
 PCIe-only pair (`interconnect: PXB`), so its all-reduce conclusions stand.
 
-1. **Reproduce the topology, do not simulate it.** A configuration flag that
+12. **Reproduce the topology, do not simulate it.** A configuration flag that
     approximates hardware is not the hardware. If the venue cannot be matched,
     refuse the run rather than substituting a proxy and reporting a verdict.
 
@@ -199,46 +204,66 @@ tower — so every `input_audio` request 400s on every release, correctly.
 The dry run caught neither, because the mock answers whatever shape the probe
 hopes for. Preflight proves orchestration, not aim.
 
-1. **First-run a new probe on hardware before trusting its verdict.** Until a
+13. **First-run a new probe on hardware before trusting its verdict.** Until a
     probe has produced its expected pass AND its expected failure against a
     real engine at least once, treat what it says about a release as a claim
     about the probe. Instrument probes so a null measurement explains itself
     (B1 now tallies response shapes; B5 records rejection bodies).
-2. **A configuration that is not the file the engine read is a claim, not a
+14. **A configuration that is not the file the engine read is a claim, not a
     record.** Launch from the committed file and carry its digest into the
     result.
 
 ## The trap the runbook told you to walk into (2026-08-29)
 
-### Setting a token cost SSH access to every box
+### Setting a token took the SSH port off every box
 
 `vast.py` passed `--env "-e HF_TOKEN=..."` to the provider's create call
 whenever `spec.env` was non-empty, which was exactly when the operator had
 `HF_TOKEN` exported — which `RUNBOOK.md`'s own canonical command instructed.
-That flag **replaces** the container's default environment rather than adding
-to it, and the default is what carries the provider's SSH key setup. A/B on the
-same offer, same image, same account key, minutes apart: without `--env` the
-box accepted ssh at t=40s; with it, nothing authenticated in 400s.
 
-Every symptom pointed away from the cause. The instance reported `running`, the
-provider's client returned an address, and the failure was `Permission denied
-(publickey)` — which reads as key propagation lag, so the first fix attempted
-was a longer wait. No budget would ever have been long enough.
+`--env` is not a list of variables. The client's help calls it "env variables
+**and port mapping options**", and its example is
+`--env '-e TZ=PDT -e XNAME=XX4 -p 22:22 -p 8080:8080'`: one docker-run argument
+string that replaces the default rather than adding to it. Passing only `-e`
+entries therefore drops `-p 22:22`, and the box runs with no published SSH
+port. A/B on the same offer, same image, same account key, minutes apart:
+without `--env` ssh was up at t=40s; with it, nothing authenticated in 400s.
 
-The one run that worked, v0.27.1 on 2026-08-11, worked by accident: `HF_TOKEN`
-was unset that day, and its `gate.log` still records the hub "sending
-unauthenticated requests". A green run had been certifying a code path nobody
-had chosen.
+Nothing about the instance said so. It reported `running`, `status_msg` said
+`success, running <image>/ssh`, and the client happily returned an address —
+for a port with nothing behind it.
+
+The one gate that had worked, v0.27.1 on 2026-08-11, worked by accident:
+`HF_TOKEN` was unset that day, and its `gate.log` still records the hub
+"sending unauthenticated requests". A green run had been certifying a code path
+nobody had chosen, and the documented procedure chose the other one.
 
 The token now travels in the gate's own ssh invocation, exported outside the
 group whose output becomes `gate.log`. `InstanceSpec` no longer has an `env`
-field at all: leaving the parameter in place would leave the flag one keyword
-argument away.
+field at all: leaving the parameter in place would have left the flag one
+keyword argument away, usable safely only by someone who also knew to
+re-declare the port mappings.
 
-1. **A creation flag that replaces rather than adds is a trap, and the docs
+### What this does not explain
+
+Seven probes ran that day across two hosts and both endpoint modes; one reached
+a shell. Three of the failures had no `--env` anywhere: a gate run with
+`HF_TOKEN` unset, a probe on a second host, and a proxy-mode instance created
+without `--direct`. Those refused the account key — `Permission denied
+(publickey)` — which is a different signature from a port that was never
+published, and it is **unexplained**. Removing `--env` is necessary and is not
+known to be sufficient. Read the error before deciding which failure you have:
+nothing listening is the fixed defect; a key refusal is the open one.
+
+15. **A creation flag that replaces rather than adds is a trap, and the docs
     can be the thing that springs it.** Before passing an option to a provider,
-    establish whether it merges with the default or supplants it — and A/B the
-    option itself, not the thing you are trying to configure with it.
-2. **A run that passes because an environment variable happened to be unset
-    has not been tested.** If a documented step changes which code path
-    executes, the undocumented path is the one nobody has evidence about.
+    read what the option is documented to contain — this one carried the port
+    mappings — and A/B the option itself, not the thing being configured with
+    it.
+16. **A run that passes because a variable happened to be unset has not been
+    tested.** When a documented step changes which code path executes, the
+    undocumented path is the one nobody has evidence about.
+17. **A confirmed cause does not close an investigation.** `--env` is proven
+    and fixed; it accounts for some of the day's failures, not all of them.
+    Recording "root cause found" while probes are still failing outside its
+    scope is how rule 8's misretirement happened — the residue is the finding.

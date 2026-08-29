@@ -194,10 +194,10 @@ def start_gate_command(
     engine image itself and has no daemon to hand a container to.
 
     This is also the only way anything reaches the box's environment. The
-    provider's create call takes one and it cannot be used: supplying it costs
-    SSH access entirely (see `VastCli.create`). The exports sit outside the
-    redirected group, so nothing about them can land in the gate log even if a
-    shell is tracing.
+    provider's create call takes one and it cannot be used: that argument also
+    declares the port mappings, so supplying it drops the published SSH port
+    (see `VastCli.create`). The exports sit outside the redirected group, so
+    nothing about them can land in the gate log even if a shell is tracing.
 
     Args:
         tag: Upstream release tag under test.

@@ -228,7 +228,7 @@ def test_a_collect_that_worked_clears_the_last_attempts_marker(tmp_path):
 
 
 def test_a_campaign_gives_the_provider_no_environment_to_pass_on(tmp_path):
-    """Handing one to the create call costs ssh access to the box it creates."""
+    """That argument declares the port mappings; one without them drops ssh."""
     provider = FakeProvider()
     _campaign(provider, FakeShell("0"), tmp_path, env={"HF_TOKEN": "shh"})
     assert "shh" not in repr(provider.specs[0])

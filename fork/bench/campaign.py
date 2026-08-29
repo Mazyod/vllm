@@ -252,7 +252,8 @@ def run_campaign(
         [requirements] if isinstance(requirements, Requirements) else list(requirements)
     )
     # Nothing about the environment reaches the provider: its create call
-    # takes one, and passing it costs SSH access to the box it creates.
+    # takes one, and that argument also declares the port mappings, so
+    # passing it drops the box's published SSH port.
     spec = InstanceSpec(
         image=image,
         disk_gb=max(candidate.min_disk_gb for candidate in wanted),

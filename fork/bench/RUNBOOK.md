@@ -61,13 +61,17 @@ has been gone for the grace period (default five minutes) or when its cap
 ### The token trap
 
 Until 2026-08-29 this command began `export HF_TOKEN=...`, and following it
-made every rental unreachable. `HF_TOKEN` being set is what made the harness
-pass `--env` to the provider's create call, and that flag **replaces** the
-container's default environment — which is what carries the provider's own SSH
-key setup. A/B on the same offer, same image, same account key, minutes apart:
-without `--env` the box accepted ssh at t=40s; with it, no login authenticated
-in 400s. The instance reports `running` either way, so it reads as a slow box
-rather than a broken one.
+cost the rental its SSH port. `HF_TOKEN` being set is what made the harness
+pass `--env` to the provider's create call, and `--env` is not a list of
+variables — the client's own help calls it "env variables **and port mapping
+options**", with the example
+`--env '-e TZ=PDT -e XNAME=XX4 -p 22:22 -p 8080:8080'`. It is one docker-run
+argument string that **replaces** the default, so passing only `-e` entries
+drops `-p 22:22`. A/B on the same offer, same image, same account key, minutes
+apart: without `--env` the box accepted ssh at t=40s; with it, nothing
+authenticated in 400s. The instance reports `running` and `status_msg` still
+says `success, running <image>/ssh`, so it reads as a slow box rather than a
+box with nothing listening.
 
 The harness no longer passes `--env` at all, and a test holds that argv
 env-free. A token now travels in the gate's own ssh invocation, exported
@@ -77,6 +81,17 @@ gate run — the 2026-08-11 v0.27.1 gate ran without one and its `gate.log`
 records the hub "sending unauthenticated requests"; and if you do gate a
 private checkpoint, the token is in a command line on the box for the life of
 the run, so use one scoped to that repository.
+
+**This is not the whole story.** Removing `--env` is necessary; it is not known
+to be sufficient. Of seven probes across two hosts and both endpoint modes on
+2026-08-29, exactly one reached a shell, and three of the failures had no
+`--env` anywhere: a gate run with `HF_TOKEN` unset, a probe on a second host,
+and a proxy-mode instance created without `--direct`. Those refused the account
+key (`Permission denied (publickey)`), which is a different signature from a
+missing port mapping and is **still unexplained**. If a rental refuses ssh,
+read the error before assuming this section covers it: connection refused with
+nothing listening is the fixed defect; `Permission denied (publickey)` is the
+open one, and the machine should be given back rather than waited on.
 
 `--rent` is phases 1 and 5 done for you: it searches its preference list once,
 rents one instance, arms the reaper before anything else, pushes this tree onto

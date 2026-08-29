@@ -133,7 +133,7 @@ def test_the_gate_is_told_which_release_and_phases():
 
 
 def test_the_gate_is_given_the_environment_the_run_needs():
-    """The provider's create call cannot carry it: passing one costs ssh."""
+    """The provider's create call cannot carry it: see VastCli.create."""
     command = start_gate_command(
         "v0.27.0", "/workspace", phases=(4,), env={"HF_TOKEN": "shh"}
     )
