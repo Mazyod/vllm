@@ -176,13 +176,20 @@ def compare_controls(
 def expectation_mismatches(
     results: Sequence[ProbeResult],
     profile_store: ProfileStore | None = None,
-) -> list[tuple[str, str, str]]:
+) -> list[tuple[str, str, str, str]]:
     """Find profiles whose boot outcome contradicts what fleet.yaml declared.
 
-    A negative arm that stops crashing renders as an ordinary R5 pass, which is
-    indistinguishable from a healthy profile — so the workaround the arm exists
-    to justify looks justified forever. R5 carries the whole answer: it passes
-    only when the engine served, logged, and left no crash signature.
+    Both directions are findings. A negative arm that stops crashing renders as
+    an ordinary R5 pass, indistinguishable from a healthy profile, so the
+    workaround the arm exists to justify looks justified forever. A non-gating
+    profile that declared it would serve and then failed renders as "fail (as
+    expected)" in the probes table, when nothing about that failure was
+    expected.
+
+    R5 passing is unambiguous: the engine served, logged, and left no crash
+    signature. R5 failing is not — it also fires on an empty log, which is a
+    harness failure rather than a crash — so a failure is reported as the
+    receipt it is, with R5's own detail beside it rather than a guessed cause.
 
     A profile with no R5 result is left out. Nothing was observed, so nothing
     is claimed.
@@ -192,27 +199,28 @@ def expectation_mismatches(
         profile_store: Tag-selected profiles, defaulting to the current tag.
 
     Returns:
-        Tuples of profile id, declared expectation, and observed outcome, for
-        the profiles where the two disagree.
+        Tuples of profile id, declared expectation, observed outcome, and the
+        R5 detail behind it, for the profiles where the two disagree.
     """
     store = profile_store or profiles.DEFAULT_STORE
-    served_by_profile: dict[str, bool] = {}
+    receipts: dict[str, ProbeResult] = {}
     for result in results:
         if result.probe_id != "R5":
             continue
-        served_by_profile[result.profile_id] = (
-            served_by_profile.get(result.profile_id, True) and result.passed
-        )
+        kept = receipts.get(result.profile_id)
+        if kept is None or (kept.passed and not result.passed):
+            receipts[result.profile_id] = result
 
-    rows: list[tuple[str, str, str]] = []
-    for profile_id, served in sorted(served_by_profile.items()):
+    rows: list[tuple[str, str, str, str]] = []
+    for profile_id, receipt in sorted(receipts.items()):
         try:
             expected = store.get(profile_id).expect
         except KeyError:
             continue
-        if expected == ("serves" if served else "boot_crash"):
+        if expected == ("serves" if receipt.passed else "boot_crash"):
             continue
-        rows.append((profile_id, expected, "served" if served else "did not serve"))
+        observed = "served" if receipt.passed else "R5 failed"
+        rows.append((profile_id, expected, observed, receipt.detail))
     return rows
 
 
@@ -320,14 +328,16 @@ def build_report(
             "## Expectation mismatches (recorded, not gated)",
             "",
             "fleet.yaml declared one outcome and the run observed the other. A",
-            "negative arm that stopped crashing may mean the workaround it",
-            "exists to justify is retirable; investigate before trusting it.",
+            "negative arm that stopped crashing may mean the workaround it exists",
+            "to justify is retirable. A profile that promised to serve and did not",
+            "was never an expected failure, whatever the probes table calls a",
+            "non-gating one. Investigate before trusting either row.",
             "",
-            "| profile | declared | observed |",
-            "|---|---|---|",
+            "| profile | declared | observed | R5 detail |",
+            "|---|---|---|---|",
         ]
-        for profile_id, expected, observed in mismatches:
-            lines.append(f"| {profile_id} | {expected} | {observed} |")
+        for profile_id, expected, observed, detail in mismatches:
+            lines.append(f"| {profile_id} | {expected} | {observed} | {detail} |")
         lines.append("")
 
     lines += [

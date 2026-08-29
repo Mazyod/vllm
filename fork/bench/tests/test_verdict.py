@@ -161,28 +161,51 @@ def test_a_negative_arm_that_stopped_crashing_is_reported():
     """N3 served on v0.27.1 and R5 rendered it as an ordinary pass. A negative
     arm that stops failing means its workaround may be retirable, which is a
     finding worth seeing rather than one to lose."""
-    results = [ProbeResult("R5", "qwen-tp2-noflags", True, "served=True")]
+    detail = "served=True crashed=False lines=812"
+    results = [ProbeResult("R5", "qwen-tp2-noflags", True, detail)]
     assert expectation_mismatches(results) == [
-        ("qwen-tp2-noflags", "boot_crash", "served")
+        ("qwen-tp2-noflags", "boot_crash", "served", detail)
     ]
 
 
 def test_a_negative_arm_that_crashed_as_declared_is_not_a_mismatch():
-    results = [ProbeResult("R5", "qwen-tp2-noflags", False, "served=False")]
+    results = [
+        ProbeResult("R5", "qwen-tp2-noflags", False, "served=False crashed=True")
+    ]
     assert expectation_mismatches(results) == []
 
 
 def test_a_profile_that_served_as_declared_is_not_a_mismatch():
-    results = [ProbeResult("R5", "gemma-full", True, "served=True")]
+    results = [ProbeResult("R5", "gemma-full", True, "served=True crashed=False")]
     assert expectation_mismatches(results) == []
 
 
 def test_a_profile_that_promised_to_serve_and_did_not_is_a_mismatch():
     """N2 is not gating, so its failure renders as "fail (as expected)" — but
     it declared serves, so the failure was not expected at all."""
-    results = [ProbeResult("R5", "gemma-v2-spec-kv-dtype", False, "served=False")]
+    detail = "served=False crashed=True lines=97"
+    results = [ProbeResult("R5", "gemma-v2-spec-kv-dtype", False, detail)]
     assert expectation_mismatches(results) == [
-        ("gemma-v2-spec-kv-dtype", "serves", "did not serve")
+        ("gemma-v2-spec-kv-dtype", "serves", "R5 failed", detail)
+    ]
+
+
+@pytest.mark.parametrize(
+    "detail",
+    [
+        "served=False crashed=False lines=812",
+        "served=False crashed=True lines=97",
+        "served=True crashed=False lines=0",
+    ],
+)
+def test_a_failed_receipt_names_the_receipt_rather_than_a_cause(detail):
+    """R5 fails on three conditions, and the third — an empty log from an
+    engine that served — is a harness failure, not a crash. Naming a cause
+    would contradict the probes row for the same profile, so the row reports
+    the receipt and carries R5's own detail."""
+    results = [ProbeResult("R5", "gemma-v2-spec-kv-dtype", False, detail)]
+    assert expectation_mismatches(results) == [
+        ("gemma-v2-spec-kv-dtype", "serves", "R5 failed", detail)
     ]
 
 
@@ -209,12 +232,14 @@ def test_report_names_a_negative_arm_that_stopped_crashing():
     report = build_report(
         "v0.28.0",
         {},
-        [ProbeResult("R5", "qwen-tp2-noflags", True, "served=True")],
+        [ProbeResult("R5", "qwen-tp2-noflags", True, "served=True lines=812")],
         {},
         {},
     )
     assert "Expectation mismatches" in report
-    assert "| qwen-tp2-noflags | boot_crash | served |" in report
+    assert (
+        "| qwen-tp2-noflags | boot_crash | served | served=True lines=812 |" in report
+    )
 
 
 def test_report_omits_the_mismatch_section_when_every_prediction_held():
