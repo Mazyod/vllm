@@ -142,26 +142,35 @@ def test_expect_boot_evidence_names_are_real_boot_evidence_fields():
         assert not unknown, f"{profile.id} expects unknown evidence: {unknown}"
 
 
+def _value_after(text: str, prefix: str, *, strip_line: bool = False) -> str:
+    """Return the first whitespace-delimited token after ``prefix`` on the
+    first line that starts with it, or raise if no such line exists."""
+    for line in text.splitlines():
+        candidate = line.strip() if strip_line else line
+        if candidate.startswith(prefix):
+            rest = candidate[len(prefix) :].split()
+            if rest:
+                return rest[0]
+    raise AssertionError(f"no line starting with {prefix!r} found")
+
+
 def test_the_four_release_pins_name_one_tag():
     """Dockerfile ARG, workflow DEFAULT_BASE_TAG, profiles.DEFAULT_TAG and
     preflight's --tag must agree, or the gate validates a release nobody is
     shipping."""
-    import re
-
     from fork.bench import profiles
 
-    docker = re.search(
-        r"^ARG BASE_TAG=(\S+)",
+    docker = _value_after(
         (REPO_ROOT / "fork/docker/Dockerfile.audio").read_text(encoding="utf-8"),
-        re.M,
-    ).group(1)
-    workflow = re.search(
-        r"^\s*DEFAULT_BASE_TAG:\s*(\S+)",
+        "ARG BASE_TAG=",
+    )
+    workflow = _value_after(
         (REPO_ROOT / ".github/workflows/build-vllm-audio.yml").read_text(
             encoding="utf-8"
         ),
-        re.M,
-    ).group(1)
+        "DEFAULT_BASE_TAG:",
+        strip_line=True,
+    )
     preflight = (REPO_ROOT / "fork/bench/preflight.sh").read_text(encoding="utf-8")
 
     assert docker == workflow == profiles.DEFAULT_TAG
