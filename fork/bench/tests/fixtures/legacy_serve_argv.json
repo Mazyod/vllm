@@ -1,5 +1,5 @@
 {
-  "_comment": "Frozen v0.27.1 gate argv as benchmarked on 2026-08-11; independent parity oracle for the YAML cutover.",
+  "_comment": "Intended v0.28.0 gate argv. Carried forward byte-identical from the v0.27.1 argv frozen on 2026-08-11, because the v0.28.0 flag audit deliberately concluded no flag needed to change; independent parity oracle for the YAML config store.",
   "profiles": {
     "gemma-full": [
       "vllm", "serve", "RedHatAI/gemma-4-31B-it-FP8-block",

@@ -26,7 +26,9 @@ def _profile(profile_id: str):
 def test_the_command_serves_the_profiles_committed_config():
     profile = _profile("gemma-full")
     argv = build_local_command(profile, port=8000)
-    expected = (profiles.BENCH_ROOT / "configs/v0.27.1/engine/gemma-tp1.yaml").resolve()
+    expected = (
+        profiles.BENCH_ROOT / "configs" / profiles.DEFAULT_TAG / "engine/gemma-tp1.yaml"
+    ).resolve()
     assert argv[0] == "vllm"
     assert Path(argv[argv.index("--config") + 1]).samefile(expected)
     assert profiles.engine_settings(profile)["model"] == (
