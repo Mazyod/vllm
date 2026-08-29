@@ -133,7 +133,7 @@ def compare_controls(
 
     Args:
         perf: Profile id to measurements.
-        profile_store: Tag-selected profiles, defaulting to v0.27.1.
+        profile_store: Tag-selected profiles, defaulting to the current tag.
 
     Returns:
         Tuples of control id, baseline id, metric, baseline value, control
@@ -201,7 +201,7 @@ def exit_code(
     Args:
         results: Every probe result from the run.
         verdicts: Patch id to verdict.
-        profile_store: Tag-selected profiles, defaulting to v0.27.1.
+        profile_store: Tag-selected profiles, defaulting to the current tag.
 
     Returns:
         0 when the gate passed, 1 otherwise.
@@ -232,7 +232,7 @@ def build_report(
         verdicts: Patch id to verdict.
         perf: Profile id to performance measurements.
         config_identity: Fleet and engine paths plus SHA-256 identities.
-        profile_store: Tag-selected profiles, defaulting to v0.27.1.
+        profile_store: Tag-selected profiles, defaulting to the current tag.
 
     Returns:
         The report body.

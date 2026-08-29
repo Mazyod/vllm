@@ -173,5 +173,4 @@ manual:
     venue: manual
     status: unvalidated
     hardware: 2xH200 SXM pair
-    image: openimage/vllm-openai-audio:v0.27.1
     upstream_issues: [51181, 51318, 51182]
