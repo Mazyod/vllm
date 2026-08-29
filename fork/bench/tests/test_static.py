@@ -142,9 +142,10 @@ def test_expect_boot_evidence_names_are_real_boot_evidence_fields():
         assert not unknown, f"{profile.id} expects unknown evidence: {unknown}"
 
 
-def test_the_three_release_pins_name_one_tag():
-    """Dockerfile ARG, workflow DEFAULT_BASE_TAG and profiles.DEFAULT_TAG must
-    agree, or the gate validates a release nobody is shipping."""
+def test_the_four_release_pins_name_one_tag():
+    """Dockerfile ARG, workflow DEFAULT_BASE_TAG, profiles.DEFAULT_TAG and
+    preflight's --tag must agree, or the gate validates a release nobody is
+    shipping."""
     import re
 
     from fork.bench import profiles

@@ -21,6 +21,10 @@ from fork.bench.verdict import (
     patch_verdict,
 )
 
+_CRASH_SIGNATURE = (
+    "RuntimeError: mat1 and mat2 shapes cannot be multiplied (2496x6400 and 10752x1024)"
+)
+
 
 def test_leave_one_out_fails_and_full_series_passes_means_still_required():
     assert patch_verdict(True, True) == PATCH_STILL_REQUIRED
@@ -149,7 +153,15 @@ def test_report_distinguishes_a_diagnostic_failure_from_a_gating_one():
     report = build_report(
         "v0.26.0",
         {},
-        [ProbeResult("R5", "qwen-tp2-noflags", False, "crashed as expected")],
+        [
+            ProbeResult(
+                "R5",
+                "qwen-tp2-noflags",
+                False,
+                "crashed as expected",
+                {"crash_signature": _CRASH_SIGNATURE},
+            )
+        ],
         {},
         {},
     )
@@ -170,9 +182,47 @@ def test_a_negative_arm_that_stopped_crashing_is_reported():
 
 def test_a_negative_arm_that_crashed_as_declared_is_not_a_mismatch():
     results = [
-        ProbeResult("R5", "qwen-tp2-noflags", False, "served=False crashed=True")
+        ProbeResult(
+            "R5",
+            "qwen-tp2-noflags",
+            False,
+            "served=False crashed=True lines=97",
+            {"crash_signature": _CRASH_SIGNATURE},
+        )
     ]
     assert expectation_mismatches(results) == []
+
+
+@pytest.mark.parametrize("data", [{}, {"crash_signature": ""}])
+def test_a_negative_arm_that_failed_without_a_crash_signature_is_reported(data):
+    """Both negative arms carry R5 and nothing else, so a boot that hung to the
+    deadline or logged nothing renders as "fail (as expected)", no mismatch row
+    and exit 0 — and the operator reads the workaround as still justified off a
+    measurement that never happened. Only one of R5's three failure conditions
+    is a crash, and only that one confirms the declaration."""
+    detail = "served=False crashed=False lines=0"
+    results = [ProbeResult("R5", "qwen-tp2-noflags", False, detail, data)]
+    assert expectation_mismatches(results) == [
+        ("qwen-tp2-noflags", "boot_crash", "R5 failed (no crash signature)", detail)
+    ]
+
+
+def test_a_profile_that_promised_to_serve_and_crashed_still_names_the_receipt():
+    """The crash signature qualifies a declared crash only. A profile that
+    declared serves failed whatever the log holds."""
+    detail = "served=False crashed=True lines=97"
+    results = [
+        ProbeResult(
+            "R5",
+            "gemma-v2-spec-kv-dtype",
+            False,
+            detail,
+            {"crash_signature": _CRASH_SIGNATURE},
+        )
+    ]
+    assert expectation_mismatches(results) == [
+        ("gemma-v2-spec-kv-dtype", "serves", "R5 failed", detail)
+    ]
 
 
 def test_a_profile_that_served_as_declared_is_not_a_mismatch():
@@ -246,7 +296,15 @@ def test_report_omits_the_mismatch_section_when_every_prediction_held():
     report = build_report(
         "v0.28.0",
         {},
-        [ProbeResult("R5", "qwen-tp2-noflags", False, "served=False")],
+        [
+            ProbeResult(
+                "R5",
+                "qwen-tp2-noflags",
+                False,
+                "served=False",
+                {"crash_signature": _CRASH_SIGNATURE},
+            )
+        ],
         {},
         {},
     )

@@ -191,6 +191,14 @@ def expectation_mismatches(
     harness failure rather than a crash — so a failure is reported as the
     receipt it is, with R5's own detail beside it rather than a guessed cause.
 
+    That asymmetry is why a declared boot_crash needs more than a failed R5 to
+    count as confirmed. Both negative arms carry R5 and no other probe, so
+    accepting any R5 failure as the crash would let a hang or an empty log
+    render as "fail (as expected)" with no mismatch row and a zero exit, and
+    the workaround the arm exists to justify would look justified off a
+    measurement that never happened. The crash signature the receipt carries is
+    the evidence; without it the row says so.
+
     A profile with no R5 result is left out. Nothing was observed, so nothing
     is claimed.
 
@@ -217,9 +225,16 @@ def expectation_mismatches(
             expected = store.get(profile_id).expect
         except KeyError:
             continue
-        if expected == ("serves" if receipt.passed else "boot_crash"):
-            continue
-        observed = "served" if receipt.passed else "R5 failed"
+        if receipt.passed:
+            if expected == "serves":
+                continue
+            observed = "served"
+        elif expected == "boot_crash":
+            if receipt.data.get("crash_signature"):
+                continue
+            observed = "R5 failed (no crash signature)"
+        else:
+            observed = "R5 failed"
         rows.append((profile_id, expected, observed, receipt.detail))
     return rows
 
