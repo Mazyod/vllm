@@ -145,21 +145,24 @@ def test_a_box_that_answers_immediately_is_not_waited_on():
     assert naps == []
 
 
-def test_waiting_for_ssh_gives_up_and_says_how_long_it_waited():
-    """A box that never answers is one to give back, not to keep pushing to."""
+def test_waiting_for_ssh_gives_up_and_says_what_it_tried():
+    """Sixty refusals is a box that never got its key; two is a short budget."""
     shell = RefusingShell(refusals=99)
-    ticks = iter([0.0, 300.0])
+    ticks = iter([0.0, 10.0, 20.0, 30.0])
     with pytest.raises(TimeoutError) as raised:
         wait_for_ssh(
             BOX,
-            deadline_s=300,
-            poll_s=0,
+            deadline_s=30,
+            poll_s=10,
             run=shell,
             clock=lambda: next(ticks),
             sleep=lambda _: None,
         )
-    assert "300s" in str(raised.value)
-    assert "Connection refused" in str(raised.value)
+    message = str(raised.value)
+    assert "3 attempts" in message
+    assert "every 10s" in message
+    assert "over 30s" in message
+    assert "Connection refused" in message
 
 
 def test_waiting_returns_the_exit_code_the_run_finished_with():

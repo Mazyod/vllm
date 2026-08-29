@@ -18,11 +18,20 @@ from fork.bench.proc import run_argv
 DONE_MARKER = "gate.exit"
 GATE_LOG = "gate.log"
 
-# Long enough for a key to propagate to a box the provider already calls
-# running, short enough that a host which never answers is refused with the
-# rental barely touched: five minutes is under a tenth of the reaper's cap and
-# well inside the margin the run keeps for collecting results.
-DEFAULT_SSH_DEADLINE_S = 5 * 60
+# How long a rented box gets to accept its first login.
+#
+# Five minutes was tried first and was not enough: on 2026-08-29 an instance
+# refused for the whole budget while a hand-run login reached the same host
+# ninety seconds earlier with the same key. Fifteen is three times that, the
+# same size as the margin the run already reserves for teardown, and still
+# leaves the bulk of a ninety-minute rental — of which the boot wait can
+# already have spent twenty-five.
+#
+# It is a ceiling, not a schedule: waiting is paid for by the second, and a box
+# that will never receive its key costs the whole budget before saying so. Ship
+# the default, raise it deliberately with --ssh-deadline-minutes when a venue
+# is known to be slow.
+DEFAULT_SSH_DEADLINE_S = 15 * 60
 
 _SSH_OPTIONS = (
     "-o",
@@ -240,22 +249,30 @@ def wait_for_ssh(
         sleep: Injection point for the delay.
 
     Raises:
-        TimeoutError: If no attempt succeeded, naming how long it waited and
-            what the last one said. A box that never answers is a box to give
-            back, not one to keep pushing a tree onto.
+        TimeoutError: If no attempt succeeded. The message carries how many
+            attempts were made, how far apart, how long that took, and what the
+            last one said — sixty refusals over fifteen minutes is a box that
+            never got its key, two is a budget that was too short for the
+            venue. A box that never answers is a box to give back, not one to
+            keep pushing a tree onto.
     """
     probe = ssh_command(endpoint, "true")
-    end = clock() + deadline_s
+    started = clock()
+    end = started + deadline_s
+    attempts = 0
     while True:
+        attempts += 1
         try:
             run(probe)
             return
         except RuntimeError as error:
             refusal = str(error)
-        if clock() >= end:
+        now = clock()
+        if now >= end:
             raise TimeoutError(
-                f"{endpoint.target} did not accept ssh within {deadline_s:g}s, "
-                f"last attempt: {refusal}"
+                f"{endpoint.target} did not accept ssh: {attempts} attempts "
+                f"every {poll_s:g}s over {now - started:g}s "
+                f"(budget {deadline_s:g}s); last attempt: {refusal}"
             )
         sleep(poll_s)
 

@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 from fork.bench.gate import DockerLauncher, DryRunLauncher, LocalLauncher, run_gate
+from fork.bench.remote import DEFAULT_SSH_DEADLINE_S
 
 _LAUNCHERS = {
     "dry-run": DryRunLauncher,
@@ -69,6 +70,16 @@ def main(argv: list[str] | None = None) -> int:
             "on what the run can cost"
         ),
     )
+    parser.add_argument(
+        "--ssh-deadline-minutes",
+        type=float,
+        default=DEFAULT_SSH_DEADLINE_S / 60,
+        help=(
+            "how long the rented box gets to accept its first login before "
+            "the run gives it back (default: %(default)g). Raise it for a "
+            "venue known to be slow with keys; every minute is paid for"
+        ),
+    )
     args = parser.parse_args(argv)
 
     phases = tuple(args.phases or (2, 3, 4))
@@ -98,6 +109,7 @@ def main(argv: list[str] | None = None) -> int:
             # The gate gives up early enough that its results are still
             # collected; the reaper is the backstop, not the schedule.
             gate_deadline_s=cap_s - campaign.TEARDOWN_MARGIN_S,
+            ssh_deadline_s=args.ssh_deadline_minutes * 60,
         )
 
     kind = "dry-run" if args.dry_run else args.launcher

@@ -14,6 +14,7 @@ import pytest
 from fork.bench.__main__ import main
 from fork.bench.campaign import run_campaign
 from fork.bench.provision import Instance, NewInstance, Offer
+from fork.bench.remote import DEFAULT_SSH_DEADLINE_S
 
 OFFER = Offer(
     id=7,
@@ -320,6 +321,39 @@ def test_a_cap_too_short_to_collect_results_is_refused(tmp_path):
                 "5",
             ]
         )
+
+
+def test_the_login_budget_can_be_raised_for_a_slow_venue(tmp_path, monkeypatch):
+    """Five minutes was not enough on real hardware; the number is an argument."""
+    captured = {}
+    monkeypatch.setattr(
+        "fork.bench.campaign.run_campaign", lambda **kw: captured.update(kw) or 0
+    )
+    main(
+        [
+            "--tag",
+            "v0.27.1",
+            "--image",
+            "i",
+            "--out",
+            str(tmp_path),
+            "--rent",
+            "--ssh-deadline-minutes",
+            "30",
+        ]
+    )
+    assert captured["ssh_deadline_s"] == 30 * 60
+
+
+def test_the_login_budget_defaults_to_the_one_the_harness_justifies(
+    tmp_path, monkeypatch
+):
+    captured = {}
+    monkeypatch.setattr(
+        "fork.bench.campaign.run_campaign", lambda **kw: captured.update(kw) or 0
+    )
+    main(["--tag", "v0.27.1", "--image", "i", "--out", str(tmp_path), "--rent"])
+    assert captured["ssh_deadline_s"] == DEFAULT_SSH_DEADLINE_S
 
 
 def test_renting_hands_the_box_the_token_it_needs(tmp_path, monkeypatch):
