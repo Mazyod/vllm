@@ -213,47 +213,72 @@ hopes for. Preflight proves orchestration, not aim.
     record.** Launch from the committed file and carry its digest into the
     result.
 
-## The trap the runbook told you to walk into (2026-08-29)
+## The root cause that was named twice and held neither time (2026-08-29)
 
-### Setting a token took the SSH port off every box
+### What was actually observed
 
-`vast.py` passed `--env "-e HF_TOKEN=..."` to the provider's create call
-whenever `spec.env` was non-empty, which was exactly when the operator had
-`HF_TOKEN` exported — which `RUNBOOK.md`'s own canonical command instructed.
+Seven ssh probes went out across two hosts and both endpoint modes. One reached
+a shell. Every preserved driver log — including a run with `HF_TOKEN` unset and
+therefore no `--env` anywhere — records the same signature:
 
-`--env` is not a list of variables. The client's help calls it "env variables
-**and port mapping options**", and its example is
-`--env '-e TZ=PDT -e XNAME=XX4 -p 22:22 -p 8080:8080'`: one docker-run argument
-string that replaces the default rather than adding to it. Passing only `-e`
-entries therefore drops `-p 22:22`, and the box runs with no published SSH
-port. A/B on the same offer, same image, same account key, minutes apart:
-without `--env` ssh was up at t=40s; with it, nothing authenticated in 400s.
+```text
+Permission denied (publickey).
+```
 
-Nothing about the instance said so. It reported `running`, `status_msg` said
-`success, running <image>/ssh`, and the client happily returned an address —
-for a port with nothing behind it.
+Not one records a refused connection or a timeout. sshd was up on every box and
+refused the account key. **That failure is unexplained and unfixed.** It is the
+only thing the day established, and the single success is as likely to be noise
+as signal.
 
-The one gate that had worked, v0.27.1 on 2026-08-11, worked by accident:
-`HF_TOKEN` was unset that day, and its `gate.log` still records the hub
-"sending unauthenticated requests". A green run had been certifying a code path
-nobody had chosen, and the documented procedure chose the other one.
+### The first diagnosis: waiting longer
 
-The token now travels in the gate's own ssh invocation, exported outside the
-group whose output becomes `gate.log`. `InstanceSpec` no longer has an `env`
-field at all: leaving the parameter in place would have left the flag one
-keyword argument away, usable safely only by someone who also knew to
-re-declare the port mappings.
+The first fix was a bigger `wait_for_ssh` budget, because `Permission denied`
+after a fresh create reads like key propagation lag. It is a reasonable
+hypothesis and it was wrong: no budget outlasts a key that is not there. The
+retry is still correct for genuine lag and is kept, but it never addressed this.
 
-### What this does not explain
+### The second diagnosis: `--env`
 
-Seven probes ran that day across two hosts and both endpoint modes; one reached
-a shell. Three of the failures had no `--env` anywhere: a gate run with
-`HF_TOKEN` unset, a probe on a second host, and a proxy-mode instance created
-without `--direct`. Those refused the account key — `Permission denied
-(publickey)` — which is a different signature from a port that was never
-published, and it is **unexplained**. Removing `--env` is necessary and is not
-known to be sufficient. Read the error before deciding which failure you have:
-nothing listening is the fixed defect; a key refusal is the open one.
+`vast.py` passed `--env "-e HF_TOKEN=..."` to the create call whenever
+`spec.env` was non-empty, which was exactly when the operator had `HF_TOKEN`
+exported — which this runbook's own canonical command instructed. And `--env`
+is genuinely a trap: the client's help calls it "env variables **and port
+mapping options**", with the example
+`--env '-e TZ=PDT -e XNAME=XX4 -p 22:22 -p 8080:8080'`. It is one docker-run
+argument string that replaces the default, so passing only `-e` entries drops
+`-p 22:22` and the box runs with no published SSH port.
+
+An A/B appeared to confirm it — one probe without `--env` connected, one with
+it did not — and it was written up as the root cause. It is not. The logs
+disagree in the way that settles it: a dropped port mapping cannot produce
+`Permission denied (publickey)`, because there would be no sshd to answer. Both
+arms had failed for the same unexplained reason and the one success was noise;
+the A/B was confounded and never had the power to indict anything.
+
+What survives is worth keeping on its own terms. `--env` is a documented way to
+lose a box, the harness no longer passes it, `InstanceSpec` no longer has an
+`env` field for anyone to reach for, and the token travels over ssh instead —
+out of instance creation entirely, and outside the group whose output becomes
+`gate.log`. That is one hazard closed on documented grounds. It is not a
+diagnosis.
+
+### What the discriminator is
+
+- **Connection refused, or a timeout, with the instance `running`** — nothing
+  listening on the published port. The `--env` hazard looks like this.
+- **`Permission denied (publickey)`** — sshd is up and rejecting the key. This
+  is the open failure, and every observed one was this.
+
+Reading the signature first is the whole difference between the two, and it is
+what neither diagnosis did.
+
+### The amplifier
+
+The one gate that had ever worked, v0.27.1 on 2026-08-11, ran with `HF_TOKEN`
+unset — its `gate.log` still records the hub "sending unauthenticated
+requests". So the green run had been exercising the no-`--env` path while the
+documented procedure chose the other one, and nobody had evidence about the
+path the runbook actually told operators to take.
 
 15. **A creation flag that replaces rather than adds is a trap, and the docs
     can be the thing that springs it.** Before passing an option to a provider,
@@ -263,7 +288,12 @@ nothing listening is the fixed defect; a key refusal is the open one.
 16. **A run that passes because a variable happened to be unset has not been
     tested.** When a documented step changes which code path executes, the
     undocumented path is the one nobody has evidence about.
-17. **A confirmed cause does not close an investigation.** `--env` is proven
-    and fixed; it accounts for some of the day's failures, not all of them.
-    Recording "root cause found" while probes are still failing outside its
-    scope is how rule 8's misretirement happened — the residue is the finding.
+17. **Name the signature before naming the cause.** Two root causes were
+    declared for this failure — propagation lag, then `--env` — and the error
+    text disproved both: `Permission denied (publickey)` is sshd answering, so
+    neither a longer wait nor a missing port mapping could produce it. Each was
+    reached by reasoning from a mechanism that *could* explain a symptom nobody
+    had read closely, and the second was confirmed by an A/B of two runs, which
+    is a sample that cannot distinguish a cause from noise. A fix that stands
+    on documented behaviour is worth shipping; it is still not a diagnosis, and
+    an investigation stays open until the observed signature is accounted for.

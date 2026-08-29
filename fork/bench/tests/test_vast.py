@@ -164,11 +164,10 @@ def test_create_never_hands_the_provider_an_environment():
     """`--env` is one docker-run string, and it carries the port mappings.
 
     The client's help calls it "env variables and port mapping options", so
-    passing only `-e` entries replaces the default and drops `-p 22:22`. A/B on
-    2026-08-29, same offer, same image, same account key, minutes apart:
-    without it the box accepted ssh at t=40s; with `--env "-e HF_TOKEN=..."`
-    nothing authenticated in 400s. Whatever the run needs is exported over ssh
-    instead, so this argv must stay env-free.
+    passing only `-e` entries replaces the default and drops `-p 22:22`. That
+    hazard is documented rather than something this harness observed, and the
+    flag buys nothing: whatever the run needs is exported over ssh instead. So
+    this argv stays env-free.
     """
     cli = FakeCli([json.dumps({"success": True, "new_contract": 100})])
     VastCli(cli).create(_offer(), SPEC)

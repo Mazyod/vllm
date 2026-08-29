@@ -66,20 +66,15 @@ confirm; `NOTHING WATCHED` (exit 2) means no instance ever carried that label,
 so **nothing was guarded and nothing about the account was verified** — check
 the label you armed it with against the one the run used.
 
-### The token trap
+### The token trap, and the open failure
 
-Until 2026-08-29 this command began `export HF_TOKEN=...`, and following it
-cost the rental its SSH port. `HF_TOKEN` being set is what made the harness
-pass `--env` to the provider's create call, and `--env` is not a list of
-variables — the client's own help calls it "env variables **and port mapping
+Until 2026-08-29 this command began `export HF_TOKEN=...`, which is what made
+the harness pass `--env` to the provider's create call. `--env` is not a list
+of variables: the client's own help calls it "env variables **and port mapping
 options**", with the example
 `--env '-e TZ=PDT -e XNAME=XX4 -p 22:22 -p 8080:8080'`. It is one docker-run
 argument string that **replaces** the default, so passing only `-e` entries
-drops `-p 22:22`. A/B on the same offer, same image, same account key, minutes
-apart: without `--env` the box accepted ssh at t=40s; with it, nothing
-authenticated in 400s. The instance reports `running` and `status_msg` still
-says `success, running <image>/ssh`, so it reads as a slow box rather than a
-box with nothing listening.
+drops `-p 22:22` and leaves the box running with nothing on its SSH port.
 
 The harness no longer passes `--env` at all, and a test holds that argv
 env-free. A token now travels in the gate's own ssh invocation, exported
@@ -90,16 +85,21 @@ records the hub "sending unauthenticated requests"; and if you do gate a
 private checkpoint, the token is in a command line on the box for the life of
 the run, so use one scoped to that repository.
 
-**This is not the whole story.** Removing `--env` is necessary; it is not known
-to be sufficient. Of seven probes across two hosts and both endpoint modes on
-2026-08-29, exactly one reached a shell, and three of the failures had no
-`--env` anywhere: a gate run with `HF_TOKEN` unset, a probe on a second host,
-and a proxy-mode instance created without `--direct`. Those refused the account
-key (`Permission denied (publickey)`), which is a different signature from a
-missing port mapping and is **still unexplained**. If a rental refuses ssh,
-read the error before assuming this section covers it: connection refused with
-nothing listening is the fixed defect; `Permission denied (publickey)` is the
-open one, and the machine should be given back rather than waited on.
+**That hazard is documented, and it is not the failure we hit.** Do not read
+this section as an explanation of a box that refuses you. All three preserved
+driver logs from 2026-08-29 show `Permission denied (publickey)` — sshd
+answering and rejecting the key — including one run that passed no `--env` at
+all. Not one shows a refused connection or a timeout, which is what a dropped
+port mapping produces. Seven probes went out across two hosts and both endpoint
+modes; one reached a shell, and that success is as likely to be noise as
+signal. **The key-provisioning failure is unexplained and unfixed.**
+
+So read the error before deciding what to do:
+
+| what ssh says | what it means | what to do |
+| --- | --- | --- |
+| connection refused, or a timeout, with the instance `running` | nothing is listening on the published port — the documented `--env` hazard | this harness cannot cause it any more; if it happens, capture the create argv before destroying |
+| `Permission denied (publickey)` | sshd is up and refusing the account key — the open failure | give the box back and re-hunt. Do **not** raise `--ssh-deadline-minutes`: no budget outlasts a key that is not there |
 
 `--rent` is phases 1 and 5 done for you: it searches its preference list once,
 rents one instance, arms the reaper before anything else, pushes this tree onto

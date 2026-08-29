@@ -160,16 +160,18 @@ class VastCli:
         example is `--env '-e TZ=PDT -e XNAME=XX4 -p 22:22 -p 8080:8080'`: the
         flag is one docker-run argument string that replaces the default rather
         than adding to it, so passing only `-e` entries drops `-p 22:22` and
-        the instance runs with no published SSH port. It still reports
-        `running`, so the loss reads as a slow box rather than a broken one.
-        A/B on 2026-08-29, same offer 32306172, same image, same account key,
-        minutes apart: without `--env` the box accepted ssh at t=40s; with
-        `--env "-e HF_TOKEN=..."` nothing authenticated in 400s.
+        the instance runs with no published SSH port, while still reporting
+        `running`.
 
-        Not passing it is necessary, and is not known to be sufficient:
-        instances have also refused the account key with no `--env` involved
-        (see LESSONS.md). Anything the run needs in its environment is exported
-        over ssh by `start_gate_command`.
+        That hazard is documented, not observed. It is **not** the failure this
+        harness actually hit: every preserved driver log shows
+        `Permission denied (publickey)` — sshd answering and refusing the key —
+        including a run that passed no `--env` at all. A dropped port mapping
+        would refuse the connection instead. The two are still unexplained and
+        unfixed apart; see LESSONS.md. This flag is simply never passed, which
+        removes one documented way to lose a box and costs nothing: anything
+        the run needs in its environment is exported over ssh by
+        `start_gate_command`.
 
         Args:
             offer: Offer to rent.

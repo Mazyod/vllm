@@ -189,7 +189,7 @@ class InstanceSpec:
     as well as variables: supplying it replaces the default, so a spec that
     named only variables would drop `-p 22:22` and leave the box running with
     no published SSH port. What the run needs is exported over ssh instead; see
-    `VastCli.create` for the documented behaviour and the A/B.
+    `VastCli.create` for the documented behaviour.
 
     Attributes:
         image: Image the instance boots.
