@@ -79,10 +79,13 @@ carried a fourth divergence for one release: a dependency pin,
 [`fork/docker/Dockerfile.audio`](fork/docker/Dockerfile.audio), because the
 stock `v0.27.1` image shipped transformers 5.15.0 and could not boot Gemma-4
 at all. That pin's exit criterion (upstream `70b84f0bcb`, #49797) landed
-upstream and the pin was retired in `v0.28.0`. **The image is now the
-upstream release plus the audio extra, and nothing else — zero divergence
-from the stock base beyond `vllm[audio]`.** Notice if that sentence ever
-stops being true. The retirement record and the filing convention for the
+upstream and the pin was retired in `v0.28.0`. **The image now adds no
+Python package, no version pin, and no source patch beyond `vllm[audio]`
+itself** — the patch-application scaffolding (the OS `patch` package,
+`/opt/fork/patches`, `apply-patches.sh`) still ships in every build and
+stays inert while the series is empty; it is not gone, just idle. Notice
+if a package, pin, or patch shows up here that isn't `vllm[audio]`. The
+retirement record and the filing convention for the
 next patch live in [`fork/patches/README.md`](fork/patches/README.md) — every
 patch ships with full context (impact, root cause, a **reproduce case**,
 validation, ruled-out theories) as a note under `fork/patches/notes/` — a
