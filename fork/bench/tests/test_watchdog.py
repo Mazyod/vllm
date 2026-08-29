@@ -151,11 +151,18 @@ def test_a_label_nobody_carries_is_not_reported_as_a_teardown(account):
 
 
 def test_watching_a_box_and_watching_nothing_read_differently(account):
-    """The two outcomes must not share a line in the log."""
+    """The two outcomes must not share an exit code or a verdict.
+
+    Asserting only that the last lines differ would pass against the defect
+    this guards: the old script printed one message for both outcomes, and the
+    run label interpolated into it made the strings differ anyway. The verdict
+    has to be the thing that differs.
+    """
     watched = _watch(account, os.getpid(), cap="0")
     nothing = _watch(account, os.getpid(), cap="0", label="fork-bench-typo")
     assert watched.returncode != nothing.returncode
-    assert watched.stdout.splitlines()[-1] != nothing.stdout.splitlines()[-1]
+    assert "NOTHING WATCHED" in nothing.stdout
+    assert "NOTHING WATCHED" not in watched.stdout
 
 
 def test_a_trigger_before_the_box_exists_keeps_watching(account):
@@ -219,5 +226,6 @@ def test_a_refused_arm_does_not_read_like_a_healthy_watch(account):
     refused = _watch(account, dead.pid, cap="600")
     healthy = _watch(account, os.getpid(), cap="0")
     assert refused.returncode != healthy.returncode
-    assert refused.stdout.splitlines()[-1] != healthy.stdout.splitlines()[-1]
+    assert "REFUSING TO ARM" in refused.stdout
+    assert "REFUSING TO ARM" not in healthy.stdout
     assert "armed:" not in refused.stdout

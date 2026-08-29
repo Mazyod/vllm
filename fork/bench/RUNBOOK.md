@@ -209,7 +209,7 @@ box contend for CPU and PCIe and will understate throughput.
 | condition | action |
 | --- | --- |
 | topology gate fails three times | abort, report, destroy |
-| the box never accepts a login | give it back and re-hunt. The error names attempts, interval and elapsed: many refusals over the whole budget is a box that never got the key, a handful is a budget too short for the venue — raise `--ssh-deadline-minutes` only for the second |
+| the box never accepts a login | give it back and re-hunt. Read the signature and follow the table in [The token trap, and the open failure](#the-token-trap-and-the-open-failure) — that table is the only place this decision is written. `Permission denied (publickey)` is the open failure and no budget helps it |
 | a boot exceeds its deadline | capture the full log, mark the profile failed, continue |
 | a probe hangs past its deadline | capture partial results, continue |
 | the instance dies mid-run | report what streamed, with an explicit truncation note |
