@@ -1,0 +1,19 @@
+# venue: manual; validated on a 2xH200 SXM pair on 2026-08-11 (v0.27.1).
+# UNVALIDATED on v0.28.0 pending re-validation (Task 9).
+# The measured DeepSeek-V4 Flash checkpoint.
+model: deepseek-ai/DeepSeek-V4-Flash-0731
+# The on-prem server spans the two H200 GPUs.
+tensor-parallel-size: 2
+# fp8_ds_mla rejects auto, so FP8 KV cache is mandatory.
+kv-cache-dtype: fp8
+# v0.27.1 justification: mitigated a DeepGEMM SM90 OOB in FULL decode
+# capture under Model Runner V1. At v0.28.0 DeepseekV4ForCausalLM defaults
+# to Model Runner V2 (config/vllm.py:72, #51768), whose attention layer
+# picks its own eager region per runner (models/deepseek_v4/attention.py:
+# 302-307, #52401) -- the runner is now the load-bearing knob, not this
+# flag. Kept but UNVERIFIED on this release; likely redundant. The
+# underlying DeepGEMM bug is still open upstream (deepseek-ai/DeepGEMM#399);
+# #51181/#51499 closed via vLLM-side capture changes, not a kernel fix.
+compilation-config:
+  cudagraph_mode: PIECEWISE
+# DSpark speculative decoding is intentionally off; no speculative-config is set.
