@@ -186,6 +186,7 @@ main_check() {
   local failures tracked_detail path
   local docker_tag workflow_tag profile_tag preflight_tag release_tag release_sha
   local pin_detail history_output export_dir frozen_sha remote_line
+  local unexpected name generated_set recorded_set export_detail export_ok
   failures=0
 
   ok_rule() {
@@ -256,13 +257,39 @@ main_check() {
     fail_rule export "fork/patches/RELEASE is incomplete"
   else
     export_dir="$(mktemp -d)"
-    if REPO="$REPO" BASE_TAG="$release_tag" PATCH_DIR="$export_dir" \
-      "$SCRIPT_DIR/export-patches.sh" "$release_sha" >/dev/null 2>&1 &&
-      diff -r --exclude=README.md "$export_dir" \
-        "$REPO/fork/patches" >/dev/null; then
+    export_ok=1
+    export_detail="generated files differ from fork/patches"
+    if ! REPO="$REPO" BASE_TAG="$release_tag" PATCH_DIR="$export_dir" \
+      "$SCRIPT_DIR/export-patches.sh" "$release_sha" >/dev/null 2>&1; then
+      export_ok=0
+    fi
+    unexpected=""
+    while IFS= read -r name; do
+      case "$name" in
+      README.md | RELEASE | series | upstream.map | *.patch) ;;
+      *) unexpected="$name"; break ;;
+      esac
+    done < <(find "$REPO/fork/patches" -mindepth 1 -maxdepth 1 \
+      -printf '%f\n' | sort)
+    if [ -n "$unexpected" ]; then
+      export_ok=0
+      export_detail="unexpected file fork/patches/$unexpected"
+    fi
+    generated_set="$(find "$export_dir" -maxdepth 1 -type f \
+      \( -name '*.patch' -o -name series -o -name upstream.map \
+      -o -name RELEASE \) -printf '%f\n' | sort)"
+    recorded_set="$(find "$REPO/fork/patches" -maxdepth 1 -type f \
+      \( -name '*.patch' -o -name series -o -name upstream.map \
+      -o -name RELEASE \) -printf '%f\n' | sort)"
+    [ "$generated_set" = "$recorded_set" ] || export_ok=0
+    while IFS= read -r name; do
+      [ -n "$name" ] || continue
+      cmp -s "$export_dir/$name" "$REPO/fork/patches/$name" || export_ok=0
+    done <<<"$generated_set"
+    if [ "$export_ok" -eq 1 ]; then
       ok_rule export
     else
-      fail_rule export "generated files differ from fork/patches"
+      fail_rule export "$export_detail"
     fi
     rm -rf "$export_dir"
   fi

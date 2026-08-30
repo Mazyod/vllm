@@ -116,6 +116,17 @@ def test_a_stale_export_fails_export(tmp_path):
     assert "FAIL export" in result.stdout
 
 
+def test_an_unexpected_patch_directory_file_fails_export_with_its_name(tmp_path):
+    upstream = init_repo(tmp_path / "upstream")
+    release_sha = patch_commit(upstream, "vllm/v1/core.py", "x = 2\n")
+    repo = overlay_repo(tmp_path, upstream, release_sha)
+    _write(repo, "fork/patches/notes.txt", "hand-written drift\n")
+    result = _check(repo)
+    assert result.returncode == 1
+    assert "FAIL export" in result.stdout
+    assert "notes.txt" in result.stdout
+
+
 def test_a_bad_release_history_fails_release_history(tmp_path):
     upstream = init_repo(tmp_path / "upstream")
     release_sha = patch_commit(upstream, "vllm/v1/core.py", "x = 2\n", trailers=False)
