@@ -175,6 +175,24 @@ def test_create_never_hands_the_provider_an_environment():
     assert "-e" not in cli.last
 
 
+def test_create_repairs_the_key_file_the_provider_writes_at_boot():
+    """Some hosts write authorized_keys as the daemon's user, mode 644.
+
+    sshd's StrictModes then refuses the file and every login fails with
+    `Permission denied (publickey)` although the key is in it (machine 56779,
+    2026-08-29/30). The onstart command chowns it back to root, repeatedly,
+    because the provider does not say whether the file lands before or after
+    onstart runs.
+    """
+    cli = FakeCli([json.dumps({"success": True, "new_contract": 100})])
+    VastCli(cli).create(_offer(), SPEC)
+    assert "--onstart-cmd" in cli.last
+    command = cli.last[cli.last.index("--onstart-cmd") + 1]
+    assert "chown root:root /root/.ssh/authorized_keys" in command
+    assert "chmod 600 /root/.ssh/authorized_keys" in command
+    assert "for i in" in command and "sleep" in command
+
+
 def test_create_returns_the_contract_and_its_scoped_key():
     cli = FakeCli(
         [

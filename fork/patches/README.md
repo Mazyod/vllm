@@ -34,7 +34,10 @@ fork carried, and both retirement witnesses agreed on 2026-08-11 — ancestry
 verified against the tag, and the release gate passed every probe firing real
 traffic through the patchless candidate (baseline:
 `fork/bench/baselines/v0.27.1-20260811.json`). See `fork/bench/LESSONS.md`
-rules 8–11 for why one witness is not enough.
+rules 8–11 for why one witness is not enough. The empty series held at
+`v0.28.0`: the 2026-08-30 gate passed every gating probe on the patchless
+candidate (baseline: `fork/bench/baselines/v0.28.0-20260830.json`, record:
+`fork/bench/configs/v0.28.0/results/20260830-attempt4.md`).
 
 Retired at `v0.27.1` (patch files and notes live in git history at the
 `fork/bump-v0.27.1` merge):
