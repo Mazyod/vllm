@@ -53,9 +53,42 @@ def test_image_workflow_carries_the_release_provenance_contract():
     assert any("freeze-release.sh" in step.get("run", "") for step in promote["steps"])
     resolve = next(step for step in resolve_steps if step.get("id") == "resolve")
     assert "resolve-publish-tags.sh" in resolve["run"]
+    assert '"${IMAGE_NAME}:${PROMOTE_FROM}"' in resolve["run"]
+    assert 'SOURCE_REF="${IMAGE_NAME}@${CANDIDATE_DIGEST}"' in resolve["run"]
+    assert "candidate_digest=$CANDIDATE_DIGEST" in resolve["run"]
+    assert jobs["build-and-push"]["outputs"]["digest"] == (
+        "${{ steps.build.outputs.digest }}"
+    )
+
+    digest_jobs = (jobs["test"], jobs["promote"])
+    digest_commands = []
+    for job in digest_jobs:
+        for step in job["steps"]:
+            command = ""
+            for line in step.get("run", "").splitlines():
+                command += line.strip()
+                if command.endswith("\\"):
+                    command = command[:-1]
+                    continue
+                if "docker pull " in command or "docker inspect " in command:
+                    digest_commands.append(command)
+                command = ""
+    assert digest_commands
+    assert all(":${{" not in command for command in digest_commands)
+    assert all('"$SOURCE_REF"' in command for command in digest_commands)
+    assert all(
+        'SOURCE_REF="${IMAGE_NAME}@' in step.get("run", "")
+        for job in digest_jobs
+        for step in job["steps"]
+        if any(
+            line.strip().startswith(("docker pull", "docker inspect"))
+            for line in step.get("run", "").splitlines()
+        )
+    )
+
     candidate = next(step for step in promote["steps"] if step.get("id") == "candidate")
-    assert 'PINNED="${IMAGE_NAME}@${DIGEST}"' in candidate["run"]
-    assert 'docker pull "$PINNED"' in candidate["run"]
+    assert "imagetools inspect" not in candidate["run"]
+    assert 'docker pull "$SOURCE_REF"' in candidate["run"]
     assert any(
         "verify-candidate.sh" in step.get("run", "") for step in promote["steps"]
     )

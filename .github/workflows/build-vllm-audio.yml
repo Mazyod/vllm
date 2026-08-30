@@ -86,6 +86,7 @@ jobs:
       image_refs: ${{ steps.resolve.outputs.image_refs }}
       promote_latest: ${{ steps.resolve.outputs.promote_latest }}
       promote_from: ${{ steps.resolve.outputs.promote_from }}
+      candidate_digest: ${{ steps.resolve.outputs.candidate_digest }}
       source_ref: ${{ steps.resolve.outputs.source_ref }}
       main_sha: ${{ github.sha }}
       release_sha: ${{ steps.resolve.outputs.release_sha }}
@@ -152,9 +153,13 @@ jobs:
           # rebuilds nothing, so the artifact the gate approved is the artifact
           # that ships.
           if [[ -n "$PROMOTE_FROM" ]]; then
-            SOURCE_REF="${IMAGE_NAME}:${PROMOTE_FROM}"
+            CANDIDATE_DIGEST=$(docker buildx imagetools inspect \
+              "${IMAGE_NAME}:${PROMOTE_FROM}" \
+              --format '{{.Manifest.Digest}}')
+            SOURCE_REF="${IMAGE_NAME}@${CANDIDATE_DIGEST}"
           else
-            SOURCE_REF="${IMAGE_NAME}:${PRIMARY_TAG}"
+            CANDIDATE_DIGEST=""
+            SOURCE_REF=""
           fi
 
           {
@@ -163,6 +168,7 @@ jobs:
             echo "primary_tag=$PRIMARY_TAG"
             echo "promote_latest=$PROMOTE_LATEST"
             echo "promote_from=$PROMOTE_FROM"
+            echo "candidate_digest=$CANDIDATE_DIGEST"
             echo "source_ref=$SOURCE_REF"
             echo "release_sha=$RELEASE_SHA"
             echo "release_tag=$RELEASE_TAG"
@@ -192,6 +198,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
     steps:
       - name: Checkout fork
         uses: actions/checkout@v5
@@ -269,14 +277,25 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Pull the image under test
-        run: docker pull "${{ needs.resolve.outputs.source_ref }}"
+        run: |
+          set -euo pipefail
+          SOURCE_REF="${{ needs.resolve.outputs.source_ref }}"
+          if [[ -z "$SOURCE_REF" ]]; then
+            SOURCE_REF="${IMAGE_NAME}@${{ needs.build-and-push.outputs.digest }}"
+          fi
+          [[ "$SOURCE_REF" == *@sha256:* ]] || {
+            echo "::error::source ref is not pinned by digest: $SOURCE_REF"
+            exit 1
+          }
+          echo "SOURCE_REF=$SOURCE_REF" >> "$GITHUB_ENV"
+          docker pull "$SOURCE_REF"
 
       - name: Assert audio decode deps are present
         run: |
           # /v1/audio/transcriptions needs these. vLLM guards `import av` and
           # `import soundfile`; if either is missing it degrades to a
           # PlaceholderModule. Importing both is pure CPU work — no GPU.
-          IMAGE="${{ needs.resolve.outputs.source_ref }}"
+          IMAGE="$SOURCE_REF"
           docker run --rm --entrypoint python3 "$IMAGE" -c \
             "import av, soundfile; print('audio deps OK: av', av.__version__, '| soundfile', soundfile.__version__)"
 
@@ -286,7 +305,7 @@ jobs:
           # Derived from the series rather than hardcoded, so it cannot go stale
           # when a patch is added or retired: every patch must reverse-apply
           # cleanly (proving it is present), and the count must match.
-          IMAGE="${{ needs.resolve.outputs.source_ref }}"
+          IMAGE="$SOURCE_REF"
           # Fail closed on an unreadable series: "0 declared" and "0 found"
           # agree, so a missing file renders as a passing check that compared
           # nothing at all.
@@ -346,17 +365,22 @@ jobs:
         id: candidate
         run: |
           set -euo pipefail
-          SOURCE="${{ needs.resolve.outputs.source_ref }}"
-          DIGEST=$(docker buildx imagetools inspect "$SOURCE" \
-            --format '{{.Manifest.Digest}}')
-          PINNED="${IMAGE_NAME}@${DIGEST}"
-          docker pull "$PINNED"
+          SOURCE_REF="${{ needs.resolve.outputs.source_ref }}"
+          if [[ -z "$SOURCE_REF" ]]; then
+            SOURCE_REF="${IMAGE_NAME}@${{ needs.build-and-push.outputs.digest }}"
+          fi
+          [[ "$SOURCE_REF" == *@sha256:* ]] || {
+            echo "::error::source ref is not pinned by digest: $SOURCE_REF"
+            exit 1
+          }
+          DIGEST="${SOURCE_REF#*@}"
+          docker pull "$SOURCE_REF"
           CAND_RELEASE_SHA=$(docker inspect --format \
-            '{{ index .Config.Labels "io.openimage.release-sha" }}' "$PINNED")
+            '{{ index .Config.Labels "io.openimage.release-sha" }}' "$SOURCE_REF")
           CAND_EXPORT=$(docker inspect --format \
-            '{{ index .Config.Labels "io.openimage.patch-export" }}' "$PINNED")
+            '{{ index .Config.Labels "io.openimage.patch-export" }}' "$SOURCE_REF")
           CAND_BASE=$(docker inspect --format \
-            '{{ index .Config.Labels "io.openimage.base-digest" }}' "$PINNED")
+            '{{ index .Config.Labels "io.openimage.base-digest" }}' "$SOURCE_REF")
           [[ "$CAND_RELEASE_SHA" != "<no value>" ]] || CAND_RELEASE_SHA=""
           [[ "$CAND_EXPORT" != "<no value>" ]] || CAND_EXPORT=""
           [[ "$CAND_BASE" != "<no value>" ]] || CAND_BASE=""
@@ -438,10 +462,9 @@ jobs:
         id: promote
         run: |
           set -euo pipefail
-          SOURCE="${{ needs.resolve.outputs.source_ref }}"
           DIGEST="${{ steps.candidate.outputs.digest }}"
-          PINNED="${IMAGE_NAME}@${DIGEST}"
-          echo "promoting $SOURCE -> $DIGEST"
+          SOURCE_REF="${IMAGE_NAME}@${DIGEST}"
+          echo "promoting $SOURCE_REF"
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
           # On a promotion the publish tags were never pushed by this run,
@@ -450,13 +473,13 @@ jobs:
             while IFS= read -r ref; do
               [[ -n "$ref" ]] || continue
               echo "  tagging $ref"
-              docker buildx imagetools create --tag "$ref" "$PINNED"
+              docker buildx imagetools create --tag "$ref" "$SOURCE_REF"
             done <<< "${{ needs.resolve.outputs.image_refs }}"
           fi
 
           if [[ "${{ needs.resolve.outputs.promote_latest }}" == "true" ]]; then
             echo "  tagging ${IMAGE_NAME}:latest"
-            docker buildx imagetools create --tag "${IMAGE_NAME}:latest" "$PINNED"
+            docker buildx imagetools create --tag "${IMAGE_NAME}:latest" "$SOURCE_REF"
           fi
 
       - name: Summary
