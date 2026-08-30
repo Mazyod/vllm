@@ -9,7 +9,7 @@
 #
 # This script is intentionally fail-closed: if any patch does not apply, the
 # build fails. That is the signal to regenerate the series against the new
-# upstream release (fork/scripts/refresh-patches.sh) instead of shipping an
+# upstream release (fork/scripts/new-release.sh) instead of shipping an
 # image whose patches silently did nothing.
 #
 # Usage: apply-patches.sh <patch-dir>

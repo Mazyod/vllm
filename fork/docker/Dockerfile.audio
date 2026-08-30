@@ -19,8 +19,8 @@
 # vllm/vllm-openai:${BASE_TAG}.
 #
 # BASE_TAG MUST be a real upstream release tag (e.g. v0.26.0). The patch series
-# is generated against that tag; bumping BASE_TAG without refreshing the series
-# (fork/scripts/refresh-patches.sh) will fail the build by design.
+# is generated against that tag; bumping BASE_TAG without running
+# fork/scripts/new-release.sh will fail the build by design.
 ARG BASE_TAG=v0.28.0
 FROM vllm/vllm-openai:${BASE_TAG}
 

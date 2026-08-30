@@ -1,13 +1,15 @@
 # `fork/` — the fork overlay
 
 Everything the fork owns lives here, plus `FORK.md`, two CI workflows, and the
-minimal root tooling staged in `overlay-root/`. Upstream source is present only
-on release work branches. Start at the top-level [`FORK.md`](../FORK.md).
+minimal root tooling. Before the one-shot migration that tooling is staged in
+`overlay-root/`; that directory exists only until migration moves its contents
+to the repository root. Upstream source is present only on release work
+branches. Start at the top-level [`FORK.md`](../FORK.md).
 
 ```text
 fork/
 ├── alignment.ledger
-├── overlay-root/               # root files installed by the one-shot migration
+├── overlay-root/               # staging only; removed by the migration
 ├── docs/
 │   ├── plans/
 │   └── specs/

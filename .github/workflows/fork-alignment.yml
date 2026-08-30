@@ -1,10 +1,9 @@
 name: Fork alignment
 
-# Enforces the fork's alignment charter (FORK.md § Charter) on every change:
-# this fork may only ADD fork-owned files and DELETE the upstream workflows
-# declared in fork/alignment.ledger. Modifying an upstream-owned file in the
-# tree is a hard failure — such changes belong in fork/patches/, applied to the
-# image at build time.
+# Enforces the overlay-only release model on every change. After migration,
+# main may contain only paths allowed by fork/alignment.ledger; release source
+# is pinned by fork/patches/RELEASE, its history is checked, and a fresh patch
+# export must match byte for byte. The migration removes --pre-migration below.
 #
 # The image build (build-vllm-audio.yml) runs the same check as a publish gate,
 # so a drifting fork can neither merge nor ship.

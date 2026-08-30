@@ -27,8 +27,8 @@ reproduce case, validation, and exit criterion in the commit. No omnibus
 patches, no drive-by edits riding along, no local "improvements" to vLLM.
 
 **R3 — Every divergence carries an exit criterion.** A patch records the
-upstream commit that will retire it; a declared deletion records why it is
-permanent. Nothing diverges "just because", and nothing outlives its reason.
+upstream commit that will retire it; every overlay entry records why it is
+needed. Nothing diverges "just because", and nothing outlives its reason.
 
 **The standing obligation.** At every release, *first* drop what upstream has
 absorbed, *then* rebase what it hasn't. The series is expected to shrink by
@@ -140,6 +140,10 @@ deletion and non-fast-forward updates while requiring the `alignment` check.
 **CI hygiene.** Because `main` contains no upstream source, upstream workflows
 are absent rather than tracked as deletions. The add-only ledger declares the
 fork overlay's complete path set.
+
+For the one-time transition, `migrate-to-overlay-main.sh --dry-run` builds a
+local `overlay-main` audit branch in a temporary worktree. It makes no remote
+changes and does not switch, clean, or otherwise alter the active checkout.
 
 ## Testing the patches locally
 
