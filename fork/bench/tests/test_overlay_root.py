@@ -2,13 +2,78 @@
 # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
 """Overlay root tooling stays a minimal, exact subset of upstream tooling."""
 
+import subprocess
 from pathlib import Path
 
 import tomllib
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-OVERLAY = REPO_ROOT / "fork" / "overlay-root"
+STAGED_OVERLAY = REPO_ROOT / "fork" / "overlay-root"
+OVERLAY = STAGED_OVERLAY if STAGED_OVERLAY.is_dir() else REPO_ROOT
+UPSTREAM_URL = "https://github.com/vllm-project/vllm.git"
+
+
+def _base_tag() -> str:
+    release = REPO_ROOT / "fork" / "patches" / "RELEASE"
+    for line in release.read_text(encoding="utf-8").splitlines():
+        if line.startswith("tag: "):
+            return line.removeprefix("tag: ")
+    raise AssertionError(f"no tag in {release}")
+
+
+def _ensure_base_tag() -> str:
+    tag = _base_tag()
+    exists = subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "rev-parse", "--verify", f"{tag}^{{commit}}"],
+        capture_output=True,
+        check=False,
+    )
+    if exists.returncode == 0:
+        return tag
+    remote = subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "remote", "get-url", "upstream"],
+        capture_output=True,
+        check=False,
+    )
+    if remote.returncode != 0:
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                str(REPO_ROOT),
+                "remote",
+                "add",
+                "upstream",
+                UPSTREAM_URL,
+            ],
+            check=True,
+        )
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(REPO_ROOT),
+            "fetch",
+            "--filter=blob:none",
+            "upstream",
+            f"refs/tags/{tag}:refs/tags/{tag}",
+        ],
+        check=True,
+    )
+    return tag
+
+
+def _upstream_bytes(path: str) -> bytes:
+    return subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "show", f"{_ensure_base_tag()}:{path}"],
+        capture_output=True,
+        check=True,
+    ).stdout
+
+
+def _upstream_text(path: str) -> str:
+    return _upstream_bytes(path).decode()
 
 
 def _hook_index(path: Path) -> dict[str, tuple[str, str, list[str]]]:
@@ -25,7 +90,7 @@ def _hook_index(path: Path) -> dict[str, tuple[str, str, list[str]]]:
 
 
 def test_overlay_ruff_config_matches_upstream():
-    upstream = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())
+    upstream = tomllib.loads(_upstream_text("pyproject.toml"))
     overlay = tomllib.loads((OVERLAY / "pyproject.toml").read_text())
     upstream_lint = {
         key: value
@@ -39,7 +104,15 @@ def test_overlay_ruff_config_matches_upstream():
 
 
 def test_overlay_precommit_hooks_are_a_subset_of_upstream_with_identical_revs():
-    upstream = _hook_index(REPO_ROOT / ".pre-commit-config.yaml")
+    upstream_config = yaml.safe_load(_upstream_text(".pre-commit-config.yaml"))
+    upstream = {}
+    for repository in upstream_config["repos"]:
+        for hook in repository["hooks"]:
+            upstream[hook["id"]] = (
+                repository["repo"],
+                str(repository.get("rev", "")),
+                hook.get("args", []),
+            )
     overlay = _hook_index(OVERLAY / ".pre-commit-config.yaml")
     assert set(overlay) == {
         "ruff-check",
@@ -63,7 +136,7 @@ def test_overlay_precommit_hooks_are_a_subset_of_upstream_with_identical_revs():
 
 def test_overlay_lint_configs_are_byte_copies():
     for name in (".markdownlint.yaml", ".shellcheckrc"):
-        assert (OVERLAY / name).read_bytes() == (REPO_ROOT / name).read_bytes()
+        assert (OVERLAY / name).read_bytes() == _upstream_bytes(name)
 
 
 def test_overlay_shellcheck_hook_uses_the_pinned_precommit_package():
