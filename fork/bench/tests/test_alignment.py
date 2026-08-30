@@ -23,7 +23,14 @@ def _write(root: Path, relative: str, content: str) -> None:
     target.write_text(content, encoding="utf-8")
 
 
-def overlay_repo(tmp_path: Path, upstream_repo: Path, release_sha: str) -> Path:
+def overlay_repo(
+    tmp_path: Path,
+    upstream_repo: Path,
+    release_sha: str,
+    *,
+    origin: Path | None = None,
+    prefetch: bool = True,
+) -> Path:
     generated = tmp_path / "generated"
     generated.mkdir()
     exported = run_script(
@@ -55,16 +62,18 @@ def overlay_repo(tmp_path: Path, upstream_repo: Path, release_sha: str) -> Path:
     shutil.copytree(generated, repo / "fork" / "patches")
     git(repo, "add", "-A")
     git(repo, "commit", "-q", "-m", "overlay")
-    git(repo, "remote", "add", "origin", str(upstream_repo))
-    git(upstream_repo, "config", "uploadpack.allowReachableSHA1InWant", "true")
-    git(
-        repo,
-        "fetch",
-        "-q",
-        "origin",
-        "refs/tags/v9.9.9:refs/tags/v9.9.9",
-    )
-    git(repo, "fetch", "-q", "origin", release_sha)
+    origin = origin or upstream_repo
+    git(repo, "remote", "add", "origin", str(origin))
+    if prefetch:
+        git(origin, "config", "uploadpack.allowReachableSHA1InWant", "true")
+        git(
+            repo,
+            "fetch",
+            "-q",
+            "origin",
+            "refs/tags/v9.9.9:refs/tags/v9.9.9",
+        )
+        git(repo, "fetch", "-q", "origin", release_sha)
     return repo
 
 
@@ -82,6 +91,54 @@ def test_a_consistent_overlay_passes_every_rule(tmp_path):
         len([line for line in result.stdout.splitlines() if line.startswith("ok  ")])
         == 5
     )
+
+
+def test_rule_3_fetches_a_missing_base_tag_from_bare_upstream(tmp_path):
+    upstream = init_repo(tmp_path / "upstream")
+    release_sha = patch_commit(upstream, "vllm/v1/core.py", "x = 2\n")
+    repo = overlay_repo(tmp_path, upstream, release_sha)
+    bare = tmp_path / "bare-upstream"
+    bare.mkdir()
+    git(bare, "init", "--bare", "-q")
+    git(upstream, "push", "-q", str(bare), "refs/tags/v9.9.9")
+    git(repo, "tag", "-d", "v9.9.9")
+    git(repo, "remote", "add", "upstream", str(bare))
+
+    result = _check(repo)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert git(repo, "rev-parse", "v9.9.9^{commit}").strip()
+
+
+def test_rule_3_falls_back_to_a_tag_only_origin_for_release_sha(tmp_path):
+    upstream = init_repo(tmp_path / "upstream")
+    release_sha = patch_commit(upstream, "vllm/v1/core.py", "x = 2\n")
+    origin = tmp_path / "origin"
+    origin.mkdir()
+    git(origin, "init", "--bare", "-q")
+    git(
+        upstream,
+        "tag",
+        "-a",
+        "fork/v9.9.9",
+        release_sha,
+        "-m",
+        "frozen",
+    )
+    git(upstream, "push", "-q", str(origin), "refs/tags/fork/v9.9.9")
+    repo = overlay_repo(
+        tmp_path,
+        upstream,
+        release_sha,
+        origin=origin,
+        prefetch=False,
+    )
+    git(repo, "remote", "add", "upstream", str(upstream))
+
+    result = run_script(CHECK, cwd=repo)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert git(repo, "rev-parse", release_sha).strip() == release_sha
 
 
 def test_an_upstream_file_on_main_fails_tracked_paths(tmp_path):

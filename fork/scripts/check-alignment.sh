@@ -63,12 +63,28 @@ declared() {
   return 1
 }
 
+ensure_base_tag() {
+  local tag="$1"
+  git -C "$REPO" remote get-url "$UPSTREAM_REMOTE" >/dev/null 2>&1 ||
+    git -C "$REPO" remote add "$UPSTREAM_REMOTE" "$UPSTREAM_URL"
+  if ! git -C "$REPO" rev-parse --verify --quiet "$tag^{commit}" >/dev/null; then
+    echo ">> fetching tag $tag"
+    git -C "$REPO" fetch --filter=blob:none "$UPSTREAM_REMOTE" \
+      "refs/tags/$tag:refs/tags/$tag"
+  fi
+}
+
 legacy_check() {
   local upstream_ref base_tag base n_add n_del violations stale_entries
   local status path pattern behind
 
-  git -C "$REPO" remote get-url "$UPSTREAM_REMOTE" >/dev/null 2>&1 ||
-    git -C "$REPO" remote add "$UPSTREAM_REMOTE" "$UPSTREAM_URL"
+  base_tag="$(sed -n 's/^ARG BASE_TAG=//p' \
+    "$REPO/fork/docker/Dockerfile.audio" | head -1)"
+  [ -n "$base_tag" ] || {
+    echo "ERROR: no ARG BASE_TAG in fork/docker/Dockerfile.audio" >&2
+    exit 1
+  }
+  ensure_base_tag "$base_tag"
   if [ "$FETCH" -eq 1 ] ||
     ! git -C "$REPO" rev-parse --verify --quiet \
       "refs/remotes/$UPSTREAM_REMOTE/$UPSTREAM_BRANCH" >/dev/null; then
@@ -77,17 +93,6 @@ legacy_check() {
       "$UPSTREAM_REMOTE" "$UPSTREAM_BRANCH"
   fi
   upstream_ref="$UPSTREAM_REMOTE/$UPSTREAM_BRANCH"
-  base_tag="$(sed -n 's/^ARG BASE_TAG=//p' \
-    "$REPO/fork/docker/Dockerfile.audio" | head -1)"
-  [ -n "$base_tag" ] || {
-    echo "ERROR: no ARG BASE_TAG in fork/docker/Dockerfile.audio" >&2
-    exit 1
-  }
-  if ! git -C "$REPO" rev-parse --verify --quiet "$base_tag^{commit}" >/dev/null; then
-    echo ">> fetching tag $base_tag"
-    git -C "$REPO" fetch --filter=blob:none "$UPSTREAM_REMOTE" \
-      "refs/tags/$base_tag:refs/tags/$base_tag"
-  fi
   base="$(git -C "$REPO" rev-parse "$base_tag^{commit}")"
   git -C "$REPO" merge-base --is-ancestor "$base" HEAD || {
     echo "ERROR: HEAD is not built on $base_tag ($base)." >&2
@@ -224,6 +229,9 @@ main_check() {
     head -1)"
   release_sha="$(sed -n 's/^release-sha: //p' \
     "$REPO/fork/patches/RELEASE" 2>/dev/null | head -1)"
+  if [ -n "$release_tag" ]; then
+    ensure_base_tag "$release_tag"
+  fi
   pin_detail="docker=$docker_tag workflow=$workflow_tag profiles=$profile_tag preflight=$preflight_tag release=$release_tag"
   if [ -z "$docker_tag" ] || [ "$docker_tag" != "$workflow_tag" ] ||
     [ "$docker_tag" != "$profile_tag" ] ||
