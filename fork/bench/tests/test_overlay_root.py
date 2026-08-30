@@ -50,3 +50,18 @@ def test_overlay_precommit_hooks_are_a_subset_of_upstream_with_identical_revs():
 def test_overlay_lint_configs_are_byte_copies():
     for name in (".markdownlint.yaml", ".shellcheckrc"):
         assert (OVERLAY / name).read_bytes() == (REPO_ROOT / name).read_bytes()
+
+
+def test_overlay_shellcheck_hook_points_at_a_tracked_fork_script():
+    config = yaml.safe_load(
+        (OVERLAY / ".pre-commit-config.yaml").read_text(encoding="utf-8")
+    )
+    shellcheck = next(
+        hook
+        for repository in config["repos"]
+        for hook in repository["hooks"]
+        if hook["id"] == "shellcheck"
+    )
+    entry = shellcheck["entry"]
+    assert entry.startswith("fork/")
+    assert (REPO_ROOT / entry).is_file()
