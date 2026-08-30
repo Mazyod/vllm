@@ -191,7 +191,8 @@ main_check() {
   local failures tracked_detail path
   local docker_tag workflow_tag profile_tag preflight_tag release_tag release_sha
   local pin_detail history_output export_dir frozen_sha remote_line
-  local unexpected name generated_set recorded_set export_detail export_ok
+  local unexpected non_regular name generated_set recorded_set
+  local export_detail export_ok
   failures=0
 
   ok_rule() {
@@ -272,14 +273,23 @@ main_check() {
       export_ok=0
     fi
     unexpected=""
+    non_regular=""
     while IFS= read -r name; do
+      path="$REPO/fork/patches/$name"
+      if [ ! -f "$path" ] || [ -L "$path" ]; then
+        non_regular="$name"
+        break
+      fi
       case "$name" in
       README.md | RELEASE | series | upstream.map | *.patch) ;;
       *) unexpected="$name"; break ;;
       esac
     done < <(find "$REPO/fork/patches" -mindepth 1 -maxdepth 1 \
       -printf '%f\n' | sort)
-    if [ -n "$unexpected" ]; then
+    if [ -n "$non_regular" ]; then
+      export_ok=0
+      export_detail="fork/patches/$non_regular is not a regular file"
+    elif [ -n "$unexpected" ]; then
       export_ok=0
       export_detail="unexpected file fork/patches/$unexpected"
     fi
