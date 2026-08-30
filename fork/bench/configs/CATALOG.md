@@ -21,13 +21,13 @@ profile.
 | v0.27.1 | [`gemma-tp1-v2-spec-kv-dtype.yaml`](v0.27.1/engine/gemma-tp1-v2-spec-kv-dtype.yaml) | negative | — | [`fleet.yaml`](v0.27.1/fleet.yaml) |
 | v0.27.1 | [`qwen-tp2-noflags.yaml`](v0.27.1/engine/qwen-tp2-noflags.yaml) | negative | — | [`fleet.yaml`](v0.27.1/fleet.yaml) |
 | v0.27.1 | [`deepseek-v4-tp2-h200.yaml`](v0.27.1/engine/deepseek-v4-tp2-h200.yaml) | off-gate | — | [`fleet.yaml`](v0.27.1/fleet.yaml) |
-| v0.28.0 | [`gemma-tp2.yaml`](v0.28.0/engine/gemma-tp2.yaml) | shipping | — | [`fleet.yaml`](v0.28.0/fleet.yaml) |
-| v0.28.0 | [`qwen-tp2.yaml`](v0.28.0/engine/qwen-tp2.yaml) | shipping | — | [`fleet.yaml`](v0.28.0/fleet.yaml) |
-| v0.28.0 | [`gemma-tp2-kvauto.yaml`](v0.28.0/engine/gemma-tp2-kvauto.yaml) | control | — | [`fleet.yaml`](v0.28.0/fleet.yaml) |
-| v0.28.0 | [`gemma-tp2-nospec.yaml`](v0.28.0/engine/gemma-tp2-nospec.yaml) | control | — | [`fleet.yaml`](v0.28.0/fleet.yaml) |
+| v0.28.0 | [`gemma-tp2.yaml`](v0.28.0/engine/gemma-tp2.yaml) | shipping | 174.6 decode tok/s | [attempt 4](v0.28.0/results/20260830-attempt4.md#measured-configurations) |
+| v0.28.0 | [`qwen-tp2.yaml`](v0.28.0/engine/qwen-tp2.yaml) | shipping | 127.4 decode tok/s | [attempt 4](v0.28.0/results/20260830-attempt4.md#measured-configurations) |
+| v0.28.0 | [`gemma-tp2-kvauto.yaml`](v0.28.0/engine/gemma-tp2-kvauto.yaml) | control | 177.5 decode tok/s | [attempt 4](v0.28.0/results/20260830-attempt4.md#measured-configurations) |
+| v0.28.0 | [`gemma-tp2-nospec.yaml`](v0.28.0/engine/gemma-tp2-nospec.yaml) | control | 71.5 decode tok/s | [attempt 4](v0.28.0/results/20260830-attempt4.md#measured-configurations) |
 | v0.28.0 | `gemma-full` / [`gemma-tp1.yaml`](v0.28.0/engine/gemma-tp1.yaml) | gating | — | [`fleet.yaml`](v0.28.0/fleet.yaml) |
 | v0.28.0 | `gemma-v2-kvfp8` / [`gemma-tp1.yaml`](v0.28.0/engine/gemma-tp1.yaml) | negative | — | [`fleet.yaml`](v0.28.0/fleet.yaml) |
-| v0.28.0 | `gemma-perf-tp1x2` / [`gemma-tp1.yaml`](v0.28.0/engine/gemma-tp1.yaml) | control | — | [`fleet.yaml`](v0.28.0/fleet.yaml) |
+| v0.28.0 | `gemma-perf-tp1x2` / [`gemma-tp1.yaml`](v0.28.0/engine/gemma-tp1.yaml) | control | 129.9 decode tok/s, two replicas | [attempt 4](v0.28.0/results/20260830-attempt4.md#measured-configurations) |
 | v0.28.0 | `qwen-full` / [`qwen-tp1.yaml`](v0.28.0/engine/qwen-tp1.yaml) | gating | — | [`fleet.yaml`](v0.28.0/fleet.yaml) |
 | v0.28.0 | [`gemma-tp1-v2-spec-kv-dtype.yaml`](v0.28.0/engine/gemma-tp1-v2-spec-kv-dtype.yaml) | negative | — | [`fleet.yaml`](v0.28.0/fleet.yaml) |
 | v0.28.0 | [`qwen-tp2-noflags.yaml`](v0.28.0/engine/qwen-tp2-noflags.yaml) | negative | — | [`fleet.yaml`](v0.28.0/fleet.yaml) |

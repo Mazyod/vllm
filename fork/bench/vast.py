@@ -13,8 +13,8 @@ and nothing about the shape is discovered on a machine that bills by the hour.
 """
 
 import json
-import re
 from collections.abc import Callable, Sequence
+from urllib.parse import urlsplit
 
 from fork.bench.proc import run_argv
 from fork.bench.provision import (
@@ -25,7 +25,23 @@ from fork.bench.provision import (
     Requirements,
 )
 
-_SSH_URL_RE = re.compile(r"ssh://[^@]+@([^:\s]+):(\d+)")
+# Repairs the key file the provider writes. On some hosts (machine 56779 and
+# host 598051, observed 2026-08-29 and 2026-08-30) the host daemon writes
+# `/root/.ssh/authorized_keys` into the container's overlay as its own user
+# (`vastai_kaalia:docker`, mode 644). sshd's default `StrictModes yes` refuses
+# a key file not owned by root, so every login fails with
+# `Permission denied (publickey)` while the key is demonstrably in the file.
+# The provider's own mitigation, `sed "s/StrictModes yes/StrictModes no/"` in
+# its wrapper build, is a no-op on the stock config, where the line is
+# commented out. Whether the daemon writes the file before or after onstart is
+# not documented, so this re-applies the ownership for three minutes rather
+# than once. Verified on machine 56779: login on the first attempt.
+AUTHORIZED_KEYS_REPAIR = (
+    "nohup bash -c 'for i in $(seq 1 90); do "
+    "chown root:root /root/.ssh/authorized_keys 2>/dev/null; "
+    "chmod 600 /root/.ssh/authorized_keys 2>/dev/null; sleep 2; done' "
+    ">/dev/null 2>&1 &"
+)
 
 
 def _rows(payload: str, key: str) -> list[dict]:
@@ -173,6 +189,11 @@ class VastCli:
         the run needs in its environment is exported over ssh by
         `start_gate_command`.
 
+        `--onstart-cmd` is passed, and it is the one thing the box runs before
+        the gate: `AUTHORIZED_KEYS_REPAIR`, which is what turned the 2026-08-29
+        `Permission denied (publickey)` wall into a first-attempt login on the
+        same machine. See the constant for the mechanism.
+
         Args:
             offer: Offer to rent.
             spec: What to put on the machine.
@@ -197,6 +218,8 @@ class VastCli:
             "--ssh",
             "--direct",
             "--cancel-unavail",
+            "--onstart-cmd",
+            AUTHORIZED_KEYS_REPAIR,
             "--raw",
         ]
         parsed = json.loads(self._run(argv).strip() or "{}")
@@ -264,12 +287,14 @@ class VastCli:
             RuntimeError: If no address could be read.
         """
         printed = self._run([self.binary, "ssh-url", str(instance_id)])
-        match = _SSH_URL_RE.search(printed)
-        if not match:
-            raise RuntimeError(
-                f"no ssh address for instance {instance_id}: {printed.strip()}"
-            )
-        return match.group(1), int(match.group(2))
+        for token in printed.split():
+            if token.startswith("ssh://"):
+                parts = urlsplit(token)
+                if parts.hostname and parts.port:
+                    return parts.hostname, parts.port
+        raise RuntimeError(
+            f"no ssh address for instance {instance_id}: {printed.strip()}"
+        )
 
     @staticmethod
     def _instance(payload: dict) -> Instance:
