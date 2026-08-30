@@ -30,6 +30,8 @@ def test_upstream_map_covers_every_patch_in_the_series():
 
 def test_upstream_map_values_look_like_commit_ids():
     for commit in read_upstream_map(PATCH_DIR / "upstream.map").values():
+        if commit == "none":
+            continue
         assert len(commit) >= 7
         assert all(character in "0123456789abcdef" for character in commit)
 
@@ -72,6 +74,14 @@ def test_is_absorbed_raises_rather_than_reporting_no_for_an_unknown_commit():
     """A silent 'no' would keep a patch forever for want of a fetch."""
     with pytest.raises(LookupError):
         is_absorbed("0" * 40, "v0.26.0", REPO_ROOT)
+
+
+def test_is_absorbed_returns_false_for_none_without_calling_git(monkeypatch):
+    def unexpected_git_call(*_args, **_kwargs):
+        raise AssertionError("git must not be called for Upstream-Merge: none")
+
+    monkeypatch.setattr("fork.bench.static._object_exists", unexpected_git_call)
+    assert is_absorbed("none", "v0.26.0", REPO_ROOT) is False
 
 
 @pytest.mark.parametrize(

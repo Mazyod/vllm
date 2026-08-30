@@ -51,9 +51,10 @@ def test_export_writes_one_patch_per_commit_plus_series_map_and_release(tmp_path
         "0001-fork-patch-bump-x.patch",
         "0002-fork-patch-add-y.patch",
     ]
-    assert (out / "upstream.map").read_text().splitlines()[-1] == (
-        "0002-fork-patch-add-y.patch " + "a" * 40
-    )
+    assert (out / "upstream.map").read_text().splitlines()[-2:] == [
+        "0001-fork-patch-bump-x.patch none",
+        "0002-fork-patch-add-y.patch " + "a" * 40,
+    ]
     assert (out / "RELEASE").read_text() == (f"tag: v9.9.9\nrelease-sha: {sha}\n")
 
 
