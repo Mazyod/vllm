@@ -128,11 +128,13 @@ previous benchmark configuration without `results/`, and bumps all four pins.
 Review and commit that overlay branch, push the release work branch, and build a
 candidate.
 
-After the gate passes, dispatch promotion with the candidate tag, publish tag,
-`promote_latest`, and the gate-record path. Promotion verifies the candidate's
-labels against `main`, creates `fork/<tag>` on the labeled release SHA, records
-the image digest and gate evidence in its annotation, pushes the tag, and only
-then retags the image. Delete `release/<tag>` after the freeze.
+After the gate passes, dispatch promotion with `promote_from` (the candidate
+tag), `publish_tags`, `promote_latest`, and `gate_record` (the gate-record
+path). Promotion verifies the candidate's labels against `main`, creates
+`fork/<tag>` on the labeled release SHA, records the image digest and gate
+evidence in its annotation, pushes the tag, and only then retags the image.
+For a legacy rollback from a label-less image, only `:latest` may move and
+`publish_tags` must be empty. Delete `release/<tag>` after the freeze.
 
 Repository rulesets make `fork/*` tags immutable and protect `main` from
 deletion and non-fast-forward updates while requiring the `alignment` check.

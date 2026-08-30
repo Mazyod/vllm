@@ -167,14 +167,20 @@ are not copied — nothing in the overlay uses them.
    config above, `fork/patches/RELEASE` pointing at the `v0.28.0` commit, the
    rewritten docs, and a short fork-owned `AGENTS.md`/`CLAUDE.md` that points
    at `FORK.md`. Force-push once.
-4. Delete every merged or superseded work branch on `origin` (from today's
+4. Apply the rulesets.
+5. Delete every merged or superseded work branch on `origin` (from today's
    `git branch -r`: `fork/alignment-charter`, `fork/bump-v0.26.0`,
    `fork/bump-v0.28.0`, `fork/gate-ssh-hardening`, `fork/lint-fixes`,
-   `fork/v0.25.1`, `fork/v0.26.0`); their history is in the archive tag and the
-   merged PRs.
-5. Apply the rulesets.
+   `fork/v0.25.1`, `fork/v0.26.0`, `fork/release-model`); their history is in
+   the archive tag and the merged PRs.
 6. Local clones: re-clone, or `git branch backup-main main` first and then
    `git fetch origin && git reset --hard origin/main`.
+
+If the archive tag exists and `origin/main` no longer points to its peeled
+target, the migration prints `resuming after force-push` and uses the archive
+target as the source main. It verifies that both releases are already frozen,
+skips archive creation, overlay construction, alignment, and the force-push,
+then resumes with ruleset creation followed by branch deletion.
 
 ## Docs to rewrite
 

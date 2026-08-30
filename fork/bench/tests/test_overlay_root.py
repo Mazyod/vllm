@@ -103,7 +103,7 @@ def test_overlay_ruff_config_matches_upstream():
     assert "mypy" not in overlay["tool"]
 
 
-def test_overlay_precommit_hooks_are_a_subset_of_upstream_with_identical_revs():
+def test_overlay_precommit_hooks_match_upstream_except_the_shellcheck_revision():
     upstream_config = yaml.safe_load(_upstream_text(".pre-commit-config.yaml"))
     upstream = {}
     for repository in upstream_config["repos"]:

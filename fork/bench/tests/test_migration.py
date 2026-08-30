@@ -180,9 +180,8 @@ def _repo_with_origin(tmp_path: Path) -> Path:
     return repo
 
 
-def test_dry_run_bypasses_the_repository_hooks_for_the_overlay_commit(tmp_path):
-    """The installed hooks belong to the old tree; a rehearsal must not trip on
-    them, and the real run must not either."""
+def test_dry_run_rehearsal_bypasses_the_old_checkout_hooks(tmp_path):
+    """The rehearsal commits in a temporary worktree with no old-tree hooks."""
     repo = _repo_with_origin(tmp_path)
     hook = repo / ".git" / "hooks" / "pre-commit"
     hook.write_text("#!/bin/sh\necho 'hook ran' >&2\nexit 1\n", encoding="utf-8")
