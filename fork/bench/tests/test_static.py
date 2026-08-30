@@ -175,3 +175,19 @@ def test_the_four_release_pins_name_one_tag():
 
     assert docker == workflow == profiles.DEFAULT_TAG
     assert f"--tag {profiles.DEFAULT_TAG}" in preflight
+
+
+def test_release_pointer_names_the_pinned_tag():
+    """The generated export must identify the release commit behind the pins."""
+    from fork.bench import profiles
+
+    values = {}
+    for line in (PATCH_DIR / "RELEASE").read_text(encoding="utf-8").splitlines():
+        key, separator, value = line.partition(": ")
+        assert separator
+        values[key] = value
+
+    release_sha = values["release-sha"]
+    assert values["tag"] == profiles.DEFAULT_TAG
+    assert len(release_sha) == 40
+    assert all(character in "0123456789abcdef" for character in release_sha)

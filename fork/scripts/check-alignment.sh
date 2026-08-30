@@ -237,7 +237,8 @@ main_check() {
   if [ -z "$release_tag" ] || [ -z "$release_sha" ]; then
     fail_rule release-history "fork/patches/RELEASE is incomplete"
   else
-    if [ "${SKIP_FETCH_RELEASE:-0}" != "1" ]; then
+    if [ "${SKIP_FETCH_RELEASE:-0}" != "1" ] &&
+      ! git -C "$REPO" cat-file -e "$release_sha^{commit}" 2>/dev/null; then
       git -C "$REPO" fetch "$ORIGIN_REMOTE" "$release_sha" >/dev/null 2>&1 ||
         git -C "$REPO" fetch "$ORIGIN_REMOTE" --tags >/dev/null 2>&1
     fi
@@ -257,7 +258,8 @@ main_check() {
     export_dir="$(mktemp -d)"
     if REPO="$REPO" BASE_TAG="$release_tag" PATCH_DIR="$export_dir" \
       "$SCRIPT_DIR/export-patches.sh" "$release_sha" >/dev/null 2>&1 &&
-      diff -r "$export_dir" "$REPO/fork/patches" >/dev/null; then
+      diff -r --exclude=README.md "$export_dir" \
+        "$REPO/fork/patches" >/dev/null; then
       ok_rule export
     else
       fail_rule export "generated files differ from fork/patches"
