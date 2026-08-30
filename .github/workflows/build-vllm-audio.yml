@@ -17,7 +17,7 @@ on:
         required: false
         default: ""
       publish_tags:
-        description: "Tags to publish under, space/comma-separated (default: the base tag)."
+        description: "Release tags for a promotion, space/comma-separated. Empty publishes no release refs."
         required: false
         default: ""
       promote_latest:
@@ -136,31 +136,21 @@ jobs:
           fi
 
           VERSION="${BASE_TAG#v}"
+          PROMOTE_FROM="${{ github.event.inputs.promote_from }}"
+          PUBLISH_TAGS=$(fork/scripts/resolve-publish-tags.sh \
+            "${{ github.event_name }}" "$BASE_TAG" "${GITHUB_SHA:0:7}" \
+            "$INPUT_PUBLISH_TAGS" "$PROMOTE_FROM")
+          PRIMARY_TAG="${PUBLISH_TAGS%% *}"
 
-          if [[ "${{ github.event_name }}" == "push" ]]; then
-            # A push build is a candidate, never a certified artifact. The
-            # 2026-07-27 series push rebuilt from an emptied series,
-            # republished the gated v0.26.0 tag and moved :latest — and the
-            # never-gated result crash-looped in production. Candidates get
-            # their own tag; promotion is a deliberate dispatch after a gate
-            # run.
-            PUBLISH_TAGS="${BASE_TAG}-cand-${GITHUB_SHA:0:7}"
+          if [[ -z "$PROMOTE_FROM" ]]; then
             PROMOTE_LATEST="false"
           else
-            # Published tags default to the base tag; a dispatch may override.
-            if [[ -n "$INPUT_PUBLISH_TAGS" ]]; then
-              PUBLISH_TAGS=$(echo "$INPUT_PUBLISH_TAGS" | tr ',' ' ' | xargs)
-            else
-              PUBLISH_TAGS="$BASE_TAG"
-            fi
             PROMOTE_LATEST="${{ github.event.inputs.promote_latest || 'false' }}"
           fi
-          PRIMARY_TAG="${PUBLISH_TAGS%% *}"
 
           # What downstream jobs verify and promote. Promoting an existing tag
           # rebuilds nothing, so the artifact the gate approved is the artifact
           # that ships.
-          PROMOTE_FROM="${{ github.event.inputs.promote_from }}"
           if [[ -n "$PROMOTE_FROM" ]]; then
             SOURCE_REF="${IMAGE_NAME}:${PROMOTE_FROM}"
           else
@@ -359,13 +349,17 @@ jobs:
           SOURCE="${{ needs.resolve.outputs.source_ref }}"
           DIGEST=$(docker buildx imagetools inspect "$SOURCE" \
             --format '{{.Manifest.Digest}}')
-          docker pull "$SOURCE"
+          PINNED="${IMAGE_NAME}@${DIGEST}"
+          docker pull "$PINNED"
           CAND_RELEASE_SHA=$(docker inspect --format \
-            '{{ index .Config.Labels "io.openimage.release-sha" }}' "$SOURCE")
+            '{{ index .Config.Labels "io.openimage.release-sha" }}' "$PINNED")
           CAND_EXPORT=$(docker inspect --format \
-            '{{ index .Config.Labels "io.openimage.patch-export" }}' "$SOURCE")
+            '{{ index .Config.Labels "io.openimage.patch-export" }}' "$PINNED")
           CAND_BASE=$(docker inspect --format \
-            '{{ index .Config.Labels "io.openimage.base-digest" }}' "$SOURCE")
+            '{{ index .Config.Labels "io.openimage.base-digest" }}' "$PINNED")
+          [[ "$CAND_RELEASE_SHA" != "<no value>" ]] || CAND_RELEASE_SHA=""
+          [[ "$CAND_EXPORT" != "<no value>" ]] || CAND_EXPORT=""
+          [[ "$CAND_BASE" != "<no value>" ]] || CAND_BASE=""
           {
             echo "digest=$DIGEST"
             echo "release_sha=$CAND_RELEASE_SHA"
@@ -373,23 +367,38 @@ jobs:
             echo "base_digest=$CAND_BASE"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Require the candidate to match main
+      - name: Verify labeled or legacy candidate
+        id: verify
         run: |
           set -euo pipefail
-          if [[ "${{ steps.candidate.outputs.release_sha }}" != "${{ needs.resolve.outputs.release_sha }}" ]]; then
-            echo "::error::candidate release-sha does not match main"
-            exit 1
-          fi
-          if [[ "${{ steps.candidate.outputs.export_hash }}" != "${{ needs.resolve.outputs.export_hash }}" ]]; then
-            echo "::error::candidate patch-export does not match main"
-            exit 1
-          fi
+          OUTPUT=$(fork/scripts/verify-candidate.sh \
+            "${{ needs.resolve.outputs.base_tag }}" \
+            "${{ steps.candidate.outputs.digest }}" \
+            "${{ steps.candidate.outputs.release_sha }}" \
+            "${{ steps.candidate.outputs.export_hash }}" \
+            "${{ needs.resolve.outputs.release_sha }}" \
+            "${{ needs.resolve.outputs.export_hash }}")
+          echo "$OUTPUT"
+          MODE="${OUTPUT#mode=}"
+          [[ "$MODE" == "labeled" || "$MODE" == "legacy" ]]
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
 
       - name: Freeze the release source and candidate digest
         id: freeze
         run: |
           set -euo pipefail
           BASE_TAG="${{ needs.resolve.outputs.base_tag }}"
+          MODE="${{ steps.verify.outputs.mode }}"
+          if [[ "$MODE" == "legacy" ]]; then
+            if [[ -n "${{ needs.resolve.outputs.image_refs }}" ]]; then
+              echo "::error::legacy candidates may only move :latest; publish_tags must be empty"
+              exit 1
+            fi
+            echo "legacy candidate already frozen as fork/${BASE_TAG}"
+            echo "tag=fork/${BASE_TAG}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           PUBLISH_BASE=false
           while IFS= read -r ref; do
             if [[ "$ref" == "${IMAGE_NAME}:${BASE_TAG}" ]]; then
@@ -398,7 +407,7 @@ jobs:
           done <<< "${{ needs.resolve.outputs.image_refs }}"
           if [[ "$PUBLISH_BASE" != "true" ]] &&
              ! git rev-parse --verify --quiet "refs/tags/fork/${BASE_TAG}" >/dev/null; then
-            echo "::error::fork/${BASE_TAG} must already be frozen when only :latest moves"
+            echo "::error::publish_tags must name ${BASE_TAG} for its first publication"
             exit 1
           fi
 

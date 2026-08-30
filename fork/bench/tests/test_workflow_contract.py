@@ -51,3 +51,11 @@ def test_image_workflow_carries_the_release_provenance_contract():
     promote = jobs["promote"]
     assert promote["permissions"]["contents"] == "write"
     assert any("freeze-release.sh" in step.get("run", "") for step in promote["steps"])
+    resolve = next(step for step in resolve_steps if step.get("id") == "resolve")
+    assert "resolve-publish-tags.sh" in resolve["run"]
+    candidate = next(step for step in promote["steps"] if step.get("id") == "candidate")
+    assert 'PINNED="${IMAGE_NAME}@${DIGEST}"' in candidate["run"]
+    assert 'docker pull "$PINNED"' in candidate["run"]
+    assert any(
+        "verify-candidate.sh" in step.get("run", "") for step in promote["steps"]
+    )
