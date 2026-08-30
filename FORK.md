@@ -143,7 +143,10 @@ fork overlay's complete path set.
 
 For the one-time transition, `migrate-to-overlay-main.sh --dry-run` builds a
 local `overlay-main` audit branch in a temporary worktree. It makes no remote
-changes and does not switch, clean, or otherwise alter the active checkout.
+changes and does not switch, clean, or otherwise alter the active checkout. Before the migration branch is merged, rehearse from the branch itself
+with `SOURCE_REF=HEAD fork/scripts/migrate-to-overlay-main.sh --dry-run`;
+the real run refuses `SOURCE_REF` and always replaces `main` with what
+`origin/main` contains.
 
 ## Testing the patches locally
 
