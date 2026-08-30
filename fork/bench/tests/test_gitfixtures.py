@@ -15,7 +15,7 @@ def test_init_repo_tags_the_upstream_commit(tmp_path):
     assert out.stdout.split() == ["v9.9.9"]
 
 
-def test_patch_commit_carries_the_three_trailers(tmp_path):
+def test_patch_commit_carries_the_sections_and_three_trailers(tmp_path):
     repo = init_repo(tmp_path / "r")
     sha = patch_commit(repo, "vllm/v1/core.py", "x = 2\n")
     body = subprocess.run(
@@ -24,5 +24,13 @@ def test_patch_commit_carries_the_three_trailers(tmp_path):
         text=True,
     ).stdout
     assert body.startswith("[fork-patch] change")
+    for heading in (
+        "Impact:",
+        "Root cause:",
+        "Reproduce:",
+        "Validation:",
+        "Ruled out:",
+    ):
+        assert any(line.startswith(heading) for line in body.splitlines())
     for key in ("Upstream-PR:", "Upstream-Merge:", "Exit-Criterion:"):
         assert key in body

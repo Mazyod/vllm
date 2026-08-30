@@ -51,6 +51,18 @@ def test_the_tag_itself_passes_with_zero_patches(tmp_path):
         ),
         (
             lambda repo: patch_commit(
+                repo, "vllm/v1/core.py", "x = 2\n", sections=False
+            ),
+            "missing section",
+        ),
+        (
+            lambda repo: patch_commit(
+                repo, "vllm/v1/core.py", "x = 2\n", pr="https://example.com/1"
+            ),
+            "Upstream-PR must start with",
+        ),
+        (
+            lambda repo: patch_commit(
                 repo, "vllm/v1/core.py", "x = 2\n", merge="notasha"
             ),
             "Upstream-Merge",

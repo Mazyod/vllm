@@ -42,7 +42,7 @@ git -C "$REPO" format-patch -q -k --full-index --no-renames --zero-commit \
   for commit in $(git -C "$REPO" rev-list --reverse "$BASE..$SHA"); do
     index=$((index + 1))
     merge="$(git -C "$REPO" log -1 --format=%B "$commit" |
-      git interpret-trailers --parse |
+      git -C "$REPO" interpret-trailers --parse |
       sed -n 's/^Upstream-Merge: *//p' | head -1)"
     number="$(printf '%04d' "$index")"
     file="$(find "$PATCH_DIR" -maxdepth 1 -name "${number}-*.patch" -printf '%f\n')"

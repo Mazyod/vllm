@@ -30,11 +30,19 @@ for commit in $(git -C "$REPO" rev-list --reverse "$BASE..$SHA"); do
   "[fork-patch] "*) ;;
   *) bad "$commit" "subject must start with '[fork-patch] '" ;;
   esac
-  trailers="$(git -C "$REPO" log -1 --format=%B "$commit" |
-    git -C "$REPO" interpret-trailers --parse)"
+  body="$(git -C "$REPO" log -1 --format=%B "$commit")"
+  for heading in "Impact:" "Root cause:" "Reproduce:" "Validation:" "Ruled out:"; do
+    grep -q "^$heading" <<<"$body" || bad "$commit" "missing section $heading"
+  done
+  trailers="$(git -C "$REPO" interpret-trailers --parse <<<"$body")"
   for key in Upstream-PR Upstream-Merge Exit-Criterion; do
     grep -q "^$key: ." <<<"$trailers" || bad "$commit" "missing trailer $key"
   done
+  upstream_pr="$(sed -n 's/^Upstream-PR: *//p' <<<"$trailers" | head -1)"
+  case "$upstream_pr" in
+  https://github.com/vllm-project/vllm/pull/*) ;;
+  *) bad "$commit" "Upstream-PR must start with https://github.com/vllm-project/vllm/pull/" ;;
+  esac
   merge="$(sed -n 's/^Upstream-Merge: *//p' <<<"$trailers" | head -1)"
   case "$merge" in
   none | "") ;;

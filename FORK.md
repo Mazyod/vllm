@@ -98,6 +98,8 @@ release-sha: 2cf0a6915ce544dc493a0990f2ea38d81601128a
 `export-patches.sh` writes that pointer with `series`, `upstream.map`, and one
 unified diff per patch commit. The commit contract requires a
 `[fork-patch] <what>` subject, only regular text changes under `vllm/**`, and
+body sections headed `Impact:`, `Root cause:`, `Reproduce:`, `Validation:`, and
+`Ruled out:` (each heading at the start of a line, in any order), followed by
 these trailers:
 
 ```text

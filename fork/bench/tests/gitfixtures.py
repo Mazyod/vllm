@@ -48,12 +48,21 @@ def patch_commit(
     pr: str = "https://github.com/vllm-project/vllm/pull/1",
     merge: str = "none",
     exit_criterion: str = "upstream merges #1",
+    sections: bool = True,
     trailers: bool = True,
 ) -> str:
     target = repo / rel_path
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(content, encoding="utf-8")
-    message = f"{subject}\n\nImpact: t.\n"
+    message = f"{subject}\n"
+    if sections:
+        message += (
+            "\nImpact: t.\n"
+            "Root cause: t.\n"
+            "Reproduce: t.\n"
+            "Validation: t.\n"
+            "Ruled out: t.\n"
+        )
     if trailers:
         message += (
             f"\nUpstream-PR: {pr}\nUpstream-Merge: {merge}\n"

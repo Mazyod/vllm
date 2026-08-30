@@ -17,7 +17,7 @@ fork/patches/
 ├── README.md                 # this file — contract + retirement record
 ├── RELEASE                   # pinned tag and exact export commit
 ├── series                    # generated apply order
-├── upstream.map              # generated non-none Upstream-Merge values
+├── upstream.map              # generated Upstream-Merge value for every patch
 └── 000N-<slug>.patch         # one generated diff per patch commit
 ```
 
@@ -83,6 +83,10 @@ Upstream-PR: https://github.com/vllm-project/vllm/pull/NNNNN
 Upstream-Merge: <40-hex merge SHA, or none>
 Exit-Criterion: <condition under which this patch is dropped>
 ```
+
+All five section headings must start a line. Their order is not significant.
+`Upstream-PR` must start with
+`https://github.com/vllm-project/vllm/pull/`.
 
 Then run `fork/scripts/export-patches.sh <release-sha>`. The history checker
 rejects missing trailers, merge or empty commits, paths outside `vllm/**`, and
