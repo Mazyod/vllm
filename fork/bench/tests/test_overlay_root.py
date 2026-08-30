@@ -51,7 +51,14 @@ def test_overlay_precommit_hooks_are_a_subset_of_upstream_with_identical_revs():
         "signoff-commit",
     }
     for hook_id, definition in overlay.items():
-        assert definition == upstream[hook_id]
+        if hook_id == "shellcheck":
+            assert definition == (
+                "https://github.com/shellcheck-py/shellcheck-py",
+                "v0.10.0.1",
+                [],
+            )
+        else:
+            assert definition == upstream[hook_id]
 
 
 def test_overlay_lint_configs_are_byte_copies():
@@ -59,16 +66,14 @@ def test_overlay_lint_configs_are_byte_copies():
         assert (OVERLAY / name).read_bytes() == (REPO_ROOT / name).read_bytes()
 
 
-def test_overlay_shellcheck_hook_points_at_a_tracked_fork_script():
+def test_overlay_shellcheck_hook_uses_the_pinned_precommit_package():
     config = yaml.safe_load(
         (OVERLAY / ".pre-commit-config.yaml").read_text(encoding="utf-8")
     )
-    shellcheck = next(
-        hook
+    repository = next(
+        repository
         for repository in config["repos"]
-        for hook in repository["hooks"]
-        if hook["id"] == "shellcheck"
+        if any(hook["id"] == "shellcheck" for hook in repository["hooks"])
     )
-    entry = shellcheck["entry"]
-    assert entry.startswith("fork/")
-    assert (REPO_ROOT / entry).is_file()
+    assert repository["repo"] == "https://github.com/shellcheck-py/shellcheck-py"
+    assert repository["rev"] == "v0.10.0.1"

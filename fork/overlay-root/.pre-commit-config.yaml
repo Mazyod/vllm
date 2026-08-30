@@ -27,13 +27,12 @@ repos:
     rev: v1.7.7
     hooks:
       - id: actionlint
-  - repo: local
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
     hooks:
       - id: shellcheck
-        name: Lint shell scripts
-        entry: fork/scripts/precommit-shellcheck.sh
-        language: script
-        types: [shell]
+  - repo: local
+    hooks:
       - id: signoff-commit
         name: Sign-off Commit
         entry: bash
