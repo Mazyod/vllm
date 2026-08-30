@@ -25,3 +25,4 @@ add  .markdownlint.yaml                          permanent  fork Markdown lint c
 add  .shellcheckrc                               permanent  fork shellcheck configuration after migration
 add  AGENTS.md                                   permanent  fork contribution instructions after migration
 add  CLAUDE.md                                   permanent  points other agents at the fork instructions
+add  .gitignore                                  permanent  ignores local caches and tool state on the overlay
