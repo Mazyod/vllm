@@ -92,3 +92,15 @@ def test_image_workflow_carries_the_release_provenance_contract():
     assert any(
         "verify-candidate.sh" in step.get("run", "") for step in promote["steps"]
     )
+
+
+def test_both_workflows_run_alignment_with_the_same_flags():
+    """One flag set, two workflows: the migration strips --pre-migration from
+    both, so they must never drift apart."""
+    root = REPO_ROOT / ".github" / "workflows"
+    invocations = []
+    for name in ("build-vllm-audio.yml", "fork-alignment.yml"):
+        text = (root / name).read_text(encoding="utf-8")
+        line = next(ln for ln in text.splitlines() if "check-alignment.sh" in ln)
+        invocations.append(line.split("check-alignment.sh", 1)[1].strip())
+    assert invocations[0] == invocations[1], invocations

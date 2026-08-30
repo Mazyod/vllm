@@ -51,10 +51,11 @@ build_overlay_tree() {
       done < <(find "$tmp/fork/overlay-root" -mindepth 1 -maxdepth 1 -print0)
       rmdir "$tmp/fork/overlay-root"
     fi
-    if [ -f "$tmp/.github/workflows/fork-alignment.yml" ]; then
-      sed -i 's/ --pre-migration//' \
-        "$tmp/.github/workflows/fork-alignment.yml"
-    fi
+    for workflow in fork-alignment.yml build-vllm-audio.yml; do
+      if [ -f "$tmp/.github/workflows/$workflow" ]; then
+        sed -i 's/ --pre-migration//' "$tmp/.github/workflows/$workflow"
+      fi
+    done
     git -C "$tmp" clean -fdxq -e .venv -e runs
     git -C "$tmp" add -A
     # One mechanical commit. The repository's installed hooks were written
