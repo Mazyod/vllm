@@ -13,6 +13,14 @@ store; commands that issue requests add `--with httpx` as well.
 
 ## Phase 0 — static (free, local)
 
+0. Start release preparation with `fork/scripts/new-release.sh <TAG>`. When a
+   surviving patch's applicability must be checked by hand, use a pristine
+   worktree rather than the overlay checkout:
+
+   ```bash
+   git worktree add /tmp/<TAG> <TAG>
+   ```
+
 1. `git fetch upstream --tags`
 2. Render the brief:
 
