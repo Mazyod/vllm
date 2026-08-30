@@ -6,12 +6,11 @@ set -euo pipefail
   echo "usage: freeze-release.sh <tag> <release-sha> <candidate-digest> <base-digest> <main-sha> <export-hash> <gate-record>" >&2
   exit 2
 }
-for value in "$@"; do
-  [ -n "$value" ] || {
-    echo "usage: freeze-release.sh <tag> <release-sha> <candidate-digest> <base-digest> <main-sha> <export-hash> <gate-record>" >&2
-    exit 2
-  }
-done
+[ -n "$1" ] && [ -n "$2" ] && [ -n "$3" ] && [ -n "$4" ] &&
+  [ -n "$5" ] && [ -n "$6" ] || {
+  echo "usage: freeze-release.sh <tag> <release-sha> <candidate-digest> <base-digest> <main-sha> <export-hash> <gate-record>" >&2
+  exit 2
+}
 
 REPO="${REPO:-$(git -C . rev-parse --show-toplevel)}"
 REMOTE="${REMOTE:-origin}"
@@ -45,6 +44,11 @@ if git -C "$REPO" rev-parse --verify --quiet "refs/tags/$FROZEN_TAG" >/dev/null;
   echo "already frozen: $FROZEN_TAG matches"
   exit 0
 fi
+
+[ -n "$GATE_RECORD" ] || {
+  echo "usage: freeze-release.sh <tag> <release-sha> <candidate-digest> <base-digest> <main-sha> <export-hash> <gate-record>" >&2
+  exit 2
+}
 
 message="fork release $TAG
 

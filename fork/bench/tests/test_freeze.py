@@ -56,6 +56,29 @@ def test_second_freeze_with_the_same_digest_is_a_no_op(tmp_path):
     assert "already frozen" in again.stdout
 
 
+def test_existing_freeze_can_be_verified_without_repeating_the_gate_record(tmp_path):
+    repo = init_repo(tmp_path / "r")
+    sha = patch_commit(repo, "vllm/v1/core.py", "x = 2\n")
+    run_script(FREEZE, "v9.9.9", sha, *ARGS, cwd=repo, env={"PUSH": "0"})
+    without_gate = ARGS[:-1] + ("",)
+    again = run_script(
+        FREEZE, "v9.9.9", sha, *without_gate, cwd=repo, env={"PUSH": "0"}
+    )
+    assert again.returncode == 0
+    assert "already frozen" in again.stdout
+
+
+def test_first_freeze_requires_a_gate_record(tmp_path):
+    repo = init_repo(tmp_path / "r")
+    sha = patch_commit(repo, "vllm/v1/core.py", "x = 2\n")
+    without_gate = ARGS[:-1] + ("",)
+    result = run_script(
+        FREEZE, "v9.9.9", sha, *without_gate, cwd=repo, env={"PUSH": "0"}
+    )
+    assert result.returncode == 2
+    assert "gate-record" in result.stderr
+
+
 def test_freeze_refuses_a_different_digest_or_sha_for_a_frozen_tag(tmp_path):
     repo = init_repo(tmp_path / "r")
     sha = patch_commit(repo, "vllm/v1/core.py", "x = 2\n")
