@@ -189,9 +189,8 @@ JSON
 }
 
 delete_remote_work_branches() {
-  local current_branch branch
+  local branch
   local -a branches
-  current_branch="$(git -C "$REPO" branch --show-current)"
   branches=(
     fork/alignment-charter
     fork/bump-v0.26.0
@@ -203,11 +202,6 @@ delete_remote_work_branches() {
     fork/release-model
   )
   for branch in "${branches[@]}"; do
-    if [ "$branch" = "fork/release-model" ] &&
-      [ "$current_branch" = "$branch" ]; then
-      echo "skipping $branch because it is the active checkout"
-      continue
-    fi
     if git -C "$REPO" ls-remote --exit-code --heads "$ORIGIN_REMOTE" \
       "refs/heads/$branch" >/dev/null 2>&1; then
       git -C "$REPO" push "$ORIGIN_REMOTE" --delete "$branch"

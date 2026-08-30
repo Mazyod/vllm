@@ -206,3 +206,25 @@ def test_source_ref_rehearses_from_a_local_ref_but_only_under_dry_run(tmp_path):
     refused = run_script(MIGRATE, cwd=repo, env={"SOURCE_REF": "HEAD"})
     assert refused.returncode == 2
     assert "only with --dry-run" in refused.stderr
+
+
+def test_branch_cleanup_deletes_release_model_from_the_active_checkout(tmp_path):
+    repo = _repo_with_origin(tmp_path)
+    git(repo, "checkout", "-q", "-b", "fork/release-model")
+    git(repo, "push", "-q", "-u", "origin", "fork/release-model")
+
+    command = 'MIGRATE_SOURCED=1; source "$1"; delete_remote_work_branches'
+    result = subprocess.run(
+        ["bash", "-c", command, "migration-test", str(MIGRATE)],
+        cwd=repo,
+        env={**os.environ, "REPO": str(repo)},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    remote_branch = git(
+        repo, "ls-remote", "--heads", "origin", "refs/heads/fork/release-model"
+    )
+    assert remote_branch == ""
