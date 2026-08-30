@@ -69,16 +69,16 @@ build_overlay_tree() {
   return "$status"
 }
 
-export_hash_at_ref() {
+export_hash_for_release() {
   [ "$#" -eq 1 ] || {
-    echo "usage: export_hash_at_ref <ref>" >&2
+    echo "usage: export_hash_for_release <tag>" >&2
     return 2
   }
-  local source_ref="$1" export_dir result
+  local tag="$1" export_dir result
   export_dir="$(mktemp -d)"
-  git -C "$REPO" archive "$source_ref" fork/patches |
-    tar -x -C "$export_dir"
-  result="$(REPO="$REPO" PATCH_DIR="$export_dir/fork/patches" \
+  REPO="$REPO" BASE_TAG="$tag" PATCH_DIR="$export_dir" \
+    "$SCRIPT_DIR/export-patches.sh" "$tag^{commit}" >/dev/null
+  result="$(REPO="$REPO" PATCH_DIR="$export_dir" \
     "$SCRIPT_DIR/export-hash.sh")"
   rm -rf "$export_dir"
   echo "$result"
@@ -217,7 +217,8 @@ delete_remote_work_branches() {
 
 main() {
   local dry_run=0 origin_main archive_tag archive_target source_main
-  local already_migrated=0 export_hash base_digest_028 base_digest_027
+  local already_migrated=0 export_hash_028 export_hash_027
+  local base_digest_028 base_digest_027
   local image_name candidate_028 candidate_027
   if [ "$#" -gt 1 ]; then
     echo "usage: migrate-to-overlay-main.sh [--dry-run]" >&2
@@ -289,18 +290,19 @@ main() {
     echo "3. freeze v0.28.0 and v0.27.1 with their shipped image digests"
   fi
   if [ "$dry_run" -eq 0 ]; then
-    export_hash="$(export_hash_at_ref "$source_main")"
+    export_hash_028="$(export_hash_for_release v0.28.0)"
+    export_hash_027="$(export_hash_for_release v0.27.1)"
     REPO="$REPO" REMOTE="$ORIGIN_REMOTE" \
       PUSH="$((1 - already_migrated))" "$SCRIPT_DIR/freeze-release.sh" \
       v0.28.0 "$(git -C "$REPO" rev-parse "v0.28.0^{commit}")" \
       "$candidate_028" \
-      "$base_digest_028" "$source_main" "$export_hash" \
+      "$base_digest_028" "$source_main" "$export_hash_028" \
       fork/bench/configs/v0.28.0/results/20260830-attempt4.md
     REPO="$REPO" REMOTE="$ORIGIN_REMOTE" \
       PUSH="$((1 - already_migrated))" "$SCRIPT_DIR/freeze-release.sh" \
       v0.27.1 "$(git -C "$REPO" rev-parse "v0.27.1^{commit}")" \
       "$candidate_027" \
-      "$base_digest_027" "$source_main" "$export_hash" \
+      "$base_digest_027" "$source_main" "$export_hash_027" \
       fork/bench/configs/v0.27.1/results/20260811-attempt4.md
   fi
 

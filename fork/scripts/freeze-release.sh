@@ -46,16 +46,22 @@ fi
 
 if git -C "$REPO" rev-parse --verify --quiet "refs/tags/$FROZEN_TAG" >/dev/null; then
   message="$(git -C "$REPO" tag -l --format='%(contents)' "$FROZEN_TAG")"
-  old_release="$(recorded_field release-sha <<<"$message")"
-  old_candidate="$(recorded_field candidate-digest <<<"$message")"
-  if [ "$old_release" != "$RELEASE_SHA" ]; then
-    echo "refusing: $FROZEN_TAG records release-sha=$old_release, got $RELEASE_SHA"
-    exit 1
-  fi
-  if [ "$old_candidate" != "$CANDIDATE_DIGEST" ]; then
-    echo "refusing: $FROZEN_TAG records candidate-digest=$old_candidate, got $CANDIDATE_DIGEST"
-    exit 1
-  fi
+  for field in \
+    release-sha candidate-digest base-digest main-sha patch-export gate-record; do
+    case "$field" in
+    release-sha) expected="$RELEASE_SHA" ;;
+    candidate-digest) expected="$CANDIDATE_DIGEST" ;;
+    base-digest) expected="$BASE_DIGEST" ;;
+    main-sha) expected="$MAIN_SHA" ;;
+    patch-export) expected="$EXPORT_HASH" ;;
+    gate-record) expected="$GATE_RECORD" ;;
+    esac
+    recorded="$(recorded_field "$field" <<<"$message")"
+    if [ "$recorded" != "$expected" ]; then
+      echo "refusing: $FROZEN_TAG records $field=$recorded, got $expected"
+      exit 1
+    fi
+  done
   if [ "$PUSH" = "1" ]; then
     remote_sha="$(remote_peeled_target)"
     if [ "$remote_sha" != "$RELEASE_SHA" ]; then

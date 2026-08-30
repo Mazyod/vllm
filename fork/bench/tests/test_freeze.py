@@ -2,6 +2,8 @@
 # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
 """The frozen tag binds source and shipped bytes; it is written once."""
 
+import pytest
+
 from fork.bench.tests.gitfixtures import (
     SCRIPTS,
     git,
@@ -56,18 +58,6 @@ def test_second_freeze_with_the_same_digest_is_a_no_op(tmp_path):
     assert "already frozen" in again.stdout
 
 
-def test_existing_freeze_can_be_verified_without_repeating_the_gate_record(tmp_path):
-    repo = init_repo(tmp_path / "r")
-    sha = patch_commit(repo, "vllm/v1/core.py", "x = 2\n")
-    run_script(FREEZE, "v9.9.9", sha, *ARGS, cwd=repo, env={"PUSH": "0"})
-    without_gate = ARGS[:-1] + ("",)
-    again = run_script(
-        FREEZE, "v9.9.9", sha, *without_gate, cwd=repo, env={"PUSH": "0"}
-    )
-    assert again.returncode == 0
-    assert "already frozen" in again.stdout
-
-
 def test_first_freeze_requires_a_gate_record(tmp_path):
     repo = init_repo(tmp_path / "r")
     sha = patch_commit(repo, "vllm/v1/core.py", "x = 2\n")
@@ -79,18 +69,32 @@ def test_first_freeze_requires_a_gate_record(tmp_path):
     assert "gate-record" in result.stderr
 
 
-def test_freeze_refuses_a_different_digest_or_sha_for_a_frozen_tag(tmp_path):
+@pytest.mark.parametrize(
+    ("field", "argument", "different"),
+    (
+        ("release-sha", 0, None),
+        ("candidate-digest", 1, "sha256:other-candidate"),
+        ("base-digest", 2, "sha256:other-base"),
+        ("main-sha", 3, "n" * 40),
+        ("patch-export", 4, "sha256:other-export"),
+        ("gate-record", 5, "fork/bench/configs/v9.9.9/results/other.md"),
+    ),
+)
+def test_freeze_names_each_mismatched_annotation_field(
+    tmp_path, field, argument, different
+):
     repo = init_repo(tmp_path / "r")
     sha = patch_commit(repo, "vllm/v1/core.py", "x = 2\n")
     run_script(FREEZE, "v9.9.9", sha, *ARGS, cwd=repo, env={"PUSH": "0"})
-    other = ("sha256:other",) + ARGS[1:]
-    result = run_script(FREEZE, "v9.9.9", sha, *other, cwd=repo, env={"PUSH": "0"})
+
+    arguments = [sha, *ARGS]
+    if field == "release-sha":
+        different = patch_commit(repo, "vllm/v1/core.py", "x = 3\n")
+    arguments[argument] = different
+    result = run_script(FREEZE, "v9.9.9", *arguments, cwd=repo, env={"PUSH": "0"})
+
     assert result.returncode == 1
-    assert "refusing" in result.stdout
-    sha2 = patch_commit(repo, "vllm/v1/core.py", "x = 3\n")
-    result = run_script(FREEZE, "v9.9.9", sha2, *ARGS, cwd=repo, env={"PUSH": "0"})
-    assert result.returncode == 1
-    assert "release-sha" in result.stdout
+    assert f"records {field}=" in result.stdout
 
 
 def test_freeze_pushes_and_verifies_the_remote_tag(tmp_path):

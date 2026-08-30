@@ -6,7 +6,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from fork.bench.tests.gitfixtures import SCRIPTS, git, run_script
+from fork.bench.tests.gitfixtures import SCRIPTS, git, init_repo, run_script
 
 MIGRATE = SCRIPTS / "migrate-to-overlay-main.sh"
 
@@ -57,6 +57,33 @@ def test_build_overlay_tree_keeps_only_fork_owned_paths(tmp_path):
     assert "vllm/core.py" not in tracked
     assert "docs/index.md" not in tracked
     assert (repo / "fork" / "overlay-root").exists()
+
+
+def test_release_export_hashes_are_regenerated_from_each_tag(tmp_path):
+    repo = init_repo(tmp_path / "repo", tag="v1.0.0")
+    _write(repo, "vllm/v1/core.py", "x = 2\n")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-q", "-m", "next upstream release")
+    git(repo, "tag", "-a", "v2.0.0", "-m", "v2.0.0")
+
+    command = (
+        'MIGRATE_SOURCED=1; source "$1"; '
+        "export_hash_for_release v1.0.0; export_hash_for_release v2.0.0"
+    )
+    result = subprocess.run(
+        ["bash", "-c", command, "migration-test", str(MIGRATE)],
+        cwd=repo,
+        env={**os.environ, "REPO": str(repo)},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    hashes = result.stdout.splitlines()
+    assert len(hashes) == 2
+    assert all(value.startswith("sha256:") for value in hashes)
+    assert hashes[0] != hashes[1]
 
 
 def test_dry_run_builds_idempotent_audit_branch_without_touching_checkout(tmp_path):
