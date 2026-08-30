@@ -1,0 +1,65 @@
+{
+  "machine": {
+    "all_reduce_path": "native",
+    "driver": "590.48.01",
+    "gpu": "NVIDIA H100 PCIe",
+    "gpu_count": "2",
+    "interconnect": "PXB"
+  },
+  "perf": {
+    "gemma-perf": {
+      "acceptance_rate": 0.5560097532989099,
+      "decode_tok_s": 156.28482919137193,
+      "elapsed_s": 1.6380348708480597,
+      "n": 4,
+      "throughput_conc1": 113.46209490205833,
+      "throughput_conc32": 549.2914575147021,
+      "throughput_conc8": 175.27479369276605,
+      "ttft_p50": 0.28176276944577694,
+      "ttft_p99": 9.061306847259402
+    },
+    "gemma-perf-kvauto": {
+      "acceptance_rate": 0.5389837625979843,
+      "decode_tok_s": 162.48727468038499,
+      "elapsed_s": 1.5755079928785563,
+      "n": 4,
+      "throughput_conc1": 149.27885995613835,
+      "throughput_conc32": 1863.07340227013,
+      "throughput_conc8": 555.3720742466897,
+      "ttft_p50": 0.22877938859164715,
+      "ttft_p99": 0.453800680115819
+    },
+    "gemma-perf-nospec": {
+      "decode_tok_s": 70.10811253784826,
+      "elapsed_s": 3.65150323882699,
+      "n": 4,
+      "throughput_conc1": 67.35944112097,
+      "throughput_conc32": 965.6639291472844,
+      "throughput_conc8": 344.42408382005067,
+      "ttft_p50": 0.2556488197296858,
+      "ttft_p99": 0.48096809908747673
+    },
+    "gemma-perf-tp1x2": {
+      "decode_tok_s": 114.36863168813954,
+      "elapsed_s": 2.238375997170806,
+      "n": 4,
+      "throughput_conc1": 98.40260086985082,
+      "throughput_conc32": 754.0826686439098,
+      "throughput_conc8": 309.3727481687636,
+      "ttft_p50": 0.3179268576204777,
+      "ttft_p99": 5.083005102351308
+    },
+    "qwen-perf": {
+      "acceptance_rate": 0.7711595429538722,
+      "decode_tok_s": 134.08474696429758,
+      "elapsed_s": 1.9092402812093496,
+      "n": 4,
+      "throughput_conc1": 134.15483296524354,
+      "throughput_conc32": 860.5253816107662,
+      "throughput_conc8": 214.1372297769672,
+      "ttft_p50": 0.21590843982994556,
+      "ttft_p99": 1.036991860717535
+    }
+  },
+  "tag": "v0.26.0"
+}

@@ -1,0 +1,505 @@
+name: Build and Push vLLM-OpenAI (audio + fork patches) Image
+
+# Migrated from Mazyod/production-stack. This fork is the new home for building
+# the vLLM engine image; production-stack now only builds the router.
+#
+# Unlike the production-stack version, this build is PINNED to a deterministic
+# upstream release tag (DEFAULT_BASE_TAG) rather than auto-following the latest
+# release. vLLM is a monster to track on bleeding edge, so the fork patch series
+# (fork/patches/) is rebased onto each release in lockstep and the base tag is
+# bumped deliberately. See FORK.md.
+
+on:
+  workflow_dispatch:
+    inputs:
+      vllm_tag:
+        description: "Upstream vllm/vllm-openai base tag to build (default: DEFAULT_BASE_TAG)"
+        required: false
+        default: ""
+      publish_tags:
+        description: "Release tags for a promotion, space/comma-separated. Empty publishes no release refs."
+        required: false
+        default: ""
+      promote_latest:
+        description: "Move :latest to this build (true/false). Promote only a build the release gate has passed."
+        required: false
+        default: "false"
+      promote_from:
+        description: >-
+          Existing tag to promote, e.g. v0.26.0-cand-984ab7a. When set nothing
+          is rebuilt: that exact digest is verified and retagged. This is how a
+          gated artifact reaches :latest — a rebuild would publish a lookalike
+          the gate never saw.
+        required: false
+        default: ""
+      gate_record:
+        description: "Path of the gate results page, e.g. fork/bench/configs/v0.28.0/results/20260830-attempt4.md. Required the first time a base tag is published."
+        required: false
+        default: ""
+
+  push:
+    branches: [main]
+    # Only the actual image inputs trigger a rebuild — not docs/notes under fork/.
+    paths:
+      - "fork/patches/*.patch"
+      - "fork/patches/series"
+      - "fork/docker/**"
+      - ".github/workflows/build-vllm-audio.yml"
+
+env:
+  IMAGE_NAME: docker.io/openimage/vllm-openai-audio
+  # Deterministic upstream release the patch series is generated against.
+  # Bump this in lockstep with fork/scripts/new-release.sh on each release.
+  DEFAULT_BASE_TAG: v0.28.0
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 0: Alignment gate — a fork that has drifted from upstream must not ship
+  # ---------------------------------------------------------------------------
+  alignment:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+          # merge-base needs the real commit history; blobless keeps it cheap.
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: Check alignment with upstream
+        run: fork/scripts/check-alignment.sh --fetch
+
+  # ---------------------------------------------------------------------------
+  # Job 1: Resolve the base tag and the image refs to publish
+  # ---------------------------------------------------------------------------
+  resolve:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      base_tag: ${{ steps.resolve.outputs.base_tag }}
+      version: ${{ steps.resolve.outputs.version }}
+      primary_tag: ${{ steps.resolve.outputs.primary_tag }}
+      image_refs: ${{ steps.resolve.outputs.image_refs }}
+      promote_latest: ${{ steps.resolve.outputs.promote_latest }}
+      promote_from: ${{ steps.resolve.outputs.promote_from }}
+      candidate_digest: ${{ steps.resolve.outputs.candidate_digest }}
+      source_ref: ${{ steps.resolve.outputs.source_ref }}
+      main_sha: ${{ github.sha }}
+      release_sha: ${{ steps.resolve.outputs.release_sha }}
+      release_tag: ${{ steps.resolve.outputs.release_tag }}
+      export_hash: ${{ steps.resolve.outputs.export_hash }}
+      base_digest: ${{ steps.resolve.outputs.base_digest }}
+    steps:
+      - name: Refuse dispatches off main
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.ref }}" != "refs/heads/main" ]]; then
+            echo "::error::dispatch from main only"
+            exit 1
+          fi
+
+      - name: Checkout fork
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Resolve base tag and publish refs
+        id: resolve
+        run: |
+          set -euo pipefail
+
+          INPUT_TAG="${{ github.event.inputs.vllm_tag }}"
+          INPUT_PUBLISH_TAGS="${{ github.event.inputs.publish_tags }}"
+          BASE_TAG="${INPUT_TAG:-${DEFAULT_BASE_TAG}}"
+          RELEASE_TAG=$(sed -n 's/^tag: //p' fork/patches/RELEASE)
+          RELEASE_SHA=$(sed -n 's/^release-sha: //p' fork/patches/RELEASE)
+          if [[ "$RELEASE_TAG" != "$BASE_TAG" ]]; then
+            echo "::error::fork/patches/RELEASE records $RELEASE_TAG, requested $BASE_TAG"
+            exit 1
+          fi
+          EXPORT_HASH=$(fork/scripts/export-hash.sh)
+          BASE_DIGEST=$(docker buildx imagetools inspect \
+            "vllm/vllm-openai:${BASE_TAG}" --format '{{.Manifest.Digest}}')
+
+          # The prebuilt base image must exist on Docker Hub, otherwise the build
+          # fails later with a confusing pull error.
+          BASE_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://hub.docker.com/v2/repositories/vllm/vllm-openai/tags/${BASE_TAG}")
+          if [[ "$BASE_CODE" != "200" ]]; then
+            echo "::error::Base image vllm/vllm-openai:${BASE_TAG} not found on Docker Hub (HTTP $BASE_CODE)"
+            exit 1
+          fi
+
+          VERSION="${BASE_TAG#v}"
+          PROMOTE_FROM="${{ github.event.inputs.promote_from }}"
+          PUBLISH_TAGS=$(fork/scripts/resolve-publish-tags.sh \
+            "${{ github.event_name }}" "$BASE_TAG" "${GITHUB_SHA:0:7}" \
+            "$INPUT_PUBLISH_TAGS" "$PROMOTE_FROM")
+          PRIMARY_TAG="${PUBLISH_TAGS%% *}"
+
+          if [[ -z "$PROMOTE_FROM" ]]; then
+            PROMOTE_LATEST="false"
+          else
+            PROMOTE_LATEST="${{ github.event.inputs.promote_latest || 'false' }}"
+          fi
+
+          # What downstream jobs verify and promote. Promoting an existing tag
+          # rebuilds nothing, so the artifact the gate approved is the artifact
+          # that ships.
+          if [[ -n "$PROMOTE_FROM" ]]; then
+            CANDIDATE_DIGEST=$(docker buildx imagetools inspect \
+              "${IMAGE_NAME}:${PROMOTE_FROM}" \
+              --format '{{.Manifest.Digest}}')
+            SOURCE_REF="${IMAGE_NAME}@${CANDIDATE_DIGEST}"
+          else
+            CANDIDATE_DIGEST=""
+            SOURCE_REF=""
+          fi
+
+          {
+            echo "base_tag=$BASE_TAG"
+            echo "version=$VERSION"
+            echo "primary_tag=$PRIMARY_TAG"
+            echo "promote_latest=$PROMOTE_LATEST"
+            echo "promote_from=$PROMOTE_FROM"
+            echo "candidate_digest=$CANDIDATE_DIGEST"
+            echo "source_ref=$SOURCE_REF"
+            echo "release_sha=$RELEASE_SHA"
+            echo "release_tag=$RELEASE_TAG"
+            echo "export_hash=$EXPORT_HASH"
+            echo "base_digest=$BASE_DIGEST"
+            echo "image_refs<<__REFS__"
+            for t in $PUBLISH_TAGS; do echo "${IMAGE_NAME}:${t}"; done
+            echo "__REFS__"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "========================================"
+          echo "  Base image     : vllm/vllm-openai:$BASE_TAG"
+          echo "  Version        : $VERSION"
+          echo "  Publish tags   : $PUBLISH_TAGS"
+          echo "  Promote latest : $PROMOTE_LATEST"
+          echo "  Promote from   : ${PROMOTE_FROM:-<build a new image>}"
+          echo "  Source ref     : $SOURCE_REF"
+          echo "========================================"
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Build the audio + patched image and push
+  # ---------------------------------------------------------------------------
+  build-and-push:
+    needs: [alignment, resolve]
+    # A promotion rebuilds nothing; it retags a digest that already exists.
+    if: needs.resolve.outputs.promote_from == ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push image
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: fork/docker/Dockerfile.audio
+          # vllm/vllm-openai is published for linux/amd64 only.
+          platforms: linux/amd64
+          push: true
+          build-args: |
+            BASE_TAG=${{ needs.resolve.outputs.base_tag }}
+          tags: ${{ needs.resolve.outputs.image_refs }}
+          labels: |
+            org.opencontainers.image.revision=${{ needs.resolve.outputs.main_sha }}
+            io.openimage.release-sha=${{ needs.resolve.outputs.release_sha }}
+            io.openimage.patch-export=${{ needs.resolve.outputs.export_hash }}
+            io.openimage.base-digest=${{ needs.resolve.outputs.base_digest }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Summary
+        run: |
+          {
+            echo "### Build Complete"
+            echo ""
+            echo "- **Base image:** \`vllm/vllm-openai:${{ needs.resolve.outputs.base_tag }}\`"
+            echo "- **Tags:**"
+            while IFS= read -r ref; do
+              [[ -n "$ref" ]] && echo "  - \`$ref\`"
+            done <<< "${{ needs.resolve.outputs.image_refs }}"
+            echo "- **Digest:** \`${{ steps.build.outputs.digest }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ---------------------------------------------------------------------------
+  # Job 3: Verify audio deps import AND the fork patches are present (CPU-only)
+  # ---------------------------------------------------------------------------
+  test:
+    needs: [resolve, build-and-push]
+    # Runs for a fresh build and for a promotion, where the build was skipped.
+    if: >-
+      always() && needs.resolve.result == 'success' &&
+      (needs.build-and-push.result == 'success' ||
+       (needs.build-and-push.result == 'skipped' &&
+        needs.resolve.outputs.promote_from != ''))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Without this the series file below is unreadable, EXPECTED computes as
+      # 0, and the patch assertion silently compares nothing — which is how it
+      # passed for every build of the empty series while proving nothing.
+      - name: Checkout fork
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Pull the image under test
+        run: |
+          set -euo pipefail
+          SOURCE_REF="${{ needs.resolve.outputs.source_ref }}"
+          if [[ -z "$SOURCE_REF" ]]; then
+            SOURCE_REF="${IMAGE_NAME}@${{ needs.build-and-push.outputs.digest }}"
+          fi
+          [[ "$SOURCE_REF" == *@sha256:* ]] || {
+            echo "::error::source ref is not pinned by digest: $SOURCE_REF"
+            exit 1
+          }
+          echo "SOURCE_REF=$SOURCE_REF" >> "$GITHUB_ENV"
+          docker pull "$SOURCE_REF"
+
+      - name: Assert audio decode deps are present
+        run: |
+          # /v1/audio/transcriptions needs these. vLLM guards `import av` and
+          # `import soundfile`; if either is missing it degrades to a
+          # PlaceholderModule. Importing both is pure CPU work — no GPU.
+          IMAGE="$SOURCE_REF"
+          docker run --rm --entrypoint python3 "$IMAGE" -c \
+            "import av, soundfile; print('audio deps OK: av', av.__version__, '| soundfile', soundfile.__version__)"
+
+      - name: Assert the image carries exactly the declared patch series
+        run: |
+          # Cheap, GPU-free proof that what shipped is what the series declares.
+          # Derived from the series rather than hardcoded, so it cannot go stale
+          # when a patch is added or retired: every patch must reverse-apply
+          # cleanly (proving it is present), and the count must match.
+          IMAGE="$SOURCE_REF"
+          # Fail closed on an unreadable series: "0 declared" and "0 found"
+          # agree, so a missing file renders as a passing check that compared
+          # nothing at all.
+          SERIES=fork/patches/series
+          [[ -f "$SERIES" ]] || { echo "::error::$SERIES not found; the checkout is missing"; exit 1; }
+          # `grep -c` exits 1 on no match, and the count is then empty rather
+          # than zero — an empty series is normal, so count without grep.
+          EXPECTED=$(awk 'NF && $1 !~ /^#/' "$SERIES" | wc -l | tr -d ' ')
+          echo "series declares $EXPECTED patch(es)"
+          docker run --rm --entrypoint bash -e EXPECTED="$EXPECTED" "$IMAGE" -c '
+            set -euo pipefail
+            SITE=$(python3 -c "import os, vllm; print(os.path.dirname(os.path.dirname(vllm.__file__)))")
+            found=0
+            while IFS= read -r line || [ -n "$line" ]; do
+              case "$line" in ""|\#*) continue ;; esac
+              patch -R -p1 --dry-run --force --directory="$SITE" \
+                < "/opt/fork/patches/$line" > /dev/null
+              echo "  present: $line"
+              found=$((found + 1))
+            done < /opt/fork/patches/series
+            [ "$found" = "$EXPECTED" ] || {
+              echo "ERROR: image carries $found patches, series declares $EXPECTED" >&2
+              exit 1
+            }
+            echo "patch series verified: $found applied, $EXPECTED declared"
+          '
+
+  # ---------------------------------------------------------------------------
+  # Job 4: Promote the verified digest — never a rebuild of it
+  # ---------------------------------------------------------------------------
+  promote:
+    needs: [resolve, build-and-push, test]
+    if: >-
+      always() && needs.test.result == 'success' &&
+      (needs.resolve.outputs.promote_latest == 'true' ||
+       needs.resolve.outputs.promote_from != '')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Read candidate labels
+        id: candidate
+        run: |
+          set -euo pipefail
+          SOURCE_REF="${{ needs.resolve.outputs.source_ref }}"
+          if [[ -z "$SOURCE_REF" ]]; then
+            SOURCE_REF="${IMAGE_NAME}@${{ needs.build-and-push.outputs.digest }}"
+          fi
+          [[ "$SOURCE_REF" == *@sha256:* ]] || {
+            echo "::error::source ref is not pinned by digest: $SOURCE_REF"
+            exit 1
+          }
+          DIGEST="${SOURCE_REF#*@}"
+          docker pull "$SOURCE_REF"
+          CAND_RELEASE_SHA=$(docker inspect --format \
+            '{{ index .Config.Labels "io.openimage.release-sha" }}' "$SOURCE_REF")
+          CAND_EXPORT=$(docker inspect --format \
+            '{{ index .Config.Labels "io.openimage.patch-export" }}' "$SOURCE_REF")
+          CAND_BASE=$(docker inspect --format \
+            '{{ index .Config.Labels "io.openimage.base-digest" }}' "$SOURCE_REF")
+          [[ "$CAND_RELEASE_SHA" != "<no value>" ]] || CAND_RELEASE_SHA=""
+          [[ "$CAND_EXPORT" != "<no value>" ]] || CAND_EXPORT=""
+          [[ "$CAND_BASE" != "<no value>" ]] || CAND_BASE=""
+          {
+            echo "digest=$DIGEST"
+            echo "release_sha=$CAND_RELEASE_SHA"
+            echo "export_hash=$CAND_EXPORT"
+            echo "base_digest=$CAND_BASE"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Verify labeled or legacy candidate
+        id: verify
+        run: |
+          set -euo pipefail
+          OUTPUT=$(fork/scripts/verify-candidate.sh \
+            "${{ needs.resolve.outputs.base_tag }}" \
+            "${{ steps.candidate.outputs.digest }}" \
+            "${{ steps.candidate.outputs.release_sha }}" \
+            "${{ steps.candidate.outputs.export_hash }}" \
+            "${{ needs.resolve.outputs.release_sha }}" \
+            "${{ needs.resolve.outputs.export_hash }}")
+          echo "$OUTPUT"
+          MODE="${OUTPUT#mode=}"
+          [[ "$MODE" == "labeled" || "$MODE" == "legacy" ]]
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+
+      - name: Freeze the release source and candidate digest
+        id: freeze
+        run: |
+          set -euo pipefail
+          BASE_TAG="${{ needs.resolve.outputs.base_tag }}"
+          MODE="${{ steps.verify.outputs.mode }}"
+          if [[ "$MODE" == "legacy" ]]; then
+            if [[ -n "${{ needs.resolve.outputs.image_refs }}" ]]; then
+              echo "::error::legacy candidates may only move :latest; publish_tags must be empty"
+              exit 1
+            fi
+            echo "legacy candidate already frozen as fork/${BASE_TAG}"
+            echo "tag=fork/${BASE_TAG}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          PUBLISH_BASE=false
+          while IFS= read -r ref; do
+            if [[ "$ref" == "${IMAGE_NAME}:${BASE_TAG}" ]]; then
+              PUBLISH_BASE=true
+            fi
+          done <<< "${{ needs.resolve.outputs.image_refs }}"
+          if [[ "$PUBLISH_BASE" != "true" ]] &&
+             ! git rev-parse --verify --quiet "refs/tags/fork/${BASE_TAG}" >/dev/null; then
+            echo "::error::publish_tags must name ${BASE_TAG} for its first publication"
+            exit 1
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+          set +e
+          OUTPUT=$(fork/scripts/freeze-release.sh \
+            "$BASE_TAG" \
+            "${{ steps.candidate.outputs.release_sha }}" \
+            "${{ steps.candidate.outputs.digest }}" \
+            "${{ steps.candidate.outputs.base_digest }}" \
+            "${{ needs.resolve.outputs.main_sha }}" \
+            "${{ steps.candidate.outputs.export_hash }}" \
+            "${{ github.event.inputs.gate_record }}" 2>&1)
+          STATUS=$?
+          set -e
+          echo "$OUTPUT"
+          if [[ "$STATUS" -ne 0 ]]; then
+            if [[ "$STATUS" -eq 2 && -z "${{ github.event.inputs.gate_record }}" ]]; then
+              echo "::error::gate_record is required for the first promotion of ${BASE_TAG}"
+            fi
+            exit "$STATUS"
+          fi
+          echo "tag=fork/${BASE_TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Retag the verified digest
+        id: promote
+        run: |
+          set -euo pipefail
+          DIGEST="${{ steps.candidate.outputs.digest }}"
+          SOURCE_REF="${IMAGE_NAME}@${DIGEST}"
+          echo "promoting $SOURCE_REF"
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+
+          # On a promotion the publish tags were never pushed by this run,
+          # because nothing was built. Point them at the pinned digest.
+          if [[ -n "${{ needs.resolve.outputs.promote_from }}" ]]; then
+            while IFS= read -r ref; do
+              [[ -n "$ref" ]] || continue
+              echo "  tagging $ref"
+              docker buildx imagetools create --tag "$ref" "$SOURCE_REF"
+            done <<< "${{ needs.resolve.outputs.image_refs }}"
+          fi
+
+          if [[ "${{ needs.resolve.outputs.promote_latest }}" == "true" ]]; then
+            echo "  tagging ${IMAGE_NAME}:latest"
+            docker buildx imagetools create --tag "${IMAGE_NAME}:latest" "$SOURCE_REF"
+          fi
+
+      - name: Summary
+        run: |
+          {
+            echo "### Release Complete"
+            echo ""
+            echo "- **Promoted digest:** \`${{ steps.promote.outputs.digest }}\`"
+            echo "- **Source:** \`${{ needs.resolve.outputs.source_ref }}\`"
+            while IFS= read -r ref; do
+              [[ -n "$ref" ]] && echo "- \`$ref\`"
+            done <<< "${{ needs.resolve.outputs.image_refs }}"
+            if [[ "${{ needs.resolve.outputs.promote_latest }}" == "true" ]]; then
+              echo "- \`${{ env.IMAGE_NAME }}:latest\`"
+            fi
+            echo "- **Frozen tag:** \`${{ steps.freeze.outputs.tag }}\`"
+            echo ""
+            echo '```text'
+            git tag -l --format='%(contents)' \
+              "${{ steps.freeze.outputs.tag }}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

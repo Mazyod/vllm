@@ -1,0 +1,30 @@
+name: Fork alignment
+
+# Enforces the overlay-only release model on every change. After migration,
+# main may contain only paths allowed by fork/alignment.ledger; release source
+# is pinned by fork/patches/RELEASE, its history is checked, and a fresh patch
+# export must match byte for byte. The migration removes below.
+#
+# The image build (build-vllm-audio.yml) runs the same check as a publish gate,
+# so a drifting fork can neither merge nor ship.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  alignment:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v5
+        with:
+          # merge-base needs the real commit history; blobless keeps it cheap.
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: Check alignment with upstream
+        run: fork/scripts/check-alignment.sh --fetch

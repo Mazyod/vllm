@@ -1,0 +1,11 @@
+(APIServer pid=8) WARNING 07-26 10:20:01 [vllm.py:2149] Model Runner V2 does not yet support the thinking_token_budget request parameter. Set VLLM_USE_V2_MODEL_RUNNER=0 if this is required.
+(EngineCore pid=76) INFO 07-26 10:20:02 [core.py:114] Initializing a V1 LLM engine (v0.25.0) with config: model='RedHatAI/gemma-4-31B-it-FP8-block', speculative_config=SpeculativeConfig(method='mtp', model='google/gemma-4-31B-it-assistant', num_spec_tokens=4), tokenizer='RedHatAI/gemma-4-31B-it-FP8-block', tensor_parallel_size=1, pipeline_parallel_size=1, disable_custom_all_reduce=False, quantization=compressed-tensors, kv_cache_dtype=fp8, device_config=cuda, served_model_name=gemma-4-31b, enable_prefix_caching=True, compilation_config={'mode': <CompilationMode.VLLM_COMPILE: 3>, 'pass_config': {}},
+(Worker pid=102) INFO 07-26 10:20:03 [gpu_worker.py:360] Using V2 Model Runner
+(EngineCore pid=76) WARNING 07-26 10:20:04 [vllm.py:2149] Model Runner V2 does not yet support the thinking_token_budget request parameter. Set VLLM_USE_V2_MODEL_RUNNER=0 if this is required.
+(Worker pid=102) INFO 07-26 10:20:05 [cuda.py:476] Using FLASHINFER attention backend out of potential backends: ['FLASHINFER', 'TRITON_ATTN'].
+(EngineCore pid=76) ERROR 07-26 10:27:15 [core.py:1231] EngineCore failed to start.
+(EngineCore pid=76) ERROR 07-26 10:27:15 [core.py:1231] Traceback (most recent call last):
+(EngineCore pid=76) ERROR 07-26 10:27:15 [core.py:1231]     raise NotImplementedError(
+(EngineCore pid=76) ERROR 07-26 10:27:15 [core.py:1231] NotImplementedError: FlashInfer backend on SM90 currently crashes with sliding-window attention layers. Use the default attention backend.
+(EngineCore pid=76)     raise NotImplementedError(
+(EngineCore pid=76) NotImplementedError: FlashInfer backend on SM90 currently crashes with sliding-window attention layers. Use the default attention backend.

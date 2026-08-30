@@ -1,0 +1,135 @@
+{
+  "_comment": "Intended v0.28.0 gate argv. Carried forward byte-identical from the v0.27.1 argv frozen on 2026-08-11, because the v0.28.0 flag audit deliberately concluded no flag needed to change; independent parity oracle for the YAML config store.",
+  "profiles": {
+    "gemma-full": [
+      "vllm", "serve", "RedHatAI/gemma-4-31B-it-FP8-block",
+      "--served-model-name", "gemma-4-31b", "--host", "0.0.0.0",
+      "--port", "8000", "--tensor-parallel-size", "1",
+      "--reasoning-parser", "gemma4", "--tool-call-parser", "gemma4",
+      "--enable-auto-tool-choice", "--kv-cache-dtype", "fp8",
+      "--enable-prefix-caching", "--max-model-len", "8192",
+      "--speculative-config",
+      "{\"method\":\"mtp\",\"model\":\"google/gemma-4-31B-it-assistant\",\"num_speculative_tokens\":4}"
+    ],
+    "gemma-v2-kvfp8": [
+      "vllm", "serve", "RedHatAI/gemma-4-31B-it-FP8-block",
+      "--served-model-name", "gemma-4-31b", "--host", "0.0.0.0",
+      "--port", "8000", "--tensor-parallel-size", "1",
+      "--reasoning-parser", "gemma4", "--tool-call-parser", "gemma4",
+      "--enable-auto-tool-choice", "--kv-cache-dtype", "fp8",
+      "--enable-prefix-caching", "--max-model-len", "8192",
+      "--speculative-config",
+      "{\"method\":\"mtp\",\"model\":\"google/gemma-4-31B-it-assistant\",\"num_speculative_tokens\":4}"
+    ],
+    "gemma-v2-spec-kv-dtype": [
+      "vllm", "serve", "RedHatAI/gemma-4-31B-it-FP8-block",
+      "--served-model-name", "gemma-4-31b", "--host", "0.0.0.0",
+      "--port", "8000", "--tensor-parallel-size", "1",
+      "--reasoning-parser", "gemma4", "--tool-call-parser", "gemma4",
+      "--enable-auto-tool-choice", "--kv-cache-dtype", "fp8",
+      "--enable-prefix-caching", "--max-model-len", "8192",
+      "--speculative-config",
+      "{\"method\":\"mtp\",\"model\":\"google/gemma-4-31B-it-assistant\",\"num_speculative_tokens\":4,\"kv_cache_dtype\":\"auto\"}"
+    ],
+    "qwen-full": [
+      "vllm", "serve", "Qwen/Qwen3.6-27B-FP8",
+      "--served-model-name", "qwen3.6-27b", "--host", "0.0.0.0",
+      "--port", "8000", "--tensor-parallel-size", "1",
+      "--reasoning-parser", "qwen3", "--tool-call-parser", "qwen3_coder",
+      "--enable-auto-tool-choice", "--kv-cache-dtype", "fp8",
+      "--no-enable-prefix-caching", "--max-model-len", "8192",
+      "--max-num-seqs", "256", "--speculative-config",
+      "{\"method\":\"mtp\",\"num_speculative_tokens\":2}"
+    ],
+    "gemma-perf": [
+      "vllm", "serve", "RedHatAI/gemma-4-31B-it-FP8-block",
+      "--served-model-name", "gemma-4-31b", "--host", "0.0.0.0",
+      "--port", "8000", "--tensor-parallel-size", "2",
+      "--reasoning-parser", "gemma4", "--tool-call-parser", "gemma4",
+      "--enable-auto-tool-choice", "--kv-cache-dtype", "fp8",
+      "--enable-prefix-caching", "--max-model-len", "8192",
+      "--speculative-config",
+      "{\"method\":\"mtp\",\"model\":\"google/gemma-4-31B-it-assistant\",\"num_speculative_tokens\":4}",
+      "--disable-custom-all-reduce", "--compilation-config",
+      "{\"pass_config\":{\"fuse_allreduce_rms\":false}}"
+    ],
+    "qwen-perf": [
+      "vllm", "serve", "Qwen/Qwen3.6-27B-FP8",
+      "--served-model-name", "qwen3.6-27b", "--host", "0.0.0.0",
+      "--port", "8000", "--tensor-parallel-size", "2",
+      "--reasoning-parser", "qwen3", "--tool-call-parser", "qwen3_coder",
+      "--enable-auto-tool-choice", "--kv-cache-dtype", "fp8",
+      "--no-enable-prefix-caching", "--max-model-len", "8192",
+      "--max-num-seqs", "256", "--speculative-config",
+      "{\"method\":\"mtp\",\"num_speculative_tokens\":2}",
+      "--disable-custom-all-reduce", "--compilation-config",
+      "{\"pass_config\":{\"fuse_allreduce_rms\":false}}"
+    ],
+    "gemma-perf-nospec": [
+      "vllm", "serve", "RedHatAI/gemma-4-31B-it-FP8-block",
+      "--served-model-name", "gemma-4-31b", "--host", "0.0.0.0",
+      "--port", "8000", "--tensor-parallel-size", "2",
+      "--reasoning-parser", "gemma4", "--tool-call-parser", "gemma4",
+      "--enable-auto-tool-choice", "--kv-cache-dtype", "fp8",
+      "--enable-prefix-caching", "--max-model-len", "8192",
+      "--disable-custom-all-reduce", "--compilation-config",
+      "{\"pass_config\":{\"fuse_allreduce_rms\":false}}"
+    ],
+    "gemma-perf-tp1x2": [
+      "vllm", "serve", "RedHatAI/gemma-4-31B-it-FP8-block",
+      "--served-model-name", "gemma-4-31b", "--host", "0.0.0.0",
+      "--port", "8000", "--tensor-parallel-size", "1",
+      "--reasoning-parser", "gemma4", "--tool-call-parser", "gemma4",
+      "--enable-auto-tool-choice", "--kv-cache-dtype", "fp8",
+      "--enable-prefix-caching", "--max-model-len", "8192",
+      "--speculative-config",
+      "{\"method\":\"mtp\",\"model\":\"google/gemma-4-31B-it-assistant\",\"num_speculative_tokens\":4}"
+    ],
+    "gemma-perf-kvauto": [
+      "vllm", "serve", "RedHatAI/gemma-4-31B-it-FP8-block",
+      "--served-model-name", "gemma-4-31b", "--host", "0.0.0.0",
+      "--port", "8000", "--tensor-parallel-size", "2",
+      "--reasoning-parser", "gemma4", "--tool-call-parser", "gemma4",
+      "--enable-auto-tool-choice", "--kv-cache-dtype", "auto",
+      "--enable-prefix-caching", "--max-model-len", "8192",
+      "--speculative-config",
+      "{\"method\":\"mtp\",\"model\":\"google/gemma-4-31B-it-assistant\",\"num_speculative_tokens\":4}",
+      "--disable-custom-all-reduce", "--compilation-config",
+      "{\"pass_config\":{\"fuse_allreduce_rms\":false}}"
+    ],
+    "gemma-tp2": [
+      "vllm", "serve", "RedHatAI/gemma-4-31B-it-FP8-block",
+      "--served-model-name", "gemma-4-31b", "--host", "0.0.0.0",
+      "--port", "8000", "--tensor-parallel-size", "2",
+      "--reasoning-parser", "gemma4", "--tool-call-parser", "gemma4",
+      "--enable-auto-tool-choice", "--kv-cache-dtype", "fp8",
+      "--enable-prefix-caching", "--max-model-len", "8192",
+      "--speculative-config",
+      "{\"method\":\"mtp\",\"model\":\"google/gemma-4-31B-it-assistant\",\"num_speculative_tokens\":4}",
+      "--disable-custom-all-reduce", "--compilation-config",
+      "{\"pass_config\":{\"fuse_allreduce_rms\":false}}"
+    ],
+    "qwen-tp2": [
+      "vllm", "serve", "Qwen/Qwen3.6-27B-FP8",
+      "--served-model-name", "qwen3.6-27b", "--host", "0.0.0.0",
+      "--port", "8000", "--tensor-parallel-size", "2",
+      "--reasoning-parser", "qwen3", "--tool-call-parser", "qwen3_coder",
+      "--enable-auto-tool-choice", "--kv-cache-dtype", "fp8",
+      "--no-enable-prefix-caching", "--max-model-len", "8192",
+      "--max-num-seqs", "256", "--speculative-config",
+      "{\"method\":\"mtp\",\"num_speculative_tokens\":2}",
+      "--disable-custom-all-reduce", "--compilation-config",
+      "{\"pass_config\":{\"fuse_allreduce_rms\":false}}"
+    ],
+    "qwen-tp2-noflags": [
+      "vllm", "serve", "Qwen/Qwen3.6-27B-FP8",
+      "--served-model-name", "qwen3.6-27b", "--host", "0.0.0.0",
+      "--port", "8000", "--tensor-parallel-size", "2",
+      "--reasoning-parser", "qwen3", "--tool-call-parser", "qwen3_coder",
+      "--enable-auto-tool-choice", "--kv-cache-dtype", "fp8",
+      "--no-enable-prefix-caching", "--max-model-len", "8192",
+      "--max-num-seqs", "256", "--speculative-config",
+      "{\"method\":\"mtp\",\"num_speculative_tokens\":2}"
+    ]
+  }
+}

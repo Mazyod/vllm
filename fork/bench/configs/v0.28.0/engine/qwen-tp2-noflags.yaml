@@ -1,0 +1,26 @@
+# The Qwen hybrid checkpoint used by the all-reduce negative arm.
+model: Qwen/Qwen3.6-27B-FP8
+# Keep the API identity identical to the shipping Qwen arm.
+served-model-name: qwen3.6-27b
+# Exercise the same two-GPU PCIe topology without either workaround.
+tensor-parallel-size: 2
+# Preserve Qwen reasoning content in OpenAI responses.
+reasoning-parser: qwen3
+# Parse Qwen3-Coder native tool calls.
+tool-call-parser: qwen3_coder
+# Let the model select tools without a forced tool choice.
+enable-auto-tool-choice: true
+# Keep the shipped Qwen KV cache in FP8.
+kv-cache-dtype: fp8
+# v0.28.0 turns prefix caching ON by default for hybrids (#50991 dropped the
+# is_hybrid carve-out); this holds the shipped Qwen behaviour against it.
+no-enable-prefix-caching: true
+# Bound the measured context independently of model defaults.
+max-model-len: 8192
+# 1024 exceeds the single-GPU Mamba cache blocks; pin 256 across releases.
+max-num-seqs: 256
+# Use Qwen's built-in two-token MTP speculative path.
+speculative-config:
+  method: mtp
+  num_speculative_tokens: 2
+# Both PCIe all-reduce workarounds are intentionally absent in this crash arm.

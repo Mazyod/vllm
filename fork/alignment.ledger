@@ -1,0 +1,27 @@
+# Fork alignment ledger — every path permitted on overlay-only main.
+#
+# Overlay main has no upstream source tree. This file is the complete allowlist
+# of fork-owned paths; `fork/scripts/check-alignment.sh` rejects every tracked
+# path that does not match an `add` entry. Engine changes live only in release
+# commits and their generated patches. See FORK.md § Charter for the rules.
+#
+# Format:  <class>  <path>  <lifetime>  <rationale>
+#
+#   class     add            — overlay main contains fork-owned files only.
+#   path      exact path, or `dir/**` to cover a whole fork-owned subtree.
+#   lifetime  permanent, or `until:<condition>` for an entry meant to end.
+#
+# Keep this list short. Every line is a liability we chose to carry.
+
+# --- Fork-owned paths. -------------------------------------------------------
+add  FORK.md                                     permanent  fork charter and operating model
+add  fork/**                                     permanent  the fork overlay: patches, notes, docker, scripts, release gate
+add  .github/workflows/build-vllm-audio.yml      permanent  builds openimage/vllm-openai-audio from the pinned tag
+add  .github/workflows/fork-alignment.yml        permanent  enforces this ledger on every pull request
+add  runs/**                                     permanent  gate-run artifacts stay local; only the ignore file is tracked
+add  pyproject.toml                              permanent  fork-only lint and test configuration after migration
+add  .pre-commit-config.yaml                     permanent  fork-only pre-commit hooks after migration
+add  .markdownlint.yaml                          permanent  fork Markdown lint configuration after migration
+add  .shellcheckrc                               permanent  fork shellcheck configuration after migration
+add  AGENTS.md                                   permanent  fork contribution instructions after migration
+add  CLAUDE.md                                   permanent  points other agents at the fork instructions

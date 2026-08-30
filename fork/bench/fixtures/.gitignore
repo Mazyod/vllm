@@ -1,0 +1,5 @@
+# Upstream's root .gitignore ignores *.log. These captures are the evidence the
+# receipt probes are tested against, so they must be tracked. Negating here
+# keeps the fix fork-owned: editing the root .gitignore would modify an
+# upstream file and fail fork/scripts/check-alignment.sh.
+!*.log

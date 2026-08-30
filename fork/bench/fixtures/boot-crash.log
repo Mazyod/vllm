@@ -1,0 +1,22 @@
+(EngineCore pid=72) INFO 07-26 10:10:01 [core.py:114] Initializing a V1 LLM engine (v0.25.1) with config: model='RedHatAI/gemma-4-31B-it-FP8-block', speculative_config=SpeculativeConfig(method='mtp', model='google/gemma-4-31B-it-assistant', num_spec_tokens=4), tokenizer='RedHatAI/gemma-4-31B-it-FP8-block', trust_remote_code=True, dtype=torch.bfloat16, tensor_parallel_size=1, pipeline_parallel_size=1, disable_custom_all_reduce=False, quantization=compressed-tensors, enforce_eager=False, kv_cache_dtype=fp8, device_config=cuda, served_model_name=gemma-4-31b, enable_prefix_caching=True, compilation_config={'mode': <CompilationMode.VLLM_COMPILE: 3>, 'pass_config': {}},
+(Worker pid=102) INFO 07-26 10:10:02 [cuda.py:476] Using TRITON_ATTN attention backend out of potential backends: ['TRITON_ATTN'].
+(Worker pid=102) INFO 07-26 10:10:52 [gemma4.py:176] Gemma4 MTP: keeping draft model's own lm_head (draft_dim != backbone_dim).
+(Worker pid=102) INFO 07-26 10:10:52 [gemma4.py:335] Gemma4 MTP: draft layer 0 (sliding_attention) -> language_model.model.layers.58.self_attn.attn
+(Worker pid=102) INFO 07-26 10:10:52 [gemma4.py:335] Gemma4 MTP: draft layer 1 (sliding_attention) -> language_model.model.layers.58.self_attn.attn
+(Worker pid=102) INFO 07-26 10:10:52 [gemma4.py:335] Gemma4 MTP: draft layer 2 (sliding_attention) -> language_model.model.layers.58.self_attn.attn
+(Worker pid=102) INFO 07-26 10:10:52 [gemma4.py:335] Gemma4 MTP: draft layer 3 (full_attention) -> language_model.model.layers.59.self_attn.attn
+(Worker pid=102) INFO 07-26 10:10:52 [llm_base_proposer.py:1466] Detected MTP model. Sharing target model embedding weights with the draft model.
+(Worker pid=102) INFO 07-26 10:10:52 [llm_base_proposer.py:1483] Target embedding dim (5376) differs from draft embedding dim (1024). Keeping separate embedding weights.
+(Worker pid=102) WARNING 07-26 10:10:52 [llm_base_proposer.py:1350] Draft model does not support multimodal inputs, falling back to text-only mode
+(EngineCore pid=72) ERROR 07-26 10:11:16 [core.py:1231] EngineCore failed to start.
+(EngineCore pid=72) ERROR 07-26 10:11:16 [core.py:1231] Traceback (most recent call last):
+(EngineCore pid=72) ERROR 07-26 10:11:16 [core.py:1231]   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/spec_decode/llm_base_proposer.py", line 1664, in dummy_run
+(EngineCore pid=72) ERROR 07-26 10:11:16 [core.py:1231]     self.model(**kwargs)
+(EngineCore pid=72) ERROR 07-26 10:11:16 [core.py:1231]   File "/usr/local/lib/python3.12/dist-packages/vllm/model_executor/models/gemma4_mtp.py", line 440, in forward
+(EngineCore pid=72) ERROR 07-26 10:11:16 [core.py:1231]     hidden_states, _ = self.pre_projection(combined)
+(EngineCore pid=72) ERROR 07-26 10:11:16 [core.py:1231]   File "/usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/linear.py", line 558, in forward
+(EngineCore pid=72) ERROR 07-26 10:11:16 [core.py:1231]     output_parallel = self.quant_method.apply(self, input_, bias)
+(EngineCore pid=72) ERROR 07-26 10:11:16 [core.py:1231]   File "/usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/utils.py", line 98, in default_unquantized_gemm
+(EngineCore pid=72) ERROR 07-26 10:11:16 [core.py:1231]     return torch.nn.functional.linear(x, weight, bias)
+(EngineCore pid=72) ERROR 07-26 10:11:16 [core.py:1231] RuntimeError: mat1 and mat2 shapes cannot be multiplied (2496x6400 and 10752x1024)
+(EngineCore pid=72) Process EngineCore:

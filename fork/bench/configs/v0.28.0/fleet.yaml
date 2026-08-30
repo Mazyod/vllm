@@ -1,0 +1,176 @@
+profiles:
+  gemma-full:
+    engine: engine/gemma-tp1.yaml
+    phase: 2
+    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO}
+    gpus: [0]
+    replicas: 1
+    revert_patches: []
+    probes: [R1, R2, R4, R5, B1, B3, B4, B5]
+    expect: serves
+    expect_boot_evidence: {}
+    expect_attention_backend: TRITON_ATTN
+    gating: true
+    control_for: null
+    venue: gate
+  gemma-v2-kvfp8:
+    engine: engine/gemma-tp1.yaml
+    phase: 2
+    env: {VLLM_USE_V2_MODEL_RUNNER: "1", VLLM_LOGGING_LEVEL: INFO}
+    gpus: [0]
+    replicas: 1
+    revert_patches: []
+    probes: [R5]
+    expect: boot_crash
+    expect_boot_evidence: {}
+    expect_attention_backend: ""
+    gating: false
+    control_for: null
+    venue: gate
+  gemma-v2-spec-kv-dtype:
+    engine: engine/gemma-tp1-v2-spec-kv-dtype.yaml
+    phase: 2
+    env: {VLLM_USE_V2_MODEL_RUNNER: "1", VLLM_LOGGING_LEVEL: INFO}
+    gpus: [0]
+    replicas: 1
+    revert_patches: []
+    probes: [R5]
+    expect: serves
+    expect_boot_evidence: {}
+    expect_attention_backend: ""
+    gating: false
+    control_for: null
+    venue: gate
+  qwen-full:
+    engine: engine/qwen-tp1.yaml
+    phase: 2
+    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO}
+    gpus: [1]
+    replicas: 1
+    revert_patches: []
+    probes: [R2, R4, R5, B2, B3, B4]
+    expect: serves
+    expect_boot_evidence: {}
+    expect_attention_backend: FLASH_ATTN
+    gating: true
+    control_for: null
+    venue: gate
+  gemma-perf:
+    engine: engine/gemma-tp2.yaml
+    phase: 3
+    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO}
+    gpus: [0, 1]
+    replicas: 1
+    revert_patches: []
+    probes: [P1, P2, P3, P4]
+    expect: serves
+    expect_boot_evidence: {}
+    expect_attention_backend: ""
+    gating: true
+    control_for: null
+    venue: gate
+  qwen-perf:
+    engine: engine/qwen-tp2.yaml
+    phase: 3
+    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO}
+    gpus: [0, 1]
+    replicas: 1
+    revert_patches: []
+    probes: [P1, P2, P3, P4]
+    expect: serves
+    expect_boot_evidence: {}
+    expect_attention_backend: ""
+    gating: true
+    control_for: null
+    venue: gate
+  gemma-perf-nospec:
+    engine: engine/gemma-tp2-nospec.yaml
+    phase: 3
+    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO}
+    gpus: [0, 1]
+    replicas: 1
+    revert_patches: []
+    probes: [P1, P2, P3]
+    expect: serves
+    expect_boot_evidence: {}
+    expect_attention_backend: ""
+    gating: false
+    control_for: gemma-perf
+    venue: gate
+  gemma-perf-tp1x2:
+    engine: engine/gemma-tp1.yaml
+    phase: 3
+    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO}
+    gpus: [0, 1]
+    replicas: 2
+    revert_patches: []
+    probes: [P1, P2, P3]
+    expect: serves
+    expect_boot_evidence: {}
+    expect_attention_backend: ""
+    gating: false
+    control_for: gemma-perf
+    venue: gate
+  gemma-perf-kvauto:
+    engine: engine/gemma-tp2-kvauto.yaml
+    phase: 3
+    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO}
+    gpus: [0, 1]
+    replicas: 1
+    revert_patches: []
+    probes: [P1, P2, P3, P4]
+    expect: serves
+    expect_boot_evidence: {}
+    expect_attention_backend: ""
+    gating: false
+    control_for: gemma-perf
+    venue: gate
+  gemma-tp2:
+    engine: engine/gemma-tp2.yaml
+    phase: 4
+    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO}
+    gpus: [0, 1]
+    replicas: 1
+    revert_patches: []
+    probes: [R1, R2, R3, R4, R5, B1, B3, B4, B5]
+    expect: serves
+    expect_boot_evidence: {}
+    expect_attention_backend: TRITON_ATTN
+    gating: true
+    control_for: null
+    venue: gate
+  qwen-tp2:
+    engine: engine/qwen-tp2.yaml
+    phase: 4
+    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO}
+    gpus: [0, 1]
+    replicas: 1
+    revert_patches: []
+    probes: [R2, R3, R4, R5, B2, B3, B4]
+    expect: serves
+    expect_boot_evidence: {}
+    expect_attention_backend: FLASH_ATTN
+    gating: true
+    control_for: null
+    venue: gate
+  qwen-tp2-noflags:
+    engine: engine/qwen-tp2-noflags.yaml
+    phase: 4
+    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO}
+    gpus: [0, 1]
+    replicas: 1
+    revert_patches: []
+    probes: [R5]
+    expect: boot_crash
+    expect_boot_evidence: {}
+    expect_attention_backend: ""
+    gating: false
+    control_for: null
+    venue: gate
+manual:
+  deepseek-v4-tp2-h200:
+    engine: engine/deepseek-v4-tp2-h200.yaml
+    venue: manual
+    status: unvalidated
+    hardware: 2xH200 SXM pair
+    upstream_issues: [51181, 51318, 51182]

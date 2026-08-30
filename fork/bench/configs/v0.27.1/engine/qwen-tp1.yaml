@@ -1,0 +1,24 @@
+# The Qwen hybrid checkpoint whose v0.27.1 path is under test.
+model: Qwen/Qwen3.6-27B-FP8
+# Stable API name used by every Qwen probe and client.
+served-model-name: qwen3.6-27b
+# The full profile runs on one GPU.
+tensor-parallel-size: 1
+# Preserve Qwen reasoning content in OpenAI responses.
+reasoning-parser: qwen3
+# Parse Qwen3-Coder native tool calls.
+tool-call-parser: qwen3_coder
+# Let the model select tools without a forced tool choice.
+enable-auto-tool-choice: true
+# Keep the shipped Qwen KV cache in FP8.
+kv-cache-dtype: fp8
+# Qwen ships with caching off; probes preserve it so they measure the engine.
+no-enable-prefix-caching: true
+# Bound the measured context independently of model defaults.
+max-model-len: 8192
+# 1024 exceeds the single-GPU Mamba cache blocks; pin 256 across releases.
+max-num-seqs: 256
+# Use Qwen's built-in two-token MTP speculative path.
+speculative-config:
+  method: mtp
+  num_speculative_tokens: 2
