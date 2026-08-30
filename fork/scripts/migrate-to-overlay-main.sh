@@ -179,7 +179,7 @@ JSON
         "do_not_enforce_on_create": false,
         "strict_required_status_checks_policy": true,
         "required_status_checks": [
-          {"context": "alignment", "integration_id": null}
+          {"context": "alignment"}
         ]
       }
     }
