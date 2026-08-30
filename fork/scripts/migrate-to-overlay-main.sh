@@ -216,7 +216,8 @@ delete_remote_work_branches() {
 }
 
 main() {
-  local dry_run=0 origin_main archive_tag export_hash base_digest_028 base_digest_027
+  local dry_run=0 origin_main archive_tag archive_target source_main
+  local already_migrated=0 export_hash base_digest_028 base_digest_027
   local image_name candidate_028 candidate_027
   if [ "$#" -gt 1 ]; then
     echo "usage: migrate-to-overlay-main.sh [--dry-run]" >&2
@@ -230,6 +231,7 @@ main() {
     dry_run=1
   fi
 
+  archive_tag="archive/main-${ARCHIVE_DATE:-$(date +%F)}"
   if [ -n "${SOURCE_REF:-}" ]; then
     # A rehearsal may build from any local ref; the real migration only ever
     # replaces main with what main itself contains.
@@ -237,12 +239,24 @@ main() {
       echo "ERROR: SOURCE_REF is honoured only with --dry-run" >&2
       exit 2
     }
-    origin_main="$(git -C "$REPO" rev-parse --verify "$SOURCE_REF^{commit}")"
+    source_main="$(git -C "$REPO" rev-parse --verify "$SOURCE_REF^{commit}")"
+    origin_main="$source_main"
   else
     git -C "$REPO" fetch "$ORIGIN_REMOTE" main
     origin_main="$(git -C "$REPO" rev-parse --verify "FETCH_HEAD^{commit}")"
+    archive_target="$(remote_tag_target "$archive_tag")"
+    if [ -n "$archive_target" ]; then
+      git -C "$REPO" fetch "$ORIGIN_REMOTE" \
+        "refs/tags/$archive_tag:refs/tags/$archive_tag"
+      source_main="$(git -C "$REPO" rev-parse --verify \
+        "refs/tags/$archive_tag^{commit}")"
+      if [ "$origin_main" != "$source_main" ]; then
+        already_migrated=1
+      fi
+    else
+      source_main="$origin_main"
+    fi
   fi
-  archive_tag="archive/main-$(date +%F)"
   image_name="${IMAGE_NAME:-docker.io/openimage/vllm-openai-audio}"
   candidate_028="sha256:673580b7bafed843c2251c5d2bcf0eb2b64a097f40fd0d4ff8dec4f988bd0349"
   candidate_027="sha256:78817c882a0bd8a1bd8031b48f91ff92381bacee12c5e5e6111eb4b5f143ca2c"
@@ -257,38 +271,57 @@ main() {
       vllm/vllm-openai:v0.27.1 --format '{{.Manifest.Digest}}')"
   fi
 
-  echo "2. archive $origin_main as $archive_tag and push it"
-  if [ "$dry_run" -eq 0 ]; then
-    ensure_archive_tag "$archive_tag" "$origin_main"
+  if [ "$already_migrated" -eq 1 ]; then
+    echo "resuming after force-push: origin/main is $origin_main"
+    echo "source main is $source_main from $archive_tag"
   fi
 
-  echo "3. freeze v0.28.0 and v0.27.1 with their shipped image digests"
+  echo "2. archive $source_main as $archive_tag and push it"
+  if [ "$already_migrated" -eq 1 ]; then
+    echo "   already archived"
+  elif [ "$dry_run" -eq 0 ]; then
+    ensure_archive_tag "$archive_tag" "$source_main"
+  fi
+
+  if [ "$already_migrated" -eq 1 ]; then
+    echo "3. verify v0.28.0 and v0.27.1 are already frozen"
+  else
+    echo "3. freeze v0.28.0 and v0.27.1 with their shipped image digests"
+  fi
   if [ "$dry_run" -eq 0 ]; then
-    export_hash="$(export_hash_at_ref "$origin_main")"
-    REPO="$REPO" REMOTE="$ORIGIN_REMOTE" "$SCRIPT_DIR/freeze-release.sh" \
+    export_hash="$(export_hash_at_ref "$source_main")"
+    REPO="$REPO" REMOTE="$ORIGIN_REMOTE" \
+      PUSH="$((1 - already_migrated))" "$SCRIPT_DIR/freeze-release.sh" \
       v0.28.0 "$(git -C "$REPO" rev-parse "v0.28.0^{commit}")" \
       "$candidate_028" \
-      "$base_digest_028" "$origin_main" "$export_hash" \
+      "$base_digest_028" "$source_main" "$export_hash" \
       fork/bench/configs/v0.28.0/results/20260830-attempt4.md
-    REPO="$REPO" REMOTE="$ORIGIN_REMOTE" "$SCRIPT_DIR/freeze-release.sh" \
+    REPO="$REPO" REMOTE="$ORIGIN_REMOTE" \
+      PUSH="$((1 - already_migrated))" "$SCRIPT_DIR/freeze-release.sh" \
       v0.27.1 "$(git -C "$REPO" rev-parse "v0.27.1^{commit}")" \
       "$candidate_027" \
-      "$base_digest_027" "$origin_main" "$export_hash" \
+      "$base_digest_027" "$source_main" "$export_hash" \
       fork/bench/configs/v0.27.1/results/20260811-attempt4.md
   fi
 
-  echo "4. build local orphan branch overlay-main from $origin_main"
-  build_overlay_tree "$origin_main" overlay-main
+  if [ "$already_migrated" -eq 1 ]; then
+    echo "4. overlay-main already built and pushed"
+    echo "5. overlay-main alignment already verified"
+    echo "6. remote main already replaced"
+  else
+    echo "4. build local orphan branch overlay-main from $source_main"
+    build_overlay_tree "$source_main" overlay-main
 
-  echo "5. verify overlay-main alignment"
-  if [ "$dry_run" -eq 0 ]; then
-    verify_overlay_branch
-  fi
+    echo "5. verify overlay-main alignment"
+    if [ "$dry_run" -eq 0 ]; then
+      verify_overlay_branch
+    fi
 
-  echo "6. replace remote main with the verified overlay tree"
-  if [ "$dry_run" -eq 0 ]; then
-    git -C "$REPO" push \
-      "--force-with-lease=main:$origin_main" "$ORIGIN_REMOTE" overlay-main:main
+    echo "6. replace remote main with the verified overlay tree"
+    if [ "$dry_run" -eq 0 ]; then
+      git -C "$REPO" push \
+        "--force-with-lease=main:$source_main" "$ORIGIN_REMOTE" overlay-main:main
+    fi
   fi
 
   echo "7. create immutable fork-tag and protected-main rulesets"

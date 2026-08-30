@@ -79,6 +79,7 @@ def test_dry_run_builds_idempotent_audit_branch_without_touching_checkout(tmp_pa
     git(tmp_path, "init", "-q", "--bare", str(origin))
     git(repo, "remote", "add", "origin", str(origin))
     git(repo, "push", "-q", "-u", "origin", "main")
+    source_main = git(repo, "rev-parse", "HEAD").strip()
     git(repo, "checkout", "-q", "-b", "operator")
     _write(repo, ".superpowers/x", "keep me\n")
     _write(repo, "ignored.log", "keep me too\n")
@@ -86,8 +87,9 @@ def test_dry_run_builds_idempotent_audit_branch_without_touching_checkout(tmp_pa
     before_branch = git(repo, "branch", "--show-current")
     before_superpowers = (repo / ".superpowers" / "x").read_bytes()
     before_ignored = (repo / "ignored.log").read_bytes()
-    first = run_script(MIGRATE, "--dry-run", cwd=repo)
-    second = run_script(MIGRATE, "--dry-run", cwd=repo)
+    env = {"ARCHIVE_DATE": "2099-01-02"}
+    first = run_script(MIGRATE, "--dry-run", cwd=repo, env=env)
+    second = run_script(MIGRATE, "--dry-run", cwd=repo, env=env)
 
     assert first.returncode == 0, first.stdout + first.stderr
     assert second.returncode == 0, second.stdout + second.stderr
@@ -103,6 +105,31 @@ def test_dry_run_builds_idempotent_audit_branch_without_touching_checkout(tmp_pa
         "fork/x",
         "pyproject.toml",
     }
+
+    git(repo, "checkout", "-q", "-b", "post-push", "main")
+    _write(repo, "post-push", "overlay main\n")
+    git(repo, "add", "post-push")
+    git(repo, "commit", "-q", "-m", "post-push main")
+    git(
+        repo,
+        "tag",
+        "-a",
+        "archive/main-2099-01-02",
+        source_main,
+        "-m",
+        "archive",
+    )
+    git(repo, "push", "-q", "origin", "refs/tags/archive/main-2099-01-02")
+    git(repo, "push", "-q", "origin", "HEAD:main")
+    git(repo, "checkout", "-q", "operator")
+
+    resumed = run_script(MIGRATE, "--dry-run", cwd=repo, env=env)
+
+    assert resumed.returncode == 0, resumed.stdout + resumed.stderr
+    assert "resuming after force-push" in resumed.stdout
+    assert git(repo, "branch", "--show-current") == before_branch
+    assert (repo / ".superpowers" / "x").read_bytes() == before_superpowers
+    assert (repo / "ignored.log").read_bytes() == before_ignored
 
 
 def _repo_with_origin(tmp_path: Path) -> Path:
