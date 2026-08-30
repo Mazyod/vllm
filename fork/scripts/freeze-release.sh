@@ -6,11 +6,11 @@ set -euo pipefail
   echo "usage: freeze-release.sh <tag> <release-sha> <candidate-digest> <base-digest> <main-sha> <export-hash> <gate-record>" >&2
   exit 2
 }
-[ -n "$1" ] && [ -n "$2" ] && [ -n "$3" ] && [ -n "$4" ] &&
-  [ -n "$5" ] && [ -n "$6" ] || {
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] ||
+  [ -z "$5" ] || [ -z "$6" ]; then
   echo "usage: freeze-release.sh <tag> <release-sha> <candidate-digest> <base-digest> <main-sha> <export-hash> <gate-record>" >&2
   exit 2
-}
+fi
 
 REPO="${REPO:-$(git -C . rev-parse --show-toplevel)}"
 REMOTE="${REMOTE:-origin}"
@@ -29,6 +29,21 @@ recorded_field() {
   sed -n "s/^$field: //p" | head -1
 }
 
+remote_peeled_target() {
+  git -C "$REPO" ls-remote "$REMOTE" "refs/tags/$FROZEN_TAG^{}" |
+    cut -f1
+}
+
+if [ "$PUSH" = "1" ] &&
+  ! git -C "$REPO" rev-parse --verify --quiet \
+    "refs/tags/$FROZEN_TAG" >/dev/null; then
+  remote_sha="$(remote_peeled_target)"
+  if [ -n "$remote_sha" ]; then
+    git -C "$REPO" fetch "$REMOTE" \
+      "refs/tags/$FROZEN_TAG:refs/tags/$FROZEN_TAG"
+  fi
+fi
+
 if git -C "$REPO" rev-parse --verify --quiet "refs/tags/$FROZEN_TAG" >/dev/null; then
   message="$(git -C "$REPO" tag -l --format='%(contents)' "$FROZEN_TAG")"
   old_release="$(recorded_field release-sha <<<"$message")"
@@ -40,6 +55,13 @@ if git -C "$REPO" rev-parse --verify --quiet "refs/tags/$FROZEN_TAG" >/dev/null;
   if [ "$old_candidate" != "$CANDIDATE_DIGEST" ]; then
     echo "refusing: $FROZEN_TAG records candidate-digest=$old_candidate, got $CANDIDATE_DIGEST"
     exit 1
+  fi
+  if [ "$PUSH" = "1" ]; then
+    remote_sha="$(remote_peeled_target)"
+    if [ "$remote_sha" != "$RELEASE_SHA" ]; then
+      echo "ERROR: remote $FROZEN_TAG peeled to $remote_sha, expected $RELEASE_SHA" >&2
+      exit 1
+    fi
   fi
   echo "already frozen: $FROZEN_TAG matches"
   exit 0
@@ -62,8 +84,7 @@ git -C "$REPO" tag -a "$FROZEN_TAG" "$RELEASE_SHA" -m "$message"
 
 if [ "$PUSH" = "1" ]; then
   git -C "$REPO" push "$REMOTE" "refs/tags/$FROZEN_TAG"
-  remote_sha="$(git -C "$REPO" ls-remote "$REMOTE" "refs/tags/$FROZEN_TAG^{}" |
-    cut -f1)"
+  remote_sha="$(remote_peeled_target)"
   if [ "$remote_sha" != "$RELEASE_SHA" ]; then
     echo "ERROR: remote $FROZEN_TAG peeled to $remote_sha, expected $RELEASE_SHA" >&2
     exit 1

@@ -103,3 +103,43 @@ def test_freeze_pushes_and_verifies_the_remote_tag(tmp_path):
     assert result.returncode == 0, result.stderr
     remote_tag = git(repo, "ls-remote", "origin", "refs/tags/fork/v9.9.9^{}")
     assert sha in remote_tag
+
+
+def test_existing_local_freeze_verifies_the_remote_peeled_target(tmp_path):
+    remote = tmp_path / "remote.git"
+    git(tmp_path, "init", "-q", "--bare", str(remote))
+    repo = init_repo(tmp_path / "r")
+    git(repo, "remote", "add", "origin", str(remote))
+    sha = patch_commit(repo, "vllm/v1/core.py", "x = 2\n")
+    run_script(FREEZE, "v9.9.9", sha, *ARGS, cwd=repo, env={"PUSH": "0"})
+    base = git(repo, "rev-parse", "v9.9.9^{commit}").strip()
+    git(repo, "tag", "-a", "remote-wrong", base, "-m", "wrong")
+    git(
+        repo,
+        "push",
+        "-q",
+        "origin",
+        "refs/tags/remote-wrong:refs/tags/fork/v9.9.9",
+    )
+
+    result = run_script(FREEZE, "v9.9.9", sha, *ARGS, cwd=repo)
+
+    assert result.returncode == 1
+    assert "peeled" in result.stderr
+
+
+def test_remote_only_freeze_is_fetched_then_verified(tmp_path):
+    remote = tmp_path / "remote.git"
+    git(tmp_path, "init", "-q", "--bare", str(remote))
+    repo = init_repo(tmp_path / "r")
+    git(repo, "remote", "add", "origin", str(remote))
+    sha = patch_commit(repo, "vllm/v1/core.py", "x = 2\n")
+    run_script(FREEZE, "v9.9.9", sha, *ARGS, cwd=repo, env={"PUSH": "0"})
+    git(repo, "push", "-q", "origin", "refs/tags/fork/v9.9.9")
+    git(repo, "tag", "-d", "fork/v9.9.9")
+
+    result = run_script(FREEZE, "v9.9.9", sha, *ARGS, cwd=repo)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "already frozen" in result.stdout
+    assert git(repo, "rev-parse", "fork/v9.9.9^{commit}").strip() == sha

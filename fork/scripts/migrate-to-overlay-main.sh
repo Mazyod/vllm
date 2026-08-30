@@ -12,49 +12,58 @@ build_overlay_tree() {
     echo "usage: build_overlay_tree <source-ref> <destination-branch>" >&2
     return 2
   }
-  local source_ref="$1" destination_branch="$2" path item name
-  local -a restore_paths
-  restore_paths=()
-
-  git -C "$REPO" rev-parse --verify "$source_ref^{commit}" >/dev/null
-  git -C "$REPO" checkout --orphan "$destination_branch"
-  git -C "$REPO" rm -rq --cached .
-  for path in \
-    FORK.md \
-    fork \
-    .github/workflows/build-vllm-audio.yml \
-    .github/workflows/fork-alignment.yml \
-    runs/.gitignore; do
-    if git -C "$REPO" cat-file -e "$source_ref:$path" 2>/dev/null; then
-      restore_paths+=("$path")
+  local source_ref="$1" destination_branch="$2" source_sha tmp status
+  source_sha="$(git -C "$REPO" rev-parse --verify "$source_ref^{commit}")"
+  if git -C "$REPO" show-ref --verify --quiet \
+    "refs/heads/$destination_branch"; then
+    git -C "$REPO" branch -D "$destination_branch"
+  fi
+  tmp="$(mktemp -d)"
+  git -C "$REPO" worktree add --detach "$tmp" "$source_sha"
+  status=0
+  (
+    set -euo pipefail
+    local path item name
+    local -a restore_paths
+    restore_paths=()
+    git -C "$tmp" checkout --orphan "$destination_branch"
+    git -C "$tmp" rm -rq --cached .
+    for path in \
+      FORK.md \
+      fork \
+      .github/workflows/build-vllm-audio.yml \
+      .github/workflows/fork-alignment.yml \
+      runs/.gitignore; do
+      if git -C "$tmp" cat-file -e "$source_sha:$path" 2>/dev/null; then
+        restore_paths+=("$path")
+      fi
+    done
+    [ "${#restore_paths[@]}" -gt 0 ] || {
+      echo "ERROR: $source_ref contains none of the fork overlay paths" >&2
+      exit 1
+    }
+    git -C "$tmp" checkout "$source_sha" -- "${restore_paths[@]}"
+    git -C "$tmp" clean -fdxq -e .venv -e runs
+    if [ -d "$tmp/fork/overlay-root" ]; then
+      while IFS= read -r -d '' item; do
+        name="${item##*/}"
+        git -C "$tmp" mv "fork/overlay-root/$name" "$name"
+      done < <(find "$tmp/fork/overlay-root" -mindepth 1 -maxdepth 1 -print0)
+      rmdir "$tmp/fork/overlay-root"
     fi
-  done
-  [ "${#restore_paths[@]}" -gt 0 ] || {
-    echo "ERROR: $source_ref contains none of the fork overlay paths" >&2
-    return 1
-  }
-  git -C "$REPO" checkout "$source_ref" -- "${restore_paths[@]}"
-
-  # Drop upstream files left untracked by the orphan checkout before moving
-  # staged root replacements into paths that used to be occupied by upstream.
-  git -C "$REPO" clean -fdxq -e .venv -e runs
-  if [ -d "$REPO/fork/overlay-root" ]; then
-    while IFS= read -r -d '' item; do
-      name="${item##*/}"
-      git -C "$REPO" mv "fork/overlay-root/$name" "$name"
-    done < <(find "$REPO/fork/overlay-root" -mindepth 1 -maxdepth 1 -print0)
-    rmdir "$REPO/fork/overlay-root"
-  fi
-  if [ -f "$REPO/.github/workflows/fork-alignment.yml" ]; then
-    sed -i 's/ --pre-migration//' \
-      "$REPO/.github/workflows/fork-alignment.yml"
-  fi
-  git -C "$REPO" clean -fdxq -e .venv -e runs
-  git -C "$REPO" add -A
-  git -C "$REPO" commit -s \
-    -m "[fork] Overlay-only main: the fork's files and nothing else" \
-    -m "Make upstream synchronization a tag fetch plus an explicit patch replay by keeping source files off main." \
-    -m "Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
+    if [ -f "$tmp/.github/workflows/fork-alignment.yml" ]; then
+      sed -i 's/ --pre-migration//' \
+        "$tmp/.github/workflows/fork-alignment.yml"
+    fi
+    git -C "$tmp" clean -fdxq -e .venv -e runs
+    git -C "$tmp" add -A
+    git -C "$tmp" commit -s \
+      -m "[fork] Overlay-only main: the fork's files and nothing else" \
+      -m "Make upstream synchronization a tag fetch plus an explicit patch replay by keeping source files off main." \
+      -m "Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
+  ) || status=$?
+  git -C "$REPO" worktree remove --force "$tmp"
+  return "$status"
 }
 
 export_hash_at_ref() {
@@ -72,8 +81,63 @@ export_hash_at_ref() {
   echo "$result"
 }
 
+remote_tag_target() {
+  [ "$#" -eq 1 ] || return 2
+  local tag="$1" target
+  target="$(git -C "$REPO" ls-remote "$ORIGIN_REMOTE" \
+    "refs/tags/$tag^{}" | cut -f1)"
+  if [ -z "$target" ]; then
+    target="$(git -C "$REPO" ls-remote "$ORIGIN_REMOTE" \
+      "refs/tags/$tag" | cut -f1)"
+  fi
+  echo "$target"
+}
+
+ensure_archive_tag() {
+  [ "$#" -eq 2 ] || return 2
+  local tag="$1" expected="$2" local_target remote_target
+  local_target="$(git -C "$REPO" rev-parse --verify --quiet \
+    "refs/tags/$tag^{commit}" 2>/dev/null || true)"
+  remote_target="$(remote_tag_target "$tag")"
+  if [ -n "$local_target" ] && [ "$local_target" != "$expected" ]; then
+    echo "ERROR: local $tag points to $local_target, expected $expected" >&2
+    return 1
+  fi
+  if [ -n "$remote_target" ] && [ "$remote_target" != "$expected" ]; then
+    echo "ERROR: remote $tag points to $remote_target, expected $expected" >&2
+    return 1
+  fi
+  if [ -z "$local_target" ]; then
+    if [ -n "$remote_target" ]; then
+      git -C "$REPO" fetch "$ORIGIN_REMOTE" \
+        "refs/tags/$tag:refs/tags/$tag"
+    else
+      git -C "$REPO" tag -a "$tag" "$expected" \
+        -m "main before the overlay-only migration"
+    fi
+  fi
+  if [ -z "$remote_target" ]; then
+    git -C "$REPO" push "$ORIGIN_REMOTE" "refs/tags/$tag"
+  fi
+}
+
+verify_overlay_branch() {
+  local tmp status
+  tmp="$(mktemp -d)"
+  git -C "$REPO" worktree add --detach "$tmp" overlay-main
+  status=0
+  REPO="$tmp" "$SCRIPT_DIR/check-alignment.sh" || status=$?
+  git -C "$REPO" worktree remove --force "$tmp"
+  return "$status"
+}
+
 create_rulesets() {
-  gh api -X POST repos/Mazyod/vllm/rulesets --input - <<'JSON'
+  local existing
+  existing="$(gh api repos/Mazyod/vllm/rulesets --jq '.[].name')"
+  if grep -Fxq "fork tags immutable" <<<"$existing"; then
+    echo "ruleset fork tags immutable exists"
+  else
+    gh api -X POST repos/Mazyod/vllm/rulesets --input - <<'JSON'
 {
   "name": "fork tags immutable",
   "target": "tag",
@@ -89,7 +153,11 @@ create_rulesets() {
   ]
 }
 JSON
-  gh api -X POST repos/Mazyod/vllm/rulesets --input - <<'JSON'
+  fi
+  if grep -Fxq "main protected" <<<"$existing"; then
+    echo "ruleset main protected exists"
+  else
+    gh api -X POST repos/Mazyod/vllm/rulesets --input - <<'JSON'
 {
   "name": "main protected",
   "target": "branch",
@@ -114,10 +182,39 @@ JSON
   ]
 }
 JSON
+  fi
+}
+
+delete_remote_work_branches() {
+  local current_branch branch
+  local -a branches
+  current_branch="$(git -C "$REPO" branch --show-current)"
+  branches=(
+    fork/alignment-charter
+    fork/bump-v0.26.0
+    fork/bump-v0.28.0
+    fork/gate-ssh-hardening
+    fork/lint-fixes
+    fork/v0.25.1
+    fork/v0.26.0
+    fork/release-model
+  )
+  for branch in "${branches[@]}"; do
+    if [ "$branch" = "fork/release-model" ] &&
+      [ "$current_branch" = "$branch" ]; then
+      echo "skipping $branch because it is the active checkout"
+      continue
+    fi
+    if git -C "$REPO" ls-remote --exit-code --heads "$ORIGIN_REMOTE" \
+      "refs/heads/$branch" >/dev/null 2>&1; then
+      git -C "$REPO" push "$ORIGIN_REMOTE" --delete "$branch"
+    fi
+  done
 }
 
 main() {
   local dry_run=0 origin_main archive_tag export_hash base_digest_028 base_digest_027
+  local image_name candidate_028 candidate_027
   if [ "$#" -gt 1 ]; then
     echo "usage: migrate-to-overlay-main.sh [--dry-run]" >&2
     exit 2
@@ -130,61 +227,55 @@ main() {
     dry_run=1
   fi
 
-  origin_main="$(git -C "$REPO" rev-parse \
-    "refs/remotes/$ORIGIN_REMOTE/main^{commit}")"
+  git -C "$REPO" fetch "$ORIGIN_REMOTE" main
+  origin_main="$(git -C "$REPO" rev-parse --verify "FETCH_HEAD^{commit}")"
   archive_tag="archive/main-$(date +%F)"
+  image_name="${IMAGE_NAME:-docker.io/openimage/vllm-openai-audio}"
+  candidate_028="sha256:673580b7bafed843c2251c5d2bcf0eb2b64a097f40fd0d4ff8dec4f988bd0349"
+  candidate_027="sha256:78817c882a0bd8a1bd8031b48f91ff92381bacee12c5e5e6111eb4b5f143ca2c"
 
-  echo "1. archive $ORIGIN_REMOTE/main as $archive_tag and push it"
+  echo "1. validate the two shipped candidate digests"
   if [ "$dry_run" -eq 0 ]; then
-    git -C "$REPO" tag -a "$archive_tag" "$origin_main" \
-      -m "main before the overlay-only migration"
-    git -C "$REPO" push "$ORIGIN_REMOTE" "refs/tags/$archive_tag"
-  fi
-
-  echo "2. freeze v0.28.0 and v0.27.1 with their shipped image digests"
-  if [ "$dry_run" -eq 0 ]; then
-    export_hash="$(export_hash_at_ref "$ORIGIN_REMOTE/main")"
+    docker buildx imagetools inspect "$image_name@$candidate_028" >/dev/null
+    docker buildx imagetools inspect "$image_name@$candidate_027" >/dev/null
     base_digest_028="$(docker buildx imagetools inspect \
       vllm/vllm-openai:v0.28.0 --format '{{.Manifest.Digest}}')"
     base_digest_027="$(docker buildx imagetools inspect \
       vllm/vllm-openai:v0.27.1 --format '{{.Manifest.Digest}}')"
+  fi
+
+  echo "2. archive $origin_main as $archive_tag and push it"
+  if [ "$dry_run" -eq 0 ]; then
+    ensure_archive_tag "$archive_tag" "$origin_main"
+  fi
+
+  echo "3. freeze v0.28.0 and v0.27.1 with their shipped image digests"
+  if [ "$dry_run" -eq 0 ]; then
+    export_hash="$(export_hash_at_ref "$origin_main")"
     REPO="$REPO" REMOTE="$ORIGIN_REMOTE" "$SCRIPT_DIR/freeze-release.sh" \
       v0.28.0 "$(git -C "$REPO" rev-parse "v0.28.0^{commit}")" \
-      sha256:673580b7bafed843c2251c5d2bcf0eb2b64a097f40fd0d4ff8dec4f988bd0349 \
+      "$candidate_028" \
       "$base_digest_028" "$origin_main" "$export_hash" \
       fork/bench/configs/v0.28.0/results/20260830-attempt4.md
     REPO="$REPO" REMOTE="$ORIGIN_REMOTE" "$SCRIPT_DIR/freeze-release.sh" \
       v0.27.1 "$(git -C "$REPO" rev-parse "v0.27.1^{commit}")" \
-      sha256:78817c882a0bd8a1bd8031b48f91ff92381bacee12c5e5e6111eb4b5f143ca2c \
+      "$candidate_027" \
       "$base_digest_027" "$origin_main" "$export_hash" \
       fork/bench/configs/v0.27.1/results/20260811-attempt4.md
   fi
 
-  echo "3. build local orphan branch overlay-main from $ORIGIN_REMOTE/main"
-  build_overlay_tree "$ORIGIN_REMOTE/main" overlay-main
+  echo "4. build local orphan branch overlay-main from $origin_main"
+  build_overlay_tree "$origin_main" overlay-main
 
-  echo "4. verify overlay-main alignment"
+  echo "5. verify overlay-main alignment"
   if [ "$dry_run" -eq 0 ]; then
-    REPO="$REPO" "$SCRIPT_DIR/check-alignment.sh"
+    verify_overlay_branch
   fi
 
-  echo "5. replace remote main with the verified overlay tree"
+  echo "6. replace remote main with the verified overlay tree"
   if [ "$dry_run" -eq 0 ]; then
     git -C "$REPO" push \
       "--force-with-lease=main:$origin_main" "$ORIGIN_REMOTE" overlay-main:main
-  fi
-
-  echo "6. delete merged and superseded remote work branches"
-  if [ "$dry_run" -eq 0 ]; then
-    git -C "$REPO" push "$ORIGIN_REMOTE" --delete \
-      fork/alignment-charter \
-      fork/bump-v0.26.0 \
-      fork/bump-v0.28.0 \
-      fork/gate-ssh-hardening \
-      fork/lint-fixes \
-      fork/v0.25.1 \
-      fork/v0.26.0 \
-      fork/release-model
   fi
 
   echo "7. create immutable fork-tag and protected-main rulesets"
@@ -192,7 +283,12 @@ main() {
     create_rulesets
   fi
 
-  echo "8. update local clones"
+  echo "8. delete merged and superseded remote work branches"
+  if [ "$dry_run" -eq 0 ]; then
+    delete_remote_work_branches
+  fi
+
+  echo "9. update local clones"
   echo "   Re-clone, or run:"
   echo "   git branch backup-main main"
   echo "   git fetch $ORIGIN_REMOTE"
