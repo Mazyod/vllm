@@ -28,4 +28,4 @@ jobs:
           filter: blob:none
 
       - name: Check alignment with upstream
-        run: fork/scripts/check-alignment.sh --fetch
+        run: fork/scripts/check-alignment.sh --fetch --pre-migration

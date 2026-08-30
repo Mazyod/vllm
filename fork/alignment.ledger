@@ -23,16 +23,9 @@ add  fork/**                                     permanent  the fork overlay: pa
 add  .github/workflows/build-vllm-audio.yml      permanent  builds openimage/vllm-openai-audio from the pinned tag
 add  .github/workflows/fork-alignment.yml        permanent  enforces this ledger on every pull request
 add  runs/**                                     permanent  gate-run artifacts stay local; only the ignore file is tracked
-
-# --- Deleted: upstream workflows. These DO conflict on `git merge upstream/main`
-# --- (modify/delete); re-delete them as part of the sync. --------------------
-del  .github/workflows/add_label_automerge.yml   permanent  upstream automerge labelling; no upstream PR flow here
-del  .github/workflows/issue_autolabel.yml       permanent  upstream issue triage bot; no issue tracker here
-del  .github/workflows/macos-smoke-test.yml      permanent  upstream release smoke test; this fork builds no wheels
-del  .github/workflows/new_pr_bot.yml            permanent  upstream PR greeter; noise on a personal fork
-del  .github/workflows/pre-commit.yml            permanent  gates on the upstream lint CI this fork does not run
-del  .github/workflows/stale.yml                 permanent  upstream stale bot; noise on a personal fork
-del  .github/workflows/notify-ci-authorized.yml  permanent  upstream CI-command bot (arrived v0.27.x); no upstream PR flow here
-del  .github/workflows/record-ci-approval.yml    permanent  upstream CI-command bot (arrived v0.27.x); no upstream PR flow here
-del  .github/workflows/run-ci-command.yml        permanent  upstream CI-command bot (arrived v0.27.x); no upstream PR flow here
-del  .github/workflows/buf.yml                   permanent  upstream protobuf schema publish (arrived v0.28.0); no Buf registry here
+add  pyproject.toml                              permanent  fork-only lint and test configuration after migration
+add  .pre-commit-config.yaml                     permanent  fork-only pre-commit hooks after migration
+add  .markdownlint.yaml                          permanent  fork Markdown lint configuration after migration
+add  .shellcheckrc                               permanent  fork shellcheck configuration after migration
+add  AGENTS.md                                   permanent  fork contribution instructions after migration
+add  CLAUDE.md                                   permanent  points other agents at the fork instructions
