@@ -70,7 +70,7 @@ jobs:
           filter: blob:none
 
       - name: Check alignment with upstream
-        run: fork/scripts/check-alignment.sh --fetch
+        run: fork/scripts/check-alignment.sh --fetch --pre-migration
 
   # ---------------------------------------------------------------------------
   # Job 1: Resolve the base tag and the image refs to publish
@@ -257,7 +257,8 @@ jobs:
     if: >-
       always() && needs.resolve.result == 'success' &&
       (needs.build-and-push.result == 'success' ||
-       needs.build-and-push.result == 'skipped')
+       (needs.build-and-push.result == 'skipped' &&
+        needs.resolve.outputs.promote_from != ''))
     runs-on: ubuntu-latest
     permissions:
       contents: read
