@@ -1,11 +1,6 @@
 [tool.ruff]
 line-length = 88
 
-[tool.ruff.lint.per-file-ignores]
-"vllm/third_party/**" = ["ALL"]
-"vllm/version.py" = ["F401"]
-"vllm/_version.py" = ["ALL"]
-
 [tool.ruff.lint]
 select = [
     # pycodestyle
@@ -43,9 +38,3 @@ docstring-code-format = true
 
 [tool.pytest.ini_options]
 testpaths = ["fork/bench/tests"]
-
-[tool.mypy]
-plugins = ['pydantic.mypy']
-ignore_missing_imports = true
-check_untyped_defs = true
-follow_imports = "silent"

@@ -27,8 +27,15 @@ def _hook_index(path: Path) -> dict[str, tuple[str, str, list[str]]]:
 def test_overlay_ruff_config_matches_upstream():
     upstream = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())
     overlay = tomllib.loads((OVERLAY / "pyproject.toml").read_text())
-    assert overlay["tool"]["ruff"]["lint"] == upstream["tool"]["ruff"]["lint"]
+    upstream_lint = {
+        key: value
+        for key, value in upstream["tool"]["ruff"]["lint"].items()
+        if key != "per-file-ignores"
+    }
+    assert overlay["tool"]["ruff"]["lint"] == upstream_lint
     assert overlay["tool"]["ruff"]["format"] == upstream["tool"]["ruff"]["format"]
+    assert "per-file-ignores" not in overlay["tool"]["ruff"]["lint"]
+    assert "mypy" not in overlay["tool"]
 
 
 def test_overlay_precommit_hooks_are_a_subset_of_upstream_with_identical_revs():
