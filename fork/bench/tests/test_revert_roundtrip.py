@@ -81,7 +81,7 @@ def test_every_series_entry_has_a_patch_file():
 def test_patch_applies_and_reverts_to_a_byte_identical_tree(base_tree, name, tmp_path):
     patch_file = PATCH_DIR / name
     snapshot = tmp_path / "snapshot"
-    shutil.copytree(base_tree / "vllm" / "v1", snapshot)
+    shutil.copytree(base_tree / "vllm", snapshot)
 
     applied = _patch(base_tree, patch_file, reverse=False)
     assert applied.returncode == 0, applied.stderr.decode()
@@ -90,7 +90,7 @@ def test_patch_applies_and_reverts_to_a_byte_identical_tree(base_tree, name, tmp
     assert reverted.returncode == 0, reverted.stderr.decode()
 
     diff = subprocess.run(
-        ["diff", "-r", str(snapshot), str(base_tree / "vllm" / "v1")],
+        ["diff", "-r", str(snapshot), str(base_tree / "vllm")],
         capture_output=True,
         check=False,
     )

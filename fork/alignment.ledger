@@ -1,38 +1,27 @@
-# Fork alignment ledger — the complete declared divergence from upstream.
+# Fork alignment ledger — every path permitted on overlay-only main.
 #
-# This file is the single source of truth for what this fork is allowed to
-# change about upstream's tree. `fork/scripts/check-alignment.sh` measures the
-# real divergence (from the merge-base with upstream/main) against these entries
-# and fails on anything undeclared. See FORK.md § Charter for the rules.
+# Overlay main has no upstream source tree. This file is the complete allowlist
+# of fork-owned paths; `fork/scripts/check-alignment.sh` rejects every tracked
+# path that does not match an `add` entry. Engine changes live only in release
+# commits and their generated patches. See FORK.md § Charter for the rules.
 #
 # Format:  <class>  <path>  <lifetime>  <rationale>
 #
-#   class     add | del      — modifying an upstream-owned file is never
-#                              declarable; carry it as a patch in fork/patches/.
+#   class     add            — overlay main contains fork-owned files only.
 #   path      exact path, or `dir/**` to cover a whole fork-owned subtree.
-#             `del` entries must be exact paths — a deletion is checked by
-#             looking the path up in the tree, and must stay deleted: if an
-#             upstream merge resurrects one, the check fails until it is gone.
-#   lifetime  permanent, or `until:<condition>` for divergence meant to end.
+#   lifetime  permanent, or `until:<condition>` for an entry meant to end.
 #
 # Keep this list short. Every line is a liability we chose to carry.
 
-# --- Added: fork-owned files. These cannot conflict with upstream. -----------
+# --- Fork-owned paths. -------------------------------------------------------
 add  FORK.md                                     permanent  fork charter and operating model
 add  fork/**                                     permanent  the fork overlay: patches, notes, docker, scripts, release gate
 add  .github/workflows/build-vllm-audio.yml      permanent  builds openimage/vllm-openai-audio from the pinned tag
 add  .github/workflows/fork-alignment.yml        permanent  enforces this ledger on every pull request
 add  runs/**                                     permanent  gate-run artifacts stay local; only the ignore file is tracked
-
-# --- Deleted: upstream workflows. These DO conflict on `git merge upstream/main`
-# --- (modify/delete); re-delete them as part of the sync. --------------------
-del  .github/workflows/add_label_automerge.yml   permanent  upstream automerge labelling; no upstream PR flow here
-del  .github/workflows/issue_autolabel.yml       permanent  upstream issue triage bot; no issue tracker here
-del  .github/workflows/macos-smoke-test.yml      permanent  upstream release smoke test; this fork builds no wheels
-del  .github/workflows/new_pr_bot.yml            permanent  upstream PR greeter; noise on a personal fork
-del  .github/workflows/pre-commit.yml            permanent  gates on the upstream lint CI this fork does not run
-del  .github/workflows/stale.yml                 permanent  upstream stale bot; noise on a personal fork
-del  .github/workflows/notify-ci-authorized.yml  permanent  upstream CI-command bot (arrived v0.27.x); no upstream PR flow here
-del  .github/workflows/record-ci-approval.yml    permanent  upstream CI-command bot (arrived v0.27.x); no upstream PR flow here
-del  .github/workflows/run-ci-command.yml        permanent  upstream CI-command bot (arrived v0.27.x); no upstream PR flow here
-del  .github/workflows/buf.yml                   permanent  upstream protobuf schema publish (arrived v0.28.0); no Buf registry here
+add  pyproject.toml                              permanent  fork-only lint and test configuration after migration
+add  .pre-commit-config.yaml                     permanent  fork-only pre-commit hooks after migration
+add  .markdownlint.yaml                          permanent  fork Markdown lint configuration after migration
+add  .shellcheckrc                               permanent  fork shellcheck configuration after migration
+add  AGENTS.md                                   permanent  fork contribution instructions after migration
+add  CLAUDE.md                                   permanent  points other agents at the fork instructions

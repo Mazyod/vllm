@@ -77,6 +77,9 @@ def is_absorbed(merge_commit: str, tag: str, repo: Path) -> bool:
             for the wrong reason, which is the failure this check exists to
             prevent.
     """
+    if merge_commit == "none":
+        return False
+
     for rev in (merge_commit, tag):
         if not _object_exists(rev, repo):
             raise LookupError(f"{rev} is not in this checkout; fetch upstream first")

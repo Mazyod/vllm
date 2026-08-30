@@ -1,78 +1,81 @@
 # `fork/` — the fork overlay
 
-Everything the fork owns lives here (plus the CI workflow at
-`.github/workflows/build-vllm-audio.yml`). None of it touches upstream vLLM
-source, so `git merge upstream/main` never conflicts with it. Start at the
-top-level [`FORK.md`](../FORK.md) for the why.
+Everything the fork owns lives here, plus `FORK.md`, two CI workflows, and the
+minimal root tooling. Before the one-shot migration that tooling is staged in
+`overlay-root/`; that directory exists only until migration moves its contents
+to the repository root. Upstream source is present only on release work
+branches. Start at the top-level [`FORK.md`](../FORK.md).
 
 ```text
 fork/
-├── alignment.ledger             # the complete declared divergence from upstream
-├── patches/                     # the fork's delta + its documented context
-│   ├── README.md                # filing convention, retirement record, note template
-│   ├── series                   # apply order (blank lines / # comments ignored)
-│   ├── upstream.map             # patch -> the upstream commit that retires it
-│   ├── *.patch                  # EMPTY since v0.27.1 absorbed the whole series
-│   └── notes/                   # one context doc per patch — recreated with the
-│                                # next patch; absent while the series is empty
+├── alignment.ledger
+├── overlay-root/               # staging only; removed by the migration
+├── docs/
+│   ├── plans/
+│   └── specs/
+├── patches/
+│   ├── README.md
+│   ├── RELEASE                 # tag + exact release commit
+│   ├── series                  # generated apply order
+│   ├── upstream.map            # generated retirement map
+│   └── *.patch                 # generated unified diffs
 ├── docker/
-│   ├── Dockerfile.audio         # FROM vllm/vllm-openai:${BASE_TAG} + audio + patches
-│   └── apply-patches.sh         # applies the series to installed vLLM (fail-closed)
+│   ├── Dockerfile.audio
+│   └── apply-patches.sh
 └── scripts/
-    ├── check-alignment.sh       # fail on any divergence the ledger does not declare
-    └── refresh-patches.sh       # rebase the series onto a new release tag (lockstep)
+    ├── check-alignment.sh
+    ├── check-release-history.sh
+    ├── export-hash.sh
+    ├── export-patches.sh
+    ├── freeze-release.sh
+    ├── migrate-to-overlay-main.sh
+    └── new-release.sh
 ```
 
 ## Alignment
 
-`alignment.ledger` declares every way this fork differs from upstream: the
-fork-owned paths it adds, and the upstream workflows it deletes. Modifying an
-upstream-owned file is not declarable — that is what patches are for.
+`alignment.ledger` contains only `add` patterns for fork-owned paths. The
+post-migration check verifies those paths, the four release pins, the pointed-to
+release history, the generated patch export, and any frozen release tag:
 
 ```bash
-fork/scripts/check-alignment.sh    # add --fetch to refresh the upstream ref
+fork/scripts/check-alignment.sh
 ```
 
-It compares `HEAD` against the base **tag** the image is built from (read from
-`docker/Dockerfile.audio`, so there is one pin and not two), *not* the merge-base
-with `upstream/main` — a release tag is cut aside from `main`, so measuring from
-`main` would report upstream's own release-branch work as fork changes. It reads
-only committed state, so commit your work before trusting a local run. CI runs
-it on every pull request and as a gate on the image build. See FORK.md § Charter.
+Before the one-shot migration, CI passes `--pre-migration` to retain the old
+diff-against-tag check.
 
 ## Patches
 
-**The series is empty as of `v0.27.1`**, which absorbed everything the fork
-carried. `patches/series` is a comment-only file and there are no `*.patch`
-files; `patches/notes/` does not currently exist and is recreated with the next
-patch. The retirement record lives in
-[`patches/README.md`](patches/README.md). What follows is the contract the next
-patch must meet.
+Patch files are generated from the linear commits on `release/<tag>`; do not
+edit `*.patch`, `series`, `upstream.map`, or `RELEASE` by hand. Each commit
+touches only regular text files under `vllm/**` and uses this message contract:
 
-Each `*.patch` is a plain unified diff (with a `#` provenance header that both
-`git apply` and `patch` ignore), generated against the pinned release tag so it
-applies with no fuzz. They are applied to the vLLM package **installed in the
-image** — `apply-patches.sh` resolves site-packages and runs `patch -p1` from
-there, so the repo-relative `vllm/...` paths line up.
+```text
+[fork-patch] <short description>
 
-Every patch is filed with a context doc under `patches/notes/` (why it hurts us,
-root cause, a reproduce case to re-check relevance, validation), and records in
-`patches/upstream.map` the upstream commit that will retire it. See
-[`patches/README.md`](patches/README.md) for the note template new patches must
-follow.
+Impact: <symptom and blast radius>
+Root cause: <mechanism and why the fix works>
+Reproduce: <portable case and expected stock/patched behavior>
+Validation: <what was tested, where, and when>
+Ruled out: <dead ends worth preserving>
 
-Add or remove a patch by editing `patches/series`. Regenerate the whole series
-against a new tag with `scripts/refresh-patches.sh <tag>`.
+Upstream-PR: https://github.com/vllm-project/vllm/pull/NNNNN
+Upstream-Merge: <40-hex merge SHA, or none>
+Exit-Criterion: <condition that retires this patch>
+```
+
+Start the next release with `scripts/new-release.sh <tag>`. It drops absorbed
+commits, replays the rest, regenerates the export, copies the previous release's
+configuration without results, and bumps the four pins.
 
 ## Building the image locally
 
 ```bash
-# from the repo root
 docker build -f fork/docker/Dockerfile.audio \
   --build-arg BASE_TAG=v0.28.0 \
   -t openimage/vllm-openai-audio:v0.28.0 .
 ```
 
-`BASE_TAG` defaults to the pin in `docker/Dockerfile.audio`, so passing it is
-only needed to build a different tag. The build fails loudly if any patch does
-not apply to `BASE_TAG` — that is the intended lockstep guardrail, not a bug.
+The build fails if any declared patch does not apply to the installed vLLM
+package. That fail-closed behavior is the release guardrail.

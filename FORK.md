@@ -6,9 +6,9 @@ It exists to ship a small set of upstream fixes that we need in production
 image.
 
 The guiding rule: **upstream stays pristine, our changes sit clearly on top.**
-Nothing here is intermingled with vLLM source on the default branch — every
-fork-owned file lives under `fork/` (plus two CI workflows). You can always
-`git merge upstream/main` without touching a line of engine code.
+`main` is an orphan branch containing only the fork overlay. Engine changes
+exist only as patch commits on a release work branch and as generated unified
+diffs applied into the upstream image.
 
 ## Charter: alignment first
 
@@ -16,61 +16,31 @@ This fork's standing goal is to stay **as close to upstream as it can while
 still being useful**. Every divergence is a liability we have chosen to carry,
 so every divergence has to earn its place. Three rules, in priority order:
 
-**R1 — Additive only, plus a declared deletion list.** The fork never modifies
-an upstream-owned file in this tree. It adds fork-owned files and deletes the
-upstream workflows enumerated in
-[`fork/alignment.ledger`](fork/alignment.ledger) — nothing else, ever. A change
-to upstream *content* rides as a patch applied to the image at build time, never
-as an edit here. This is the whole reason `git merge upstream/main` stays a
-non-event.
+**R1 — Overlay main; source-only release commits.** `main` contains no upstream
+file. Release commits touch only `vllm/**`; the generated patches are applied
+to upstream's installed package at image-build time.
 
 **R2 — One patch, one concrete goal, traceable to upstream.** A patch backports
 exactly one upstream PR, or serves one narrowly-stated fork need. It touches the
-fewest files that achieve that goal and ships with a note under
-`fork/patches/notes/`. No omnibus patches, no drive-by edits riding along, no
-local "improvements" to vLLM.
+fewest files that achieve that goal and documents its impact, root cause,
+reproduce case, validation, and exit criterion in the commit. No omnibus
+patches, no drive-by edits riding along, no local "improvements" to vLLM.
 
 **R3 — Every divergence carries an exit criterion.** A patch records the
-upstream commit that will retire it; a declared deletion records why it is
-permanent. Nothing diverges "just because", and nothing outlives its reason.
+upstream commit that will retire it; every overlay entry records why it is
+needed. Nothing diverges "just because", and nothing outlives its reason.
 
 **The standing obligation.** At every release, *first* drop what upstream has
 absorbed, *then* rebase what it hasn't. The series is expected to shrink by
 default; growing it is the exception that needs an argument.
 
-R1 is enforced mechanically, not by good intentions:
-[`fork/scripts/check-alignment.sh`](fork/scripts/check-alignment.sh) measures the
-real divergence from the base **tag** the image is built from — read from
-`fork/docker/Dockerfile.audio`, so there is one pin and not two — and fails on
-anything the ledger does not declare. Measuring from the merge-base with
-`upstream/main` would be wrong: a release tag is cut aside from `main`, so
-upstream's own release-branch work would show up as fork modifications. It runs
-on every pull request
-([`fork-alignment.yml`](.github/workflows/fork-alignment.yml)) and as a gate on
-the image build, so a drifted fork can neither merge nor ship.
-
-```console
-$ fork/scripts/check-alignment.sh
-fork alignment
-  upstream base : v0.28.0 (2cf0a6915c)
-  ledger        : fork/alignment.ledger
-
-  added     N files, declared                                    OK
-  deleted   N files, declared                                    OK
-  modified  0 upstream files                                     OK
-
-  note: HEAD is N commits behind upstream/main — merge it on the next release sync
-
-Aligned: divergence from v0.28.0 is exactly what the ledger declares.
-```
-
-The three `N`s are placeholders for counts that move: `added` and `deleted`
-change whenever the fork gains or drops a file, and the behind-count changes on
-every `git fetch` — the fork deliberately sits on a release tag, so it is
-*always* behind `main`. That makes the trailing `note:` informational, not a
-failure. Only the `added`/`deleted`/`modified` lines gate anything, and of those
-only the `modified` count is fixed at `0`: any other value is undeclared
-divergence.
+R1 is enforced mechanically by
+[`fork/scripts/check-alignment.sh`](fork/scripts/check-alignment.sh). It checks
+that every tracked path matches an `add` entry in
+[`fork/alignment.ledger`](fork/alignment.ledger), all release pins agree, the
+pointed-to release history obeys the patch contract, a fresh export is
+byte-identical, and an existing frozen tag still targets that release SHA. It
+runs on every pull request and as an image-build gate.
 
 ## What we add
 
@@ -89,12 +59,9 @@ itself** — the patch-application scaffolding (the OS `patch` package,
 `/opt/fork/patches`, `apply-patches.sh`) still ships in every build and
 stays inert while the series is empty; it is not gone, just idle. Notice
 if a package, pin, or patch shows up here that isn't `vllm[audio]`. The
-retirement record and the filing convention for the
-next patch live in [`fork/patches/README.md`](fork/patches/README.md) — every
-patch ships with full context (impact, root cause, a **reproduce case**,
-validation, ruled-out theories) as a note under `fork/patches/notes/` — a
-directory that does not exist while the series is empty, and is recreated by the
-next patch.
+retirement record and commit convention for the next patch live in
+[`fork/patches/README.md`](fork/patches/README.md). Every patch commit carries
+its full context and the trailers that make its upstream retirement mechanical.
 
 **Every configuration we serve is a committed file.** The exact YAML each
 benchmarked configuration ran — and the one to deploy on-prem — lives per
@@ -103,7 +70,7 @@ release under [`fork/bench/configs/`](fork/bench/configs/), indexed by
 `vllm serve --config` against those bytes and records their digest in every
 result, so a number always names the configuration that produced it.
 
-## The model: deterministic tag + patches on top
+## The model: pristine tag + documented patch commits
 
 vLLM is a monster to build from source, so we do **not** compile it. Instead:
 
@@ -114,79 +81,83 @@ vllm/vllm-openai:<TAG>   (prebuilt upstream release image)
       = openimage/vllm-openai-audio:<TAG>
 ```
 
-Two things are deliberately decoupled:
+| ref | content | mutability |
+| --- | --- | --- |
+| upstream `vX.Y.Z` | pristine upstream release commit | immutable upstream ref |
+| `release/<tag>` | tag plus one linear `[fork-patch]` commit per patch | disposable work branch |
+| `fork/<tag>` | annotated tag at the exact release commit shipped | immutable after promotion |
+| `main` | fork overlay only; no upstream source | normal protected PR history |
 
-- **git `main`** sits on the pinned release tag (the tag's commit is an
-  ancestor of `HEAD`, enforced by `check-alignment.sh`) with the fork overlay
-  on top. Release tags are cut aside from upstream `main` and carry
-  release-branch cherry-picks, so `main` is synced by merging **the tag**, not
-  upstream `main`.
-- **The image** is built from a pinned release tag — `DEFAULT_BASE_TAG` in
-  [`.github/workflows/build-vllm-audio.yml`](.github/workflows/build-vllm-audio.yml),
-  currently **`v0.28.0`**.
+The pointer from `main` to release source is `fork/patches/RELEASE`:
 
-The patch files in `fork/patches/` are generated against that exact tag, which
-is why they apply with no fuzz. If a patch ever fails to apply, the image build
-fails **on purpose** — that is the signal to refresh the series (below), not to
-ship an image whose patches silently did nothing.
+```text
+tag: v0.28.0
+release-sha: 2cf0a6915ce544dc493a0990f2ea38d81601128a
+```
+
+`export-patches.sh` writes that pointer with `series`, `upstream.map`, and one
+unified diff per patch commit. The commit contract requires a
+`[fork-patch] <what>` subject, only regular text changes under `vllm/**`, and
+body sections headed `Impact:`, `Root cause:`, `Reproduce:`, `Validation:`, and
+`Ruled out:` (each heading at the start of a line, in any order), followed by
+these trailers:
+
+```text
+Upstream-PR: https://github.com/vllm-project/vllm/pull/NNNNN
+Upstream-Merge: <40-hex merge SHA, or none>
+Exit-Criterion: <when this patch is dropped>
+```
+
+The image workflow reads only `RELEASE`, builds from the matching upstream tag,
+and labels the candidate with the overlay SHA, release SHA, patch-export hash,
+and upstream image digest.
 
 ## Lockstep with upstream releases
 
-When vLLM cuts a new release (e.g. `v0.27.1`):
+When vLLM cuts a new release:
 
 ```bash
-# 0. Merge the release TAG (not upstream/main — tags are cut aside from main,
-#    and check-alignment.sh requires HEAD to sit on the pinned tag). Conflicts:
-#    the ledger's deleted workflows (delete them again) and, possibly, files the
-#    previous release branch cherry-picked (take the tag's side).
-git merge v0.27.1
-
-# 1. Drop what upstream absorbed, then rebase what it did not (see below).
-fork/scripts/refresh-patches.sh v0.27.1   # skip if the series emptied
-
-# 2. Bump BOTH pins to the tag:
-#    .github/workflows/build-vllm-audio.yml -> DEFAULT_BASE_TAG
-#    fork/docker/Dockerfile.audio           -> ARG BASE_TAG (what check-alignment reads)
-fork/scripts/check-alignment.sh
-
-# 2b. Create the release's engine configurations. Copy the previous release's
-#    fleet.yaml and engine/*.yaml into fork/bench/configs/<tag>/ (never its
-#    results/), then re-justify every flag against the new release. The gate
-#    refuses --tag <tag> until that directory exists.
-#    Schema and freeze rule: fork/bench/configs/README.md
-
-# 3. Review, commit, push. A push builds a CANDIDATE (:<tag>-cand-<sha>) and
-#    never moves :latest. Gate the candidate (fork/bench/RUNBOOK.md), then
-#    promote the gated digest via workflow dispatch: promote_from=<cand tag>,
-#    publish_tags=<tag>, promote_latest=true.
+git fetch upstream --tags
+fork/scripts/new-release.sh vX.Y.Z
 ```
 
-Step 1 starts with the **drop** check, per R3: for each patch, take the upstream
-merge commit recorded in its note and ask whether the new tag already contains
-it — `git merge-base --is-ancestor <merge-commit> <tag>`. If it does, delete the
-patch, its note and its `fork/patches/series` line instead of rebasing it. Only
-then run `refresh-patches.sh`; if it reports a surviving patch no longer applies,
-rebase that one by hand.
+The script creates `release/<tag>` at the pristine tag, drops commits whose
+`Upstream-Merge` is already an ancestor, and cherry-picks the survivors. It
+then creates `fork/bump-<tag>` from `main`, regenerates the export, copies the
+previous benchmark configuration without `results/`, and bumps all four pins.
+Review and commit that overlay branch, push the release work branch, and build a
+candidate.
 
-**CI hygiene.** This fork keeps only its own two workflows
-([`build-vllm-audio.yml`](.github/workflows/build-vllm-audio.yml) and
-[`fork-alignment.yml`](.github/workflows/fork-alignment.yml)); upstream's
-governance/lint workflows are deleted because they are noise on a personal fork.
-They are the fork's only non-additive divergence, so they are enumerated with
-their rationale in [`fork/alignment.ledger`](fork/alignment.ledger) — and they
-are exactly what merging the next release tag will conflict on (any new bot
-workflow upstream adds needs its own ledger entry). Re-delete them as part of
-the sync; `check-alignment.sh` fails if one survives.
+After the gate passes, dispatch promotion with `promote_from` (the candidate
+tag), `publish_tags`, `promote_latest`, and `gate_record` (the gate-record
+path). Promotion verifies the candidate's labels against `main`, creates
+`fork/<tag>` on the labeled release SHA, records the image digest and gate
+evidence in its annotation, pushes the tag, and only then retags the image.
+For a legacy rollback from a label-less image, only `:latest` may move and
+`publish_tags` must be empty. Delete `release/<tag>` after the freeze.
+
+Repository rulesets make `fork/*` tags immutable and protect `main` from
+deletion and non-fast-forward updates while requiring the `alignment` check.
+
+**CI hygiene.** Because `main` contains no upstream source, upstream workflows
+are absent rather than tracked as deletions. The add-only ledger declares the
+fork overlay's complete path set.
+
+For the one-time transition, `migrate-to-overlay-main.sh --dry-run` builds a
+local `overlay-main` audit branch in a temporary worktree. It makes no remote
+changes and does not switch, clean, or otherwise alter the active checkout. Before the migration branch is merged, rehearse from the branch itself
+with `SOURCE_REF=HEAD fork/scripts/migrate-to-overlay-main.sh --dry-run`;
+the real run refuses `SOURCE_REF` and always replaces `main` with what
+`origin/main` contains.
 
 ## Testing the patches locally
 
-When the series is non-empty, the canonical integrated tree is the `fork/<tag>`
-branch (the release tag with the patch series applied as discrete commits) —
-`fork/v0.26.0` is the last one, since the series emptied at `v0.27.1`:
+The canonical integrated tree for a shipped release is the immutable
+`fork/<tag>` annotated tag:
 
 ```bash
-git fetch origin fork/v0.26.0
-git log --oneline v0.26.0..origin/fork/v0.26.0   # exactly the patch commits
+git fetch origin tag fork/<tag>
+git log --oneline <tag>..fork/<tag>   # exactly the patch commits
 ```
 
 Or apply a single patch against a fresh checkout to inspect it in isolation:
@@ -194,7 +165,7 @@ Or apply a single patch against a fresh checkout to inspect it in isolation:
 ```bash
 git worktree add /tmp/<tag> <tag>
 cd /tmp/<tag>
-git apply --check fork/patches/<patch-file>
+patch -p1 --dry-run --force < /path/to/fork/patches/<patch-file>
 ```
 
 ## The image

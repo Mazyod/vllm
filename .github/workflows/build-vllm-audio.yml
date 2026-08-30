@@ -17,7 +17,7 @@ on:
         required: false
         default: ""
       publish_tags:
-        description: "Tags to publish under, space/comma-separated (default: the base tag)."
+        description: "Release tags for a promotion, space/comma-separated. Empty publishes no release refs."
         required: false
         default: ""
       promote_latest:
@@ -30,6 +30,10 @@ on:
           is rebuilt: that exact digest is verified and retagged. This is how a
           gated artifact reaches :latest — a rebuild would publish a lookalike
           the gate never saw.
+        required: false
+        default: ""
+      gate_record:
+        description: "Path of the gate results page, e.g. fork/bench/configs/v0.28.0/results/20260830-attempt4.md. Required the first time a base tag is published."
         required: false
         default: ""
 
@@ -45,7 +49,7 @@ on:
 env:
   IMAGE_NAME: docker.io/openimage/vllm-openai-audio
   # Deterministic upstream release the patch series is generated against.
-  # Bump this in lockstep with fork/scripts/refresh-patches.sh on each release.
+  # Bump this in lockstep with fork/scripts/new-release.sh on each release.
   DEFAULT_BASE_TAG: v0.28.0
 
 jobs:
@@ -60,6 +64,7 @@ jobs:
       - name: Checkout fork
         uses: actions/checkout@v5
         with:
+          ref: ${{ github.sha }}
           # merge-base needs the real commit history; blobless keeps it cheap.
           fetch-depth: 0
           filter: blob:none
@@ -81,8 +86,29 @@ jobs:
       image_refs: ${{ steps.resolve.outputs.image_refs }}
       promote_latest: ${{ steps.resolve.outputs.promote_latest }}
       promote_from: ${{ steps.resolve.outputs.promote_from }}
+      candidate_digest: ${{ steps.resolve.outputs.candidate_digest }}
       source_ref: ${{ steps.resolve.outputs.source_ref }}
+      main_sha: ${{ github.sha }}
+      release_sha: ${{ steps.resolve.outputs.release_sha }}
+      release_tag: ${{ steps.resolve.outputs.release_tag }}
+      export_hash: ${{ steps.resolve.outputs.export_hash }}
+      base_digest: ${{ steps.resolve.outputs.base_digest }}
     steps:
+      - name: Refuse dispatches off main
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.ref }}" != "refs/heads/main" ]]; then
+            echo "::error::dispatch from main only"
+            exit 1
+          fi
+
+      - name: Checkout fork
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
       - name: Resolve base tag and publish refs
         id: resolve
         run: |
@@ -91,6 +117,15 @@ jobs:
           INPUT_TAG="${{ github.event.inputs.vllm_tag }}"
           INPUT_PUBLISH_TAGS="${{ github.event.inputs.publish_tags }}"
           BASE_TAG="${INPUT_TAG:-${DEFAULT_BASE_TAG}}"
+          RELEASE_TAG=$(sed -n 's/^tag: //p' fork/patches/RELEASE)
+          RELEASE_SHA=$(sed -n 's/^release-sha: //p' fork/patches/RELEASE)
+          if [[ "$RELEASE_TAG" != "$BASE_TAG" ]]; then
+            echo "::error::fork/patches/RELEASE records $RELEASE_TAG, requested $BASE_TAG"
+            exit 1
+          fi
+          EXPORT_HASH=$(fork/scripts/export-hash.sh)
+          BASE_DIGEST=$(docker buildx imagetools inspect \
+            "vllm/vllm-openai:${BASE_TAG}" --format '{{.Manifest.Digest}}')
 
           # The prebuilt base image must exist on Docker Hub, otherwise the build
           # fails later with a confusing pull error.
@@ -102,35 +137,29 @@ jobs:
           fi
 
           VERSION="${BASE_TAG#v}"
+          PROMOTE_FROM="${{ github.event.inputs.promote_from }}"
+          PUBLISH_TAGS=$(fork/scripts/resolve-publish-tags.sh \
+            "${{ github.event_name }}" "$BASE_TAG" "${GITHUB_SHA:0:7}" \
+            "$INPUT_PUBLISH_TAGS" "$PROMOTE_FROM")
+          PRIMARY_TAG="${PUBLISH_TAGS%% *}"
 
-          if [[ "${{ github.event_name }}" == "push" ]]; then
-            # A push build is a candidate, never a certified artifact. The
-            # 2026-07-27 series push rebuilt from an emptied series,
-            # republished the gated v0.26.0 tag and moved :latest — and the
-            # never-gated result crash-looped in production. Candidates get
-            # their own tag; promotion is a deliberate dispatch after a gate
-            # run.
-            PUBLISH_TAGS="${BASE_TAG}-cand-${GITHUB_SHA:0:7}"
+          if [[ -z "$PROMOTE_FROM" ]]; then
             PROMOTE_LATEST="false"
           else
-            # Published tags default to the base tag; a dispatch may override.
-            if [[ -n "$INPUT_PUBLISH_TAGS" ]]; then
-              PUBLISH_TAGS=$(echo "$INPUT_PUBLISH_TAGS" | tr ',' ' ' | xargs)
-            else
-              PUBLISH_TAGS="$BASE_TAG"
-            fi
             PROMOTE_LATEST="${{ github.event.inputs.promote_latest || 'false' }}"
           fi
-          PRIMARY_TAG="${PUBLISH_TAGS%% *}"
 
           # What downstream jobs verify and promote. Promoting an existing tag
           # rebuilds nothing, so the artifact the gate approved is the artifact
           # that ships.
-          PROMOTE_FROM="${{ github.event.inputs.promote_from }}"
           if [[ -n "$PROMOTE_FROM" ]]; then
-            SOURCE_REF="${IMAGE_NAME}:${PROMOTE_FROM}"
+            CANDIDATE_DIGEST=$(docker buildx imagetools inspect \
+              "${IMAGE_NAME}:${PROMOTE_FROM}" \
+              --format '{{.Manifest.Digest}}')
+            SOURCE_REF="${IMAGE_NAME}@${CANDIDATE_DIGEST}"
           else
-            SOURCE_REF="${IMAGE_NAME}:${PRIMARY_TAG}"
+            CANDIDATE_DIGEST=""
+            SOURCE_REF=""
           fi
 
           {
@@ -139,7 +168,12 @@ jobs:
             echo "primary_tag=$PRIMARY_TAG"
             echo "promote_latest=$PROMOTE_LATEST"
             echo "promote_from=$PROMOTE_FROM"
+            echo "candidate_digest=$CANDIDATE_DIGEST"
             echo "source_ref=$SOURCE_REF"
+            echo "release_sha=$RELEASE_SHA"
+            echo "release_tag=$RELEASE_TAG"
+            echo "export_hash=$EXPORT_HASH"
+            echo "base_digest=$BASE_DIGEST"
             echo "image_refs<<__REFS__"
             for t in $PUBLISH_TAGS; do echo "${IMAGE_NAME}:${t}"; done
             echo "__REFS__"
@@ -164,9 +198,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
     steps:
       - name: Checkout fork
         uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -189,6 +227,11 @@ jobs:
           build-args: |
             BASE_TAG=${{ needs.resolve.outputs.base_tag }}
           tags: ${{ needs.resolve.outputs.image_refs }}
+          labels: |
+            org.opencontainers.image.revision=${{ needs.resolve.outputs.main_sha }}
+            io.openimage.release-sha=${{ needs.resolve.outputs.release_sha }}
+            io.openimage.patch-export=${{ needs.resolve.outputs.export_hash }}
+            io.openimage.base-digest=${{ needs.resolve.outputs.base_digest }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -224,6 +267,8 @@ jobs:
       # passed for every build of the empty series while proving nothing.
       - name: Checkout fork
         uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v4
@@ -232,14 +277,25 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Pull the image under test
-        run: docker pull "${{ needs.resolve.outputs.source_ref }}"
+        run: |
+          set -euo pipefail
+          SOURCE_REF="${{ needs.resolve.outputs.source_ref }}"
+          if [[ -z "$SOURCE_REF" ]]; then
+            SOURCE_REF="${IMAGE_NAME}@${{ needs.build-and-push.outputs.digest }}"
+          fi
+          [[ "$SOURCE_REF" == *@sha256:* ]] || {
+            echo "::error::source ref is not pinned by digest: $SOURCE_REF"
+            exit 1
+          }
+          echo "SOURCE_REF=$SOURCE_REF" >> "$GITHUB_ENV"
+          docker pull "$SOURCE_REF"
 
       - name: Assert audio decode deps are present
         run: |
           # /v1/audio/transcriptions needs these. vLLM guards `import av` and
           # `import soundfile`; if either is missing it degrades to a
           # PlaceholderModule. Importing both is pure CPU work — no GPU.
-          IMAGE="${{ needs.resolve.outputs.source_ref }}"
+          IMAGE="$SOURCE_REF"
           docker run --rm --entrypoint python3 "$IMAGE" -c \
             "import av, soundfile; print('audio deps OK: av', av.__version__, '| soundfile', soundfile.__version__)"
 
@@ -249,7 +305,7 @@ jobs:
           # Derived from the series rather than hardcoded, so it cannot go stale
           # when a patch is added or retired: every patch must reverse-apply
           # cleanly (proving it is present), and the count must match.
-          IMAGE="${{ needs.resolve.outputs.source_ref }}"
+          IMAGE="$SOURCE_REF"
           # Fail closed on an unreadable series: "0 declared" and "0 found"
           # agree, so a missing file renders as a passing check that compared
           # nothing at all.
@@ -288,8 +344,14 @@ jobs:
        needs.resolve.outputs.promote_from != '')
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
     steps:
+      - name: Checkout fork
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -299,19 +361,110 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Read candidate labels
+        id: candidate
+        run: |
+          set -euo pipefail
+          SOURCE_REF="${{ needs.resolve.outputs.source_ref }}"
+          if [[ -z "$SOURCE_REF" ]]; then
+            SOURCE_REF="${IMAGE_NAME}@${{ needs.build-and-push.outputs.digest }}"
+          fi
+          [[ "$SOURCE_REF" == *@sha256:* ]] || {
+            echo "::error::source ref is not pinned by digest: $SOURCE_REF"
+            exit 1
+          }
+          DIGEST="${SOURCE_REF#*@}"
+          docker pull "$SOURCE_REF"
+          CAND_RELEASE_SHA=$(docker inspect --format \
+            '{{ index .Config.Labels "io.openimage.release-sha" }}' "$SOURCE_REF")
+          CAND_EXPORT=$(docker inspect --format \
+            '{{ index .Config.Labels "io.openimage.patch-export" }}' "$SOURCE_REF")
+          CAND_BASE=$(docker inspect --format \
+            '{{ index .Config.Labels "io.openimage.base-digest" }}' "$SOURCE_REF")
+          [[ "$CAND_RELEASE_SHA" != "<no value>" ]] || CAND_RELEASE_SHA=""
+          [[ "$CAND_EXPORT" != "<no value>" ]] || CAND_EXPORT=""
+          [[ "$CAND_BASE" != "<no value>" ]] || CAND_BASE=""
+          {
+            echo "digest=$DIGEST"
+            echo "release_sha=$CAND_RELEASE_SHA"
+            echo "export_hash=$CAND_EXPORT"
+            echo "base_digest=$CAND_BASE"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Verify labeled or legacy candidate
+        id: verify
+        run: |
+          set -euo pipefail
+          OUTPUT=$(fork/scripts/verify-candidate.sh \
+            "${{ needs.resolve.outputs.base_tag }}" \
+            "${{ steps.candidate.outputs.digest }}" \
+            "${{ steps.candidate.outputs.release_sha }}" \
+            "${{ steps.candidate.outputs.export_hash }}" \
+            "${{ needs.resolve.outputs.release_sha }}" \
+            "${{ needs.resolve.outputs.export_hash }}")
+          echo "$OUTPUT"
+          MODE="${OUTPUT#mode=}"
+          [[ "$MODE" == "labeled" || "$MODE" == "legacy" ]]
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+
+      - name: Freeze the release source and candidate digest
+        id: freeze
+        run: |
+          set -euo pipefail
+          BASE_TAG="${{ needs.resolve.outputs.base_tag }}"
+          MODE="${{ steps.verify.outputs.mode }}"
+          if [[ "$MODE" == "legacy" ]]; then
+            if [[ -n "${{ needs.resolve.outputs.image_refs }}" ]]; then
+              echo "::error::legacy candidates may only move :latest; publish_tags must be empty"
+              exit 1
+            fi
+            echo "legacy candidate already frozen as fork/${BASE_TAG}"
+            echo "tag=fork/${BASE_TAG}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          PUBLISH_BASE=false
+          while IFS= read -r ref; do
+            if [[ "$ref" == "${IMAGE_NAME}:${BASE_TAG}" ]]; then
+              PUBLISH_BASE=true
+            fi
+          done <<< "${{ needs.resolve.outputs.image_refs }}"
+          if [[ "$PUBLISH_BASE" != "true" ]] &&
+             ! git rev-parse --verify --quiet "refs/tags/fork/${BASE_TAG}" >/dev/null; then
+            echo "::error::publish_tags must name ${BASE_TAG} for its first publication"
+            exit 1
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+          set +e
+          OUTPUT=$(fork/scripts/freeze-release.sh \
+            "$BASE_TAG" \
+            "${{ steps.candidate.outputs.release_sha }}" \
+            "${{ steps.candidate.outputs.digest }}" \
+            "${{ steps.candidate.outputs.base_digest }}" \
+            "${{ needs.resolve.outputs.main_sha }}" \
+            "${{ steps.candidate.outputs.export_hash }}" \
+            "${{ github.event.inputs.gate_record }}" 2>&1)
+          STATUS=$?
+          set -e
+          echo "$OUTPUT"
+          if [[ "$STATUS" -ne 0 ]]; then
+            if [[ "$STATUS" -eq 2 && -z "${{ github.event.inputs.gate_record }}" ]]; then
+              echo "::error::gate_record is required for the first promotion of ${BASE_TAG}"
+            fi
+            exit "$STATUS"
+          fi
+          echo "tag=fork/${BASE_TAG}" >> "$GITHUB_OUTPUT"
+
       - name: Retag the verified digest
         id: promote
         run: |
           set -euo pipefail
-          SOURCE="${{ needs.resolve.outputs.source_ref }}"
-
-          # Pin to the digest before retagging. Resolving once means every tag
-          # written below names the same bytes the test job just verified, even
-          # if the source tag moves underneath this run.
-          DIGEST=$(docker buildx imagetools inspect "$SOURCE" \
-            --format '{{.Manifest.Digest}}')
-          PINNED="${IMAGE_NAME}@${DIGEST}"
-          echo "promoting $SOURCE -> $DIGEST"
+          DIGEST="${{ steps.candidate.outputs.digest }}"
+          SOURCE_REF="${IMAGE_NAME}@${DIGEST}"
+          echo "promoting $SOURCE_REF"
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
           # On a promotion the publish tags were never pushed by this run,
@@ -320,13 +473,13 @@ jobs:
             while IFS= read -r ref; do
               [[ -n "$ref" ]] || continue
               echo "  tagging $ref"
-              docker buildx imagetools create --tag "$ref" "$PINNED"
+              docker buildx imagetools create --tag "$ref" "$SOURCE_REF"
             done <<< "${{ needs.resolve.outputs.image_refs }}"
           fi
 
           if [[ "${{ needs.resolve.outputs.promote_latest }}" == "true" ]]; then
             echo "  tagging ${IMAGE_NAME}:latest"
-            docker buildx imagetools create --tag "${IMAGE_NAME}:latest" "$PINNED"
+            docker buildx imagetools create --tag "${IMAGE_NAME}:latest" "$SOURCE_REF"
           fi
 
       - name: Summary
@@ -342,4 +495,10 @@ jobs:
             if [[ "${{ needs.resolve.outputs.promote_latest }}" == "true" ]]; then
               echo "- \`${{ env.IMAGE_NAME }}:latest\`"
             fi
+            echo "- **Frozen tag:** \`${{ steps.freeze.outputs.tag }}\`"
+            echo ""
+            echo '```text'
+            git tag -l --format='%(contents)' \
+              "${{ steps.freeze.outputs.tag }}"
+            echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
