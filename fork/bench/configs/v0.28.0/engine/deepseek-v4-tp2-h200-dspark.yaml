@@ -1,0 +1,38 @@
+# venue: manual; the DSpark argument set for v0.28.0, replacing the frozen
+# spec-off deepseek-v4-tp2-h200.yaml. Validated 2026-09-01 on a 2xH200 SXM
+# *NVLink* slice (vast machine 131918, openimage/vllm-openai-audio:v0.28.0) --
+# by a comment-free copy of these keys and values, not by these bytes -- at
+# concurrency 1-8 only; unmeasured above 8, where this pool works out to ~35
+# streams of 131K-token requests (derived, not a measured line: the engine
+# quotes its own concurrency multiple at 1,048,576 tokens per request). Production is PCIe H200 without NVLink, so the TP2
+# all-reduce bug class is untested here. A 16/32/64 sweep on the dedicated
+# PCIe box is required before this file takes production traffic. Numbers and
+# caveats: results/20260901-dsv4-dspark.md.
+# The measured DeepSeek-V4 Flash checkpoint.
+model: deepseek-ai/DeepSeek-V4-Flash-0731
+# The on-prem server spans the two H200 GPUs.
+tensor-parallel-size: 2
+# fp8_ds_mla rejects auto, so FP8 KV cache is mandatory.
+kv-cache-dtype: fp8
+# The draft ships inside the target checkpoint. dspark force-selects Model
+# Runner V2 (config/vllm.py:624-632); never set VLLM_USE_V2_MODEL_RUNNER=0.
+# k=3 keeps next_n = k+1 = 4 on SM90's native paged-MQA indexer
+# (utils/deep_gemm.py:555-563). k=4 and k=5, both on default cudagraph,
+# measured slower than k=3 at concurrency 2/4/8 while showing a higher mean
+# accepted length (1.54 / 1.62 against 1.41 at concurrency 8) and a lower
+# acceptance fraction (0.39 / 0.32 against 0.47).
+# Do not add enable_adaptive_verification (raises on SM90) or
+# indexer_kv_dtype: mxfp4; a dynamic schedule is inert under V2 at this tag.
+speculative-config:
+  method: dspark
+  model: deepseek-ai/DeepSeek-V4-Flash-0731
+  num_speculative_tokens: 3
+# No compilation-config. The frozen file's cudagraph_mode PIECEWISE dodged a
+# DeepGEMM SM90 out-of-bounds read that the v0.28.0 repin onto
+# deepseek-ai/DeepGEMM@8b1392b9 fixes: DeepGEMM#399 is open and unmerged and
+# vllm#51182 closed unmerged, both superseded by that repin; vllm#51181 closed
+# via vLLM-side capture changes, not the repin; vllm#51318 merged and is in
+# this tag. Under V2 the attention layer picks its own eager region
+# (deepseek_v4/attention.py:302-307) so the flag no longer protects, and it
+# forces an eager draft (gpu/spec_decode/dflash/speculator.py:113-129) costing
+# DSpark 27% at batch 1.

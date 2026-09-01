@@ -45,7 +45,10 @@ ENGINE_BY_PROFILE = {
 }
 EXPECTED_ENGINE_FILES = {
     *(Path(path).name for path in ENGINE_BY_PROFILE.values()),
+    # Both manual DSV4 files: the frozen spec-off baseline and the DSpark set
+    # that replaces it. The baseline stays because its bytes were launched.
     "deepseek-v4-tp2-h200.yaml",
+    "deepseek-v4-tp2-h200-dspark.yaml",
 }
 FLEET_FIELDS = {
     "engine",

@@ -168,9 +168,43 @@ profiles:
     control_for: null
     venue: gate
 manual:
+  # The spec-off baseline, catalogued as the control for the DSpark record.
+  # This file was NOT launched byte-for-byte: box 1 arm A launched a
+  # YAML-equivalent comment-free copy (sha256 67939e9e...). It is left
+  # untouched and treated as frozen conservatively, its stale header included;
+  # deepseek-v4-tp2-h200-dspark.yaml carries the corrections. Keep it as the
+  # rollback target.
   deepseek-v4-tp2-h200:
     engine: engine/deepseek-v4-tp2-h200.yaml
     venue: manual
-    status: unvalidated
-    hardware: 2xH200 SXM pair
-    upstream_issues: [51181, 51318, 51182]
+    status: validated-nvlink-conc1-8
+    hardware: 2xH200 SXM NVLink slice (vast machine 131918)
+    image: openimage/vllm-openai-audio:v0.28.0
+    # The digest promoted on 2026-08-30 and carried by the tag the run pulled;
+    # the run recorded the tag, not the digest.
+    image_digest: "sha256:673580b7bafed843c2251c5d2bcf0eb2b64a097f40fd0d4ff8dec4f988bd0349"
+    validation_date: "2026-09-01"
+    results: results/20260901-dsv4-dspark.md
+  deepseek-v4-tp2-h200-dspark:
+    engine: engine/deepseek-v4-tp2-h200-dspark.yaml
+    venue: manual
+    # Catalogued off-gate: measured, but not a production-topology argument
+    # set. The numbers come from a YAML-equivalent comment-free copy of this
+    # file (sha256 6c9d05a5...), not from these bytes; see the result record.
+    # Validated on an NVLink 2xH200 slice at concurrency 1-8 only;
+    # unmeasured above 8, where the pool works out to ~35 streams of 131K-token
+    # requests (derived). A 16/32/64 sweep on the dedicated PCIe box is required
+    # before this file is used for production traffic, which is also the only
+    # venue where the TP2 all-reduce bug class becomes reachable.
+    status: validated-nvlink-conc1-8
+    hardware: 2xH200 SXM NVLink slice (vast machine 131918)
+    image: openimage/vllm-openai-audio:v0.28.0
+    image_digest: "sha256:673580b7bafed843c2251c5d2bcf0eb2b64a097f40fd0d4ff8dec4f988bd0349"
+    validation_date: "2026-09-01"
+    # 51318 merged and is in this tag; 51182 closed unmerged and DeepGEMM#399
+    # is open and unmerged, both superseded by the v0.28.0 DeepGEMM repin;
+    # 51181 closed via vLLM-side capture changes. All four went with the
+    # PIECEWISE block. 50851 is why V2 stays forced; 53679 and 54011 are
+    # v0.28.1 upgrade hazards absent from this tag.
+    upstream_issues: [50851, 53679, 54011]
+    results: results/20260901-dsv4-dspark.md
