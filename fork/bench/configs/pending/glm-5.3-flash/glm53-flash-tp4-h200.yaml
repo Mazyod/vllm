@@ -1,0 +1,86 @@
+# venue: pending-release. NOT LAUNCHABLE ON ANY FORK RELEASE.
+# zai-org/GLM-5.3-Flash is Glm5NextForConditionalGeneration, an architecture
+# absent from v0.28.0, v0.28.1rc0 and upstream main; only the unmerged
+# vllm#53906 adds it. Measured 2026-09-01 on 4xH200 SXM (NVLink) under the
+# vendor pre-release image tag vllm/vllm-openai:glm53-flash-cu129 -- a MUTABLE
+# tag, and the only on-box receipt of what ran is the reported build
+# vllm 0.1.dev20051+g487ecf187 with flashinfer 0.6.17. The multi-arch index
+# digest sha256:3b9ab05f137ed51afb08ee68929bc2244acd13d21612eb08b5f5573a89241f79
+# is a post-run same-day registry resolution of that tag, NOT the launched
+# bytes; re-resolve before relying on it. Launched by a comment-free
+# copy of these keys and values, not by these bytes. Promote into
+# configs/<TAG>/engine/ and run `python3 -m fork.bench.config_validation
+# --tag <TAG>` on a box running that release the day a tag contains Glm5Next;
+# until then no parser has ever seen this file. Numbers, caveats and the
+# launched digests: RECORD.md beside this file.
+#
+# The FP8 checkpoint zai-org/GLM-5.3-Flash (~306 GiB, 76.4 GiB per rank at
+# TP4), staged as a local snapshot at revision
+# 03eb5366286afd40d2221b1d9c63a6dd1ba4832e. A LOCAL PATH IS MANDATORY: the
+# repo id crashes Glm5NextProcessor.from_pretrained with a FileNotFoundError
+# on processor_config.json, which the vendor image does not resolve through
+# the hub cache. Re-point this at wherever the promoting box stages the
+# snapshot; keep it a path, never the repo id.
+model: /workspace/hf/hub/models--zai-org--GLM-5.3-Flash/snapshots/03eb5366286afd40d2221b1d9c63a6dd1ba4832e
+# Stable API name used by every GLM probe and client.
+served-model-name: glm-5.3-flash
+# Four H200s carry the weights; 64 heads, 2048 moe_intermediate and 288
+# experts all divide by 4. Only the 34 KDA layers shard: MLA and the DSA
+# indexer are num_kv_heads=1 and replicated on every rank.
+tensor-parallel-size: 4
+# BF16 KV IS MANDATORY ON HOPPER. kv-cache-dtype: fp8 is accepted at config
+# time, selects FLASHMLA_SPARSE and logs the fp8_ds_mla layout, then dies five
+# minutes later inside cudagraph memory profiling with "concat_and_cache_mla,
+# cache_kernels.cu:866, pe_dim must be 64 for fp8_ds_mla" -- the packed layout
+# is hardcoded for rope-64 and this model is mla_use_nope (qk_rope_head_dim 0).
+# vllm#53963, reported on SM120, reproduces on SM90. auto also widens the
+# backend list to FLASH_ATTN_MLA_SPARSE, which is what boots.
+kv-cache-dtype: auto
+# Bound the measured context; the checkpoint declares 1,048,576.
+max-model-len: 131072
+# THE DEFAULT 1024 FAILS: "max_num_seqs (1024) exceeds available Mamba cache
+# blocks (512). Each decode sequence requires one Mamba cache block, so CUDA
+# graph capture cannot proceed." 3 is the policy this file is sized for, and
+# it must also fit under the mamba blocks the KV budget affords.
+max-num-seqs: 3
+# 6.00 GiB per GPU -> "GPU KV cache size: 443,628 tokens, Maximum concurrency
+# for 131,072 tokens per request: 3.38x", which genuinely admits three
+# distinct-prefix 118,281-token requests at 85.2% pool usage. Overrides
+# gpu-memory-utilization entirely and skips memory profiling: the init-engine
+# phase (profile, create kv cache, warmup model) drops from 397.96 s to
+# 16.66 s, and total wall boot from 511 s to 120 s. Empirical 14,522
+# B/token/GPU at bf16 with k=3; re-verify if k moves (12,570 with no draft,
+# 15,162 at k=5).
+kv-cache-memory-bytes: 6442450944
+# One MTP module (num_nextn_predict_layers 1) iterated k times; the indexer is
+# shared across draft steps (index_share_for_mtp_iteration). k=3, NOT the
+# vendor recipe's 5: k=3 measured 668.5 against k=5's 597.8 tok/s at
+# concurrency 4 and 953.4 against 766.7 at concurrency 8. Acceptance
+# 0.55-0.58, mean accepted length 1.64-1.76; at k=5 position 4 is accepted
+# 10.1% of the time. Do not add enable_adaptive_verification.
+speculative-config:
+  method: mtp
+  num_speculative_tokens: 3
+# Preserve GLM reasoning content; thinking is always on in this template and
+# reasoning_effort (default "max") is the only knob. At max_tokens 512 the
+# model emits 100% reasoning and 0% visible content.
+reasoning-parser: glm45
+# Parse GLM native tool calls. glm45/glm47 both alias the GLM-4.7 modules and
+# the round trip verified clean.
+tool-call-parser: glm47
+# Let the model select tools without a forced tool choice.
+enable-auto-tool-choice: true
+# NOT SET, deliberately: enable-expert-parallel cost 5-12% at every measured
+# concurrency on this box and added +0.6 GiB activation and +1.0 GiB cudagraph.
+# cudagraph_mode is already FULL_AND_PIECEWISE by default and captured clean.
+# UNTESTED HERE and required before the PCIe venue: disable-custom-all-reduce
+# and compilation-config.pass_config.fuse_allreduce_rms: false, the fork's two
+# house PCIe workarounds.
+#
+# SCOPE OF THE MEASUREMENT: one full-NVLink 4xH200 box at concurrency 1-8 only;
+# above 8 is unmeasured on every arm. Production is PCIe H200 without NVLink
+# and a 288-expert MoE moves exactly the traffic NVLink hides, so every
+# throughput number behind this file is an upper bound. The 3x131,072 claim is
+# the boot receipt "GPU KV cache size: 443,628 tokens, Maximum concurrency for
+# 131,072 tokens per request: 3.38x"; admission was measured with three
+# 118,281-token requests, not at a full 131,072 each.
