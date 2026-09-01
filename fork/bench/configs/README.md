@@ -10,6 +10,24 @@ configs/<TAG>/
   results/*.md
 ```
 
+A configuration for a model no release tag supports yet has no release
+directory to live in. It goes under `configs/pending/<model>/` instead, holding
+its record and its candidate YAML:
+
+```text
+configs/pending/<model>/
+  RECORD.md
+  <name>.yaml
+```
+
+`pending/` is not a release directory. It has no `fleet.yaml`, no `engine/`
+layer, and no release parser has validated its YAML. It is excluded from the
+engine, fleet, parser, profile and scheduling globs, which select
+`*/engine/*.yaml`, `*/fleet.yaml` and `v*`; **only the repo-wide symlink lint
+traverses it**, since that one walks the whole config tree by design and should
+keep covering `pending/`. Promote the file into `<TAG>/engine/` and run the
+on-box validation below the day a tag supports the architecture.
+
 `engine/*.yaml` contains only arguments accepted by that release's `vllm
 serve --config`. `fleet.yaml` contains the launch and probe metadata that vLLM
 cannot consume. One engine file represents one distinct argument set and may be
