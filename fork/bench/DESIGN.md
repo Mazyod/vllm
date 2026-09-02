@@ -51,10 +51,11 @@ Stated so nobody later assumes coverage that is not here:
 
 ## Shape
 
-**Venue.** One rented two-GPU Hopper box, on-demand, PCIe-connected. The
-deployment target is TP2 without NVLink, and the point of renting is to
-reproduce that topology on comparable hardware (H100 class) rather than to test
-on a proxy: prove it there, and it holds in production.
+**Venue.** One rented `hopper-pcie-2` reference-profile box: two Hopper GPUs,
+on-demand, without an NVLink-class GPU fabric. The point is to reproduce that
+capability on the least expensive comparable hardware (normally H100 class),
+not to claim that the profile describes privately owned infrastructure. A
+result is scoped to the anonymous profile.
 
 The absence of NVLink is a requirement, not a cost compromise: two of the
 configurations under test are all-reduce workarounds that only fail on a machine
@@ -73,6 +74,20 @@ to destroy the instance and hunt another offer. No code in `fork/bench` sets
 **Trigger.** Manual. The decision to spend stays a human one. Everything after
 that decision — rent, verify, run, collect, destroy — is automated behind
 `--rent`.
+
+**Least expensive valid venue.** CPU/mock preflight owns every property that
+does not require a GPU. Lower-cost CUDA hardware owns generic lifecycle and API
+tests. H100-class owns Hopper-specific behavior when it fits. H200-class memory
+is rented only when the real checkpoint/context fit is itself the question.
+The selection ladder and anonymous names live in
+[`../deploy/HARDWARE_PROFILES.md`](../deploy/HARDWARE_PROFILES.md).
+
+**Certification, not tuning.** `--rent` certifies an already-known argument set
+and therefore destroys on every outcome. Development keeps one separately
+watched rental warm, restarts model process groups after configuration/probe
+failures, and reuses model/compiler caches. Feeding edits into repeated
+certification runs is both methodologically wrong (the object keeps changing)
+and needlessly expensive.
 
 **Division of labour.** The operator chooses when to run. The harness owns
 everything else: renting, probing, measuring, reporting, and giving the machine
@@ -105,7 +120,7 @@ reads, while `fleet.yaml` assigns that argument set to a phase, environment,
 GPU set, replica count, and probes. The [catalog](configs/CATALOG.md) identifies
 which files ship, isolate controls and negatives, or run off-gate.
 
-**TP2 is the shipping topology**, so those profiles carry the full receipt,
+**TP2 is the reference topology**, so those profiles carry the full receipt,
 behavioural, and performance set. Single-GPU profiles isolate patch relevance
 or compare two replicas against the same two-GPU budget. Keeping the engine
 arguments out of this document prevents a prose copy from becoming a second,
@@ -181,7 +196,7 @@ and R3 assert on.
 
 | id | probe | pass condition |
 | --- | --- | --- |
-| B1 | 100 structured-output requests (50 native, 50 tool mode), each with `enable_thinking` set, a 2048-token completion budget so reasoning finishes before the budget does, and MTP on; count `{{` and `{"{` openers across **content and tool-call arguments**. Runs at TP2, the shipping topology, as well as single-GPU | 0 corrupt, and at least one constrained output actually inspected |
+| B1 | 100 structured-output requests (50 native, 50 tool mode), each with `enable_thinking` set, a 2048-token completion budget so reasoning finishes before the budget does, and MTP on; count `{{` and `{"{` openers across **content and tool-call arguments**. Runs at TP2, the reference topology, as well as single-GPU | 0 corrupt, and at least one constrained output actually inspected |
 | B2 | 60 guided and tool-calling requests; count HTTP 500 `Failed to advance FSM` | 0 |
 | B3 | `vllm:spec_decode_*` counters non-zero; acceptance rate recorded | speculative decoding actually live |
 | B4 | a request carrying `thinking_token_budget` | accepted, not rejected |
@@ -285,7 +300,7 @@ onto the survivors of a partial fleet reads as a throughput win.
 | 1 | **Provision and host check.** Rent an on-demand offer, arm the reaper, classify the pair, stage both models' weights. `--rent` does all of it. | topology classified PCIe-only. An NVLink pair or an unreadable matrix refuses the run | ~15 min |
 | 2 | **Correctness, both GPUs in parallel.** Every leave-one-out and negative boot. Not timing-sensitive, so the parallelism is free. | each boot produced a receipt or a captured crash signature | ~25 min |
 | 3 | **Performance, strictly serialized.** Each shipping configuration at TP2, one at a time. | numbers recorded | ~20 min |
-| 4 | **TP2 arm — the shipping topology.** Both configurations with the all-reduce workarounds on, carrying the full receipt *and* behavioural probe set (must pass), then N3 with the workarounds off. | every gating probe passed | ~25 min |
+| 4 | **TP2 arm — the reference topology.** Both configurations with the all-reduce workarounds on, carrying the full receipt *and* behavioural probe set (must pass), then N3 with the workarounds off. | every gating probe passed | ~25 min |
 | 5 | **Verdict.** Emit the report, collect it back *before* anything is destroyed, then destroy the instance and **verify** destruction against the provider API. | instance list empty | ends |
 
 **Phase 1's topology gate is not optional.** Offers advertising no NVLink

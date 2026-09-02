@@ -1,0 +1,51 @@
+name: glm53-gemma4-6xh200
+status: proved-nvlink
+scope: historical-disjoint-placement-control
+hardware-profile: hopper-fabric-large
+result: results/20260902-glm53-gemma4-6xh200/RECORD.md
+image: vllm/vllm-openai@sha256:fcd2a743ca206241f8c7ead6a2e771936b7a1e7d99b662b64b8cece83ae45145
+hardware:
+  gpu-name: H200
+  host-gpus: 8
+  assigned-gpus: 6
+  unassigned-gpus:
+    - 6
+    - 7
+rental-policy:
+  verified-host: true
+  interruptible: false
+  minimum-disk-gb: 600
+  maximum-dollars-per-hour: 38
+  hard-cap-minutes: 120
+services:
+  glm-5.3-flash:
+    engine: engine/glm53-gemma4-6xh200/glm53-flash-tp4.yaml
+    gpus:
+      - 0
+      - 1
+      - 2
+      - 3
+    port: 8001
+    model-revision: 03eb5366286afd40d2221b1d9c63a6dd1ba4832e
+    minimum-context-tokens: 131072
+    speculative-method: mtp
+    speculative-tokens: 3
+  gemma-4-31b:
+    engine: engine/glm53-gemma4-6xh200/gemma4-31b-tp2.yaml
+    gpus:
+      - 4
+      - 5
+    port: 8002
+    model-revision: d7242548c457ab4b45bd3adb8937f2659af4739d
+    draft-revision: 627c5ec1458b9086b841a91e0512fd31fd2fbbf1
+    minimum-context-tokens: 32768
+    speculative-method: mtp
+    speculative-tokens: 4
+proof:
+  simultaneous-health: true
+  simultaneous-long-context: true
+  require-needle-recovery: true
+  require-speculative-counters: true
+  require-post-probe-health: true
+  preserve-engine-logs: true
+  preserve-gpu-telemetry: true

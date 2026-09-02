@@ -1,0 +1,39 @@
+{
+  "simultaneous_wall_s": 27.866,
+  "long_context": {
+    "glm": {
+      "model": "glm-5.3-flash",
+      "local_prompt_tokens": 129500,
+      "server_prompt_tokens": 129500,
+      "completion_tokens": 12,
+      "elapsed_s": 18.535,
+      "needle": "GLM-CORESIDENT-5319",
+      "needle_found": true,
+      "finish_reason": "stop"
+    },
+    "gemma": {
+      "model": "gemma-4-31b",
+      "local_prompt_tokens": 31493,
+      "server_prompt_tokens": 31493,
+      "completion_tokens": 12,
+      "elapsed_s": 9.085,
+      "needle": "GEMMA-CORESIDENT-4317",
+      "needle_found": true,
+      "finish_reason": "stop"
+    }
+  },
+  "speculative_delta": {
+    "glm": {
+      "drafted": 9.0,
+      "accepted": 9.0
+    },
+    "gemma": {
+      "drafted": 12.0,
+      "accepted": 10.0
+    }
+  },
+  "post_probe_health": {
+    "glm": true,
+    "gemma": true
+  }
+}

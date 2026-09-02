@@ -11,6 +11,33 @@ outright on a machine with no CUDA wheel. Gate commands also include `--with
 pyyaml` because selecting `--tag` loads that release's YAML configuration
 store; commands that issue requests add `--with httpx` as well.
 
+## Before spending: name the question and campaign type
+
+Write one sentence describing the property the rental must prove, then select
+the least expensive valid profile from
+[`../deploy/HARDWARE_PROFILES.md`](../deploy/HARDWARE_PROFILES.md). Do not rent
+H200-class hardware for token counting, controller behavior, HTTP orchestration,
+or evidence collection. Use H100-class Hopper when the failure is Hopper-specific
+but does not need H200 memory. Rent the large-memory profile only when the real
+checkpoint/context fit is the question.
+
+Choose the campaign type before create:
+
+| type | use it when | failure behavior |
+| --- | --- | --- |
+| **development/tuning** | configuration, runner, memory limits, placement, or probes may change | keep the watched rental and caches; stop model process groups, save logs, push the change, relaunch |
+| **certification** | exact committed bytes and fixed probes already passed during development | collect and destroy on every outcome; no tuning inside the run |
+
+`--rent` is a **certification** controller. It is intentionally one-shot. Using
+it as a tuning loop destroys the cache after every typo or backend mismatch and
+turns one model download into many. The warm-box procedure under
+[Developing the harness itself](#developing-the-harness-itself) is mandatory for
+development, not an optional optimization.
+
+Every paid run records a cost envelope before create: hourly ceiling, hard cap,
+expected model-transfer bytes and rate, and whether a persistent/warm cache is
+being reused. No spend begins until CPU preflight is green.
+
 ## Phase 0 — static (free, local)
 
 0. Start release preparation with `fork/scripts/new-release.sh <TAG>`. When a
@@ -42,7 +69,7 @@ store; commands that issue requests add `--with httpx` as well.
 
 ## The quick check
 
-If you only have time for one thing, run the shipping topology on a rented box:
+If you only have time for one thing, run the reference topology on a rented box:
 
 ```bash
 # No HF_TOKEN. The fleet's checkpoints are public; set one only for a gated
@@ -128,7 +155,7 @@ box; the campaign collects the refusal and destroys it, but does not re-hunt.
 
 Phase 4 itself is TP2 with the all-reduce workarounds on, carrying the full
 receipt and behavioural probe set, plus the N3 arm with the workarounds off. It
-answers "will this release serve the way production needs" without the
+answers "will this release serve on the reference profile" without the
 leave-one-out matrix. Exit code 0 means every gating probe passed.
 
 Run the full `--phase 2 --phase 3 --phase 4` when you also want to know whether
@@ -223,6 +250,19 @@ box contend for CPU and PCIe and will understate throughput.
 | the instance dies mid-run | report what streamed, with an explicit truncation note |
 | the reaper fires | the session is over; whatever streamed is the result |
 
+The table above governs certification. During development, a model boot failure,
+OOM, unsupported backend, bad prompt, or probe assertion is **not** an instance
+abort. Preserve the evidence, kill only the model process groups, and iterate on
+the warm instance. Destroy a development rental only when:
+
+- its hard cap or planned session end is reached;
+- topology/hardware cannot answer the question;
+- provider, SSH, security, disk, driver, or host state is unrecoverable;
+- evidence has been collected and no further in-scope experiment remains.
+
+A transient direct-port refusal is not proof the instance is gone. Read provider
+state and retry both polling and collection while the provider reports it live.
+
 ## Changing a configuration
 
 The procedure and both layer schemas are in
@@ -240,9 +280,10 @@ is a tooling failure, not a configuration finding.
 
 ## Developing the harness itself
 
-Renting per attempt re-downloads sixty gigabytes of weights every time. When
-iterating on the gate rather than gating a release, keep **one** box warm and
-push fixes onto it:
+Renting per attempt re-downloads the weights every time. Current checkpoint sets
+can exceed 360 GB and cost more in transfer than the short GPU smoke itself.
+When iterating on the gate, an engine configuration, placement, or a probe, keep
+**one** box warm and push fixes onto it:
 
 1. Rent once — under a label of your own, so the watchdog has something to match
    — and arm it so the cost is bounded whatever happens to your shell:
@@ -276,6 +317,35 @@ push fixes onto it:
 Destroy the box the moment you stop needing it, and confirm with
 `vastai show instances`. An exit code is not evidence that anything was torn
 down.
+
+During this warm session:
+
+1. stage every pinned model revision once, in parallel;
+2. keep Hugging Face and compiler caches on the rental disk (or a bounded
+   persistent volume when several sessions are planned);
+3. give each launch a new log/result directory, but reuse checkpoint bytes;
+4. on failure, stop the complete engine process group and verify GPU memory is
+   released before relaunch;
+5. collect small evidence after each iteration, not only at session end;
+6. run the final committed bytes once more before calling the result certified.
+
+The external watchdog is what makes a warm rental safe. Automatic destruction
+after every configuration failure is not a substitute for a watchdog; it is an
+expensive loss of useful state.
+
+## Long-context and collection foot guns
+
+- Transformers processors may return a `BatchEncoding`/`Mapping`; `len(value)`
+  can count fields rather than token ids. Extract `input_ids`, handle batched
+  shape, and assert local count equals the server-reported prompt count.
+- A context proof records both actual prompt/completion tokens and the requested
+  envelope. “Configured for 128K” is not evidence that a long request ran.
+- Test prompt construction locally with tokenizer assets before a GPU rental.
+- A detached job may finish and let an SSH-oriented rental container exit before
+  the controller's next poll. Write a done marker, hold the container open for a
+  bounded collection window, and retry collection while provider state is live.
+- Classify the error text before naming OOM. An unsupported attention backend is
+  not a memory failure, even if it appears during KV-cache initialization.
 
 ## After the run
 
