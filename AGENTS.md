@@ -14,6 +14,24 @@ Run Python tooling through `uv run --no-project`.
 Keep the overlay minimal, auditable, and generated files reproducible.
 Follow the patch contract and release workflow documented in `FORK.md`.
 
+Hardware work follows the cost and privacy policy in
+`fork/deploy/HARDWARE_PROFILES.md` and `fork/bench/RUNBOOK.md`:
+
+- Use the least expensive venue that preserves the property being tested. CPU,
+  mock, or a cheaper GPU is the default; H200-class hardware is the final proof
+  venue only when memory capacity or that exact architecture is load-bearing.
+- Decide whether a rental is **development** or **certification** before create.
+  Development keeps one watched rental and model cache warm across configuration
+  failures; certification is the one-shot collect-and-destroy workflow.
+- A model/config/probe failure stops model processes, not the development
+  rental. Destroy only for a hard cap, provider/security problem, unsuitable
+  hardware, unrecoverable host state, or the final end of the session.
+- Describe hardware with anonymous capability profiles. Never infer or record
+  ownership, private location, provider host ids, IPs, or an association between
+  a profile and a person or organization.
+- Arm an external label watchdog before every paid create. Record elapsed time,
+  hourly rate, transfer bytes/rate, and whether caches were reused.
+
 ## Commands
 
 - `bash fork/bench/preflight.sh` - unit suite + dry-run gate; must print PREFLIGHT GREEN.
@@ -30,3 +48,7 @@ Follow the patch contract and release workflow documented in `FORK.md`.
 - `main` is ruleset-protected: changes land by PR and the `alignment` check must pass.
 - Script tests build throwaway repos with `fork/bench/tests/gitfixtures.py`; never run `fork/scripts/migrate-to-overlay-main.sh` without `--dry-run`.
 - vast.ai `Permission denied (publickey)` with the key present: read `vastai logs <id>` first — `bad ownership or modes` is the daemon-owned key file; the gate's `--onstart-cmd` repair (`fork/bench/vast.py`) handles it.
+- For iterative hardware work, do not use a one-shot rental campaign until the
+  exact configuration and probes have already passed on the warm development
+  rental. Repeatedly downloading large checkpoints is a harness failure, not an
+  acceptable tuning loop.

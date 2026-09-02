@@ -1,0 +1,20 @@
+# Exact co-deployment engine configuration for GPUs 4-5.
+model: /workspace/hf/models--RedHatAI--gemma-4-31B-it-FP8-block/snapshots/d7242548c457ab4b45bd3adb8937f2659af4739d
+served-model-name: gemma-4-31b
+tensor-parallel-size: 2
+reasoning-parser: gemma4
+tool-call-parser: gemma4
+enable-auto-tool-choice: true
+kv-cache-dtype: fp8
+enable-prefix-caching: true
+max-model-len: 32768
+# Do not let the default sequence count inflate capture/workspace memory.
+max-num-seqs: 4
+# A 32K Gemma request needs roughly 2.4 GiB/GPU of page-aware cache. 16 GiB
+# carries four with margin while preserving ample room for draft and graphs.
+kv-cache-memory-bytes: 17179869184
+speculative-config:
+  method: mtp
+  model: /workspace/hf/models--google--gemma-4-31B-it-assistant/snapshots/627c5ec1458b9086b841a91e0512fd31fd2fbbf1
+  num_speculative_tokens: 4
+

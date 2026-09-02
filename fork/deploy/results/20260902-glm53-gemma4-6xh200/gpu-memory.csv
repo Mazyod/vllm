@@ -1,0 +1,9 @@
+assignment,idle_used_mib,peak_used_mib,free_at_peak_mib
+glm_gpu0,89809,93771,49387
+glm_gpu1,89857,93803,49355
+glm_gpu2,89857,93803,49355
+glm_gpu3,89809,93773,49385
+gemma_gpu4,37163,38047,105111
+gemma_gpu5,37163,38047,105111
+spare_gpu6,0,0,143158
+spare_gpu7,0,0,143158

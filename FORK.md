@@ -70,6 +70,14 @@ release under [`fork/bench/configs/`](fork/bench/configs/), indexed by
 `vllm serve --config` against those bytes and records their digest in every
 result, so a number always names the configuration that produced it.
 
+**Hardware evidence is capability-scoped, private, and cost-bounded.** Deployment
+records name anonymous profiles such as `hopper-pcie-4-large`; they do not claim
+that a person or organization owns that shape, and they carry no private
+location, host id, IP, or provider account detail. Experiments use the cheapest
+venue that can reproduce the property under test. Configuration development
+reuses one watched rental and its model cache; a one-shot rent/collect/destroy
+campaign is reserved for certification after the configuration is known.
+
 ## The model: pristine tag + documented patch commits
 
 vLLM is a monster to build from source, so we do **not** compile it. Instead:

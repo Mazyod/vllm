@@ -297,3 +297,78 @@ path the runbook actually told operators to take.
     is a sample that cannot distinguish a cause from noise. A fix that stands
     on documented behaviour is worth shipping; it is still not a diagnosis, and
     an investigation stays open until the observed signature is accounted for.
+
+## The $82 smoke test (2026-09-02)
+
+### A certification controller was used as a development loop
+
+The goal was one co-resident GLM+Gemma proof. Five paid rentals were created,
+each staging roughly 363 GB, even though the final simultaneous inference took
+28 seconds. Approximate total: $46 of instance time and $36 of repeated network
+transfer. The successful run itself was about $13 of instance time plus one
+transfer. Most of the difference was avoidable.
+
+The root mistake was workflow selection. `rent(...)` is designed for release
+certification: enter one rental scope, run immutable probes, collect, destroy in
+`finally`. That safety property became destructive when configuration, runner,
+and probe code were still changing. Each ordinary development failure deleted a
+valuable checkpoint/compiler cache and forced the next attempt to start cold.
+
+The repository already said “iterate on one warm box.” It was treated as advice
+instead of a precondition. A detached hard-cap watchdog would have bounded cost
+without destroying the useful state after each failed model process.
+
+### The failure chain
+
+1. Gemma selected a V2 FlashInfer draft path that explicitly refuses
+   sliding-window attention on SM90. It was described initially as memory
+   pressure even though the exception was `NotImplementedError`, not OOM.
+2. A transient refusal on a direct SSH port was treated as instance death. The
+   provider still reported the rental live; the controller destroyed it anyway.
+3. The long-prompt sizer called `len()` on Transformers `BatchEncoding`. That
+   counted fields (`input_ids`, `attention_mask`) rather than tokens, so the
+   first proof stopped short of its context threshold.
+4. Replacing `dict` with an exact-type check did not fix it: `BatchEncoding` is
+   dictionary-like, not necessarily a `dict`. The doubling search kept building
+   larger strings until host RAM made the bug obvious. The correct contract is
+   `Mapping`, extract `input_ids`, then interpret batched shape.
+5. A detached proof wrote its result and exited between ten-second polls. The
+   SSH-oriented container stopped before rsync, so a successful result was lost.
+   A done marker without a bounded post-result hold is still a race.
+6. GPU placement was treated as exclusive territory: four devices “consumed” by
+   one model plus two by another. Multi-model packing should first overlap TP
+   groups within one memory budget; adding devices is a conclusion, not a
+   starting assumption.
+
+### What a clean run should look like
+
+Use CPU/mock for prompt sizing, `BatchEncoding`, controller state, and evidence
+format. Use the cheapest GPU that preserves a backend or lifecycle question.
+Stage pinned checkpoints once on one watched development rental, push changes,
+and restart only engine process groups. When the configuration and probes pass,
+launch the exact committed bytes once through the certification controller.
+
+For the four-GPU packing initiative, test `hopper-pcie-4-large` first and a
+fabric-connected four-GPU fallback only when necessary. The profile describes a
+capability; it must not be associated with private ownership or location.
+
+18. **Choose the least expensive venue that preserves the property.** Stronger
+    hardware can hide the memory/topology failure and always costs more.
+19. **Declare development or certification before create.** If arguments or
+    probes may change, a one-shot certification campaign is premature.
+20. **A model failure is not a rental failure.** Save the log, kill the process
+    group, verify memory release, and relaunch on the warm development rental.
+21. **Checkpoint and compiler caches are paid assets.** Destroying them between
+    iterations must be an explicit decision, not a `finally` side effect.
+22. **GPU placement may overlap.** Prove packing and explicit memory policies
+    before summing models' isolated GPU counts.
+23. **Token counts need two witnesses.** Extract `input_ids` through the
+    `Mapping` interface and require local count to equal server usage.
+24. **Provider state outranks one failed connection.** Retry polling and
+    collection while the provider reports the instance live.
+25. **A result needs a collection window.** Write the done marker, hold the
+    container open for a bounded interval, collect, then tear down.
+26. **Hardware profiles are anonymous capabilities.** Never commit ownership,
+    private location, host/offer/instance ids, IPs, endpoints, or GPU UUIDs.
+27. **Account for transfer separately from GPU time.** Record bytes and rate;
+    repeated checkpoint download can exceed the smoke's compute cost.

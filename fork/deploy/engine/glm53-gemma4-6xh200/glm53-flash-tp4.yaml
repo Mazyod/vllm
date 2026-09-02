@@ -1,0 +1,19 @@
+# Exact co-deployment engine configuration for GPUs 0-3.
+model: /workspace/hf/models--zai-org--GLM-5.3-Flash/snapshots/03eb5366286afd40d2221b1d9c63a6dd1ba4832e
+served-model-name: glm-5.3-flash
+tensor-parallel-size: 4
+# Hopper cannot run this NoPE model's packed FP8 KV path. Native FP8 describes
+# the checkpoint weights; KV must remain BF16 (`auto`) on H200.
+kv-cache-dtype: auto
+max-model-len: 131072
+max-num-seqs: 3
+# Isolated hardware proved this page-aware budget admits three near-128K
+# requests while leaving roughly 48 GiB/GPU free. Co-deployment needs one.
+kv-cache-memory-bytes: 6442450944
+speculative-config:
+  method: mtp
+  num_speculative_tokens: 3
+reasoning-parser: glm45
+tool-call-parser: glm47
+enable-auto-tool-choice: true
+
