@@ -5,6 +5,7 @@
 
 import pytest
 
+from fork.bench.profiles import load
 from fork.bench.receipts import ProbeResult
 from fork.bench.verdict import (
     PATCH_BROKEN,
@@ -109,7 +110,7 @@ def test_exit_code_ignores_a_negative_probe_crashing_as_predicted():
 def test_exit_code_ignores_an_exploratory_probe_whose_outcome_is_unknown():
     """N2 answers an open question; the image does not ship the V2 runner."""
     results = [ProbeResult("R5", "gemma-v2-spec-kv-dtype", False, "crashed")]
-    assert exit_code(results, {}) == 0
+    assert exit_code(results, {}, load("v0.28.0")) == 0
 
 
 def test_exit_code_gates_on_an_unrecognised_profile():
@@ -220,7 +221,7 @@ def test_a_profile_that_promised_to_serve_and_crashed_still_names_the_receipt():
             {"crash_signature": _CRASH_SIGNATURE},
         )
     ]
-    assert expectation_mismatches(results) == [
+    assert expectation_mismatches(results, load("v0.28.0")) == [
         ("gemma-v2-spec-kv-dtype", "serves", "R5 failed", detail)
     ]
 
@@ -235,7 +236,7 @@ def test_a_profile_that_promised_to_serve_and_did_not_is_a_mismatch():
     it declared serves, so the failure was not expected at all."""
     detail = "served=False crashed=True lines=97"
     results = [ProbeResult("R5", "gemma-v2-spec-kv-dtype", False, detail)]
-    assert expectation_mismatches(results) == [
+    assert expectation_mismatches(results, load("v0.28.0")) == [
         ("gemma-v2-spec-kv-dtype", "serves", "R5 failed", detail)
     ]
 
@@ -254,7 +255,7 @@ def test_a_failed_receipt_names_the_receipt_rather_than_a_cause(detail):
     would contradict the probes row for the same profile, so the row reports
     the receipt and carries R5's own detail."""
     results = [ProbeResult("R5", "gemma-v2-spec-kv-dtype", False, detail)]
-    assert expectation_mismatches(results) == [
+    assert expectation_mismatches(results, load("v0.28.0")) == [
         ("gemma-v2-spec-kv-dtype", "serves", "R5 failed", detail)
     ]
 

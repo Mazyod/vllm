@@ -99,8 +99,8 @@ vllm/vllm-openai:<TAG>   (prebuilt upstream release image)
 The pointer from `main` to release source is `fork/patches/RELEASE`:
 
 ```text
-tag: v0.28.0
-release-sha: 2cf0a6915ce544dc493a0990f2ea38d81601128a
+tag: v0.29.0
+release-sha: 98dff2a81d747d1dba01a47f939f48c3526d4206
 ```
 
 `export-patches.sh` writes that pointer with `series`, `upstream.map`, and one
@@ -119,6 +119,11 @@ Exit-Criterion: <when this patch is dropped>
 The image workflow reads only `RELEASE`, builds from the matching upstream tag,
 and labels the candidate with the overlay SHA, release SHA, patch-export hash,
 and upstream image digest.
+
+The `v0.29.0` candidate also needs no patches. Upstream includes the XGrammar
+termination fix (#52805) and speculative reasoning-boundary logging fix (#53046).
+See the [release preparation record](fork/bench/configs/v0.29.0/results/20260909-preparation.md)
+for validation status; source inclusion is not a runtime gate pass.
 
 ## Lockstep with upstream releases
 
@@ -179,7 +184,8 @@ patch -p1 --dry-run --force < /path/to/fork/patches/<patch-file>
 ## The image
 
 - **Registry / name:** `docker.io/openimage/vllm-openai-audio`
-- **Tags:** the upstream base tag (currently `v0.28.0`) and `latest`.
+- **Tags:** `v0.28.0` and `latest` remain the certified images while the
+  `v0.29.0` candidate is prepared and gated.
 - **Drop-in:** entrypoint is inherited from `vllm/vllm-openai`, so it replaces
   the stock image directly.
 - **CI:** [`build-vllm-audio.yml`](.github/workflows/build-vllm-audio.yml) —

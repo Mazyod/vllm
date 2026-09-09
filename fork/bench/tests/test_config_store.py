@@ -32,7 +32,6 @@ LEGACY_FLEET_PATH = (
 ENGINE_BY_PROFILE = {
     "gemma-full": "engine/gemma-tp1.yaml",
     "gemma-v2-kvfp8": "engine/gemma-tp1.yaml",
-    "gemma-v2-spec-kv-dtype": "engine/gemma-tp1-v2-spec-kv-dtype.yaml",
     "qwen-full": "engine/qwen-tp1.yaml",
     "gemma-perf": "engine/gemma-tp2.yaml",
     "qwen-perf": "engine/qwen-tp2.yaml",
@@ -264,6 +263,8 @@ def _parse_effective_namespace(parser, argv: list[str]) -> dict[str, Any]:
 def test_fleet_preserves_every_profile_and_its_non_engine_metadata():
     fleet = _load_yaml(FLEET_PATH)["profiles"]
     witness = json.loads(LEGACY_FLEET_PATH.read_text(encoding="utf-8"))["profiles"]
+    # Retired after two releases reproduced the same failure as gemma-v2-kvfp8.
+    witness.pop("gemma-v2-spec-kv-dtype")
     expected_ids = set(witness)
     assert set(fleet) == expected_ids
     assert set(ENGINE_BY_PROFILE) == expected_ids
@@ -338,7 +339,9 @@ def test_every_profile_has_pure_argv_parity(profile: profiles.Profile):
 def test_the_frozen_argv_covers_every_profile():
     """A profile missing from the oracle would pass parity by not being asked."""
     frozen = json.loads(LEGACY_ARGV_PATH.read_text(encoding="utf-8"))["profiles"]
-    assert set(frozen) == {profile.id for profile in profiles.PROFILES}
+    assert set(frozen) - {"gemma-v2-spec-kv-dtype"} == {
+        profile.id for profile in profiles.PROFILES
+    }
 
 
 def test_a_changed_engine_value_breaks_parity(tmp_path: Path):
