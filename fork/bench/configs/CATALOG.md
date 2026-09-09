@@ -43,17 +43,17 @@ architecture.
 | v0.28.0 | [`qwen-tp2-noflags.yaml`](v0.28.0/engine/qwen-tp2-noflags.yaml) | negative | — | [`fleet.yaml`](v0.28.0/fleet.yaml) |
 | v0.28.0 | [`deepseek-v4-tp2-h200-dspark.yaml`](v0.28.0/engine/deepseek-v4-tp2-h200-dspark.yaml) | off-gate (YAML-equivalent copy launched) | 252 decode tok/s @conc1 / 930 @conc8, DSpark k=3, NVLink venue, conc 1–8 only | [DSpark validation](v0.28.0/results/20260901-dsv4-dspark.md#measured-configurations) |
 | v0.28.0 | [`deepseek-v4-tp2-h200.yaml`](v0.28.0/engine/deepseek-v4-tp2-h200.yaml) | control (YAML-equivalent copy launched) | 132 decode tok/s @conc1 / 678 @conc8, spec off, PIECEWISE | [DSpark validation](v0.28.0/results/20260901-dsv4-dspark.md#piecewise-against-the-engine-default) |
-| v0.29.0 | [`gemma-tp2.yaml`](v0.29.0/engine/gemma-tp2.yaml) | unvalidated candidate | — | [preparation](v0.29.0/results/20260909-preparation.md) |
-| v0.29.0 | [`qwen-tp2.yaml`](v0.29.0/engine/qwen-tp2.yaml) | unvalidated candidate | — | [preparation](v0.29.0/results/20260909-preparation.md) |
-| v0.29.0 | [`gemma-tp2-kvauto.yaml`](v0.29.0/engine/gemma-tp2-kvauto.yaml) | unvalidated control | — | [preparation](v0.29.0/results/20260909-preparation.md) |
-| v0.29.0 | [`gemma-tp2-nospec.yaml`](v0.29.0/engine/gemma-tp2-nospec.yaml) | unvalidated control | — | [preparation](v0.29.0/results/20260909-preparation.md) |
-| v0.29.0 | `gemma-full` / [`gemma-tp1.yaml`](v0.29.0/engine/gemma-tp1.yaml) | unvalidated candidate | — | [preparation](v0.29.0/results/20260909-preparation.md) |
-| v0.29.0 | `gemma-v2-kvfp8` / [`gemma-tp1.yaml`](v0.29.0/engine/gemma-tp1.yaml) | unvalidated candidate | — | [preparation](v0.29.0/results/20260909-preparation.md) |
-| v0.29.0 | `gemma-perf-tp1x2` / [`gemma-tp1.yaml`](v0.29.0/engine/gemma-tp1.yaml) | unvalidated control | — | [preparation](v0.29.0/results/20260909-preparation.md) |
-| v0.29.0 | `qwen-full` / [`qwen-tp1.yaml`](v0.29.0/engine/qwen-tp1.yaml) | unvalidated candidate | — | [preparation](v0.29.0/results/20260909-preparation.md) |
-| v0.29.0 | [`qwen-tp2-noflags.yaml`](v0.29.0/engine/qwen-tp2-noflags.yaml) | unvalidated candidate | — | [preparation](v0.29.0/results/20260909-preparation.md) |
-| v0.29.0 | [`deepseek-v4-tp2-h200-dspark.yaml`](v0.29.0/engine/deepseek-v4-tp2-h200-dspark.yaml) | unvalidated candidate | — | [preparation](v0.29.0/results/20260909-preparation.md) |
-| v0.29.0 | [`deepseek-v4-tp2-h200.yaml`](v0.29.0/engine/deepseek-v4-tp2-h200.yaml) | unvalidated control | — | [preparation](v0.29.0/results/20260909-preparation.md) |
+| v0.29.0 | [`gemma-tp2.yaml`](v0.29.0/engine/gemma-tp2.yaml) | shipping | 174.1 decode tok/s | [gate](v0.29.0/results/20260909-gate.md) |
+| v0.29.0 | [`qwen-tp2.yaml`](v0.29.0/engine/qwen-tp2.yaml) | shipping | 142.4 decode tok/s | [gate](v0.29.0/results/20260909-gate.md) |
+| v0.29.0 | [`gemma-tp2-kvauto.yaml`](v0.29.0/engine/gemma-tp2-kvauto.yaml) | control | 176.5 decode tok/s | [gate](v0.29.0/results/20260909-gate.md) |
+| v0.29.0 | [`gemma-tp2-nospec.yaml`](v0.29.0/engine/gemma-tp2-nospec.yaml) | control | 71.2 decode tok/s | [gate](v0.29.0/results/20260909-gate.md) |
+| v0.29.0 | `gemma-full` / [`gemma-tp1.yaml`](v0.29.0/engine/gemma-tp1.yaml) | gating | — | [gate](v0.29.0/results/20260909-gate.md) |
+| v0.29.0 | `gemma-v2-kvfp8` / [`gemma-tp1.yaml`](v0.29.0/engine/gemma-tp1.yaml) | negative | — | [gate](v0.29.0/results/20260909-gate.md) |
+| v0.29.0 | `gemma-perf-tp1x2` / [`gemma-tp1.yaml`](v0.29.0/engine/gemma-tp1.yaml) | control | 127.7 decode tok/s, two replicas | [gate](v0.29.0/results/20260909-gate.md) |
+| v0.29.0 | `qwen-full` / [`qwen-tp1.yaml`](v0.29.0/engine/qwen-tp1.yaml) | gating | — | [gate](v0.29.0/results/20260909-gate.md) |
+| v0.29.0 | [`qwen-tp2-noflags.yaml`](v0.29.0/engine/qwen-tp2-noflags.yaml) | negative | — | [gate](v0.29.0/results/20260909-gate.md) |
+| v0.29.0 | [`deepseek-v4-tp2-h200-dspark.yaml`](v0.29.0/engine/deepseek-v4-tp2-h200-dspark.yaml) | off-gate, unvalidated | — | [gate](v0.29.0/results/20260909-gate.md) |
+| v0.29.0 | [`deepseek-v4-tp2-h200.yaml`](v0.29.0/engine/deepseek-v4-tp2-h200.yaml) | off-gate control, unvalidated | — | [gate](v0.29.0/results/20260909-gate.md) |
 
 ## Pending release
 

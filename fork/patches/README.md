@@ -37,7 +37,9 @@ traffic through the patchless candidate (baseline:
 rules 8–11 for why one witness is not enough. The empty series held at
 `v0.28.0`: the 2026-08-30 gate passed every gating probe on the patchless
 candidate (baseline: `fork/bench/baselines/v0.28.0-20260830.json`, record:
-`fork/bench/configs/v0.28.0/results/20260830-attempt4.md`).
+`fork/bench/configs/v0.28.0/results/20260830-attempt4.md`). The series
+also remains empty at `v0.29.0`: all 38 required probes and 12 structured
+streams passed; see the [gate record](../bench/configs/v0.29.0/results/20260909-gate.md).
 
 Retired at `v0.27.1` (patch files and notes live in git history at the
 `fork/bump-v0.27.1` merge):

@@ -1,0 +1,105 @@
+{
+  "config": {
+    "fleet": {
+      "path": "fork/bench/configs/v0.29.0/fleet.yaml",
+      "sha256": "1db6df51e0439abd56b30bc0129313429710b4a57c977e9bb2a6d5548a025dd0"
+    },
+    "profiles": {
+      "gemma-perf": {
+        "path": "fork/bench/configs/v0.29.0/engine/gemma-tp2.yaml",
+        "sha256": "21a5238af91efae7926b21a8668c8287ec284582b06c074f129647c1d4838c42"
+      },
+      "gemma-perf-kvauto": {
+        "path": "fork/bench/configs/v0.29.0/engine/gemma-tp2-kvauto.yaml",
+        "sha256": "55222ba73cae7c30811f8ced31ae96fdb0ec9df62e41e5a0ec817b007617e1c9"
+      },
+      "gemma-perf-nospec": {
+        "path": "fork/bench/configs/v0.29.0/engine/gemma-tp2-nospec.yaml",
+        "sha256": "0bce38d1b750ea181f71d5fb18d9766c419de76ca5b789ce789e5a229c955248"
+      },
+      "gemma-perf-tp1x2": {
+        "path": "fork/bench/configs/v0.29.0/engine/gemma-tp1.yaml",
+        "sha256": "0cc8134da66ffda0753824740e7a079abd4490c01c8f97cbb9165ddb86ab7459"
+      },
+      "gemma-tp2": {
+        "path": "fork/bench/configs/v0.29.0/engine/gemma-tp2.yaml",
+        "sha256": "21a5238af91efae7926b21a8668c8287ec284582b06c074f129647c1d4838c42"
+      },
+      "qwen-perf": {
+        "path": "fork/bench/configs/v0.29.0/engine/qwen-tp2.yaml",
+        "sha256": "58e8bc17917ddeb09380e63b7718d1794854151e8c45c7ce9a4de36750115894"
+      },
+      "qwen-tp2": {
+        "path": "fork/bench/configs/v0.29.0/engine/qwen-tp2.yaml",
+        "sha256": "58e8bc17917ddeb09380e63b7718d1794854151e8c45c7ce9a4de36750115894"
+      },
+      "qwen-tp2-noflags": {
+        "path": "fork/bench/configs/v0.29.0/engine/qwen-tp2-noflags.yaml",
+        "sha256": "d5288f5ad5e47b02bb665160133d579c10db45e1900ea4cab10bb6e20dcb2408"
+      }
+    }
+  },
+  "machine": {
+    "all_reduce_path": "native",
+    "driver": "590.48.01",
+    "gpu": "NVIDIA H100 PCIe",
+    "gpu_count": "2",
+    "interconnect": "PXB"
+  },
+  "perf": {
+    "gemma-perf": {
+      "acceptance_rate": 0.5461062693280855,
+      "decode_tok_s": 174.09676913821926,
+      "elapsed_s": 1.470446587074548,
+      "n": 4,
+      "throughput_conc1": 99.41887901468162,
+      "throughput_conc32": 568.8851056048837,
+      "throughput_conc8": 428.0958559368917,
+      "ttft_p50": 0.28033914300613105,
+      "ttft_p99": 0.3120435469318181
+    },
+    "gemma-perf-kvauto": {
+      "acceptance_rate": 0.5623741007194245,
+      "decode_tok_s": 176.53297135346986,
+      "elapsed_s": 1.4501540309283882,
+      "n": 4,
+      "throughput_conc1": 161.3933444489178,
+      "throughput_conc32": 1660.3963766179584,
+      "throughput_conc8": 473.52229103840517,
+      "ttft_p50": 0.23125009378418326,
+      "ttft_p99": 0.24865025305189192
+    },
+    "gemma-perf-nospec": {
+      "decode_tok_s": 71.16417056521908,
+      "elapsed_s": 3.597315867897123,
+      "n": 4,
+      "throughput_conc1": 68.3912329068025,
+      "throughput_conc32": 987.7627558866353,
+      "throughput_conc8": 356.2174478961897,
+      "ttft_p50": 0.24799927999265492,
+      "ttft_p99": 0.2861019179690629
+    },
+    "gemma-perf-tp1x2": {
+      "decode_tok_s": 127.74013995742537,
+      "elapsed_s": 2.0040685730054975,
+      "n": 4,
+      "throughput_conc1": 90.69409280083848,
+      "throughput_conc32": 1484.706089630601,
+      "throughput_conc8": 445.4640585975984,
+      "ttft_p50": 0.312133853090927,
+      "ttft_p99": 0.5065859861206263
+    },
+    "qwen-perf": {
+      "acceptance_rate": 0.7591118558860495,
+      "decode_tok_s": 142.39735079854353,
+      "elapsed_s": 1.797786254901439,
+      "n": 4,
+      "throughput_conc1": 135.1230954437817,
+      "throughput_conc32": 879.6384053433233,
+      "throughput_conc8": 452.026626968687,
+      "ttft_p50": 0.21647354192100465,
+      "ttft_p99": 0.2400651730131358
+    }
+  },
+  "tag": "v0.29.0"
+}

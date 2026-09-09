@@ -1,7 +1,7 @@
 # v0.29.0 release preparation
 
-Status: candidate preparation; runtime validation and promotion are pending.
-No v0.29.0 performance or hardware certification is claimed here.
+This is the preparation record. Runtime validation is complete in the
+[release gate record](20260909-gate.md), which supersedes the pending checks below.
 
 ## Source and artifact
 
