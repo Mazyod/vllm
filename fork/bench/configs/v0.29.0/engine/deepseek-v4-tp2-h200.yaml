@@ -1,0 +1,6 @@
+# Unvalidated on v0.29.0; argument values carried from v0.28.0.
+model: deepseek-ai/DeepSeek-V4-Flash-0731
+tensor-parallel-size: 2
+kv-cache-dtype: fp8
+compilation-config:
+  cudagraph_mode: PIECEWISE
