@@ -127,10 +127,11 @@ The image workflow reads only `RELEASE`, builds from the matching upstream tag,
 and labels the candidate with the overlay SHA, release SHA, patch-export hash,
 and upstream image digest.
 
-The `v0.29.0` candidate also needs no patches. Upstream includes the XGrammar
+The `v0.29.0` gate passed without source patches. Upstream includes the XGrammar
 termination fix (#52805) and speculative reasoning-boundary logging fix (#53046).
-See the [release preparation record](fork/bench/configs/v0.29.0/results/20260909-preparation.md)
-for validation status; source inclusion is not a runtime gate pass.
+The [release gate record](fork/bench/configs/v0.29.0/results/20260909-gate.md)
+records all required checks passing, including structured streams and the
+corrected PCIe collective environment.
 
 ## Lockstep with upstream releases
 
@@ -191,8 +192,8 @@ patch -p1 --dry-run --force < /path/to/fork/patches/<patch-file>
 ## The image
 
 - **Registry / name:** `docker.io/openimage/vllm-openai-audio`
-- **Tags:** `v0.28.0` and `latest` remain the certified images while the
-  `v0.29.0` candidate is prepared and gated.
+- **Validated version:** `v0.29.0`; promotion uses the digest in the gate record.
+  `latest` remains on `v0.28.0` pending deployment environment confirmation.
 - **Drop-in:** entrypoint is inherited from `vllm/vllm-openai`, so it replaces
   the stock image directly.
 - **CI:** [`build-vllm-audio.yml`](.github/workflows/build-vllm-audio.yml) —
