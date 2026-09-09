@@ -149,6 +149,11 @@ previous benchmark configuration without `results/`, and bumps all four pins.
 Review and commit that overlay branch, push the release work branch, and build a
 candidate.
 
+After building a candidate, keep gate records outside `fork/patches/`: the
+image fingerprint covers every file there, including `README.md`. Changing
+that directory requires a new candidate; do not alter it while documenting a
+completed gate for an existing digest.
+
 After the gate passes, dispatch promotion with `promote_from` (the candidate
 tag), `publish_tags`, `promote_latest`, and `gate_record` (the gate-record
 path). Promotion verifies the candidate's labels against `main`, creates
