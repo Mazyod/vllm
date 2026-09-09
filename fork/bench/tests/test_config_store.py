@@ -265,6 +265,16 @@ def test_fleet_preserves_every_profile_and_its_non_engine_metadata():
     witness = json.loads(LEGACY_FLEET_PATH.read_text(encoding="utf-8"))["profiles"]
     # Retired after two releases reproduced the same failure as gemma-v2-kvfp8.
     witness.pop("gemma-v2-spec-kv-dtype")
+    # Preserve the pre-v0.29.0 PCIe collective path after #52998 changed defaults.
+    for name in (
+        "gemma-perf",
+        "qwen-perf",
+        "gemma-perf-nospec",
+        "gemma-perf-kvauto",
+        "gemma-tp2",
+        "qwen-tp2",
+    ):
+        witness[name]["env"]["VLLM_ALLREDUCE_USE_FLASHINFER"] = "0"
     expected_ids = set(witness)
     assert set(fleet) == expected_ids
     assert set(ENGINE_BY_PROFILE) == expected_ids

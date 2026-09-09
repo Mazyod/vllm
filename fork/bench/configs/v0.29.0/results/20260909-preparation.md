@@ -28,8 +28,13 @@ structured output, and attention backends. Runtime testing is warranted:
   their explicit V1 setting; the Gemma V2 diagnostic remains. The SM90
   FlashInfer sliding-window rejection is still present in the tag.
 - FlashInfer standalone all-reduce becomes the default (#52998), independently
-  of `disable-custom-all-reduce`. The existing PCIe workarounds remain;
-  inspect the actual collective path during TP2 testing.
+  of `disable-custom-all-reduce`. The first development run confirmed
+  `FLASHINFER,PYNCCL` dispatch and a TRT-LLM fallback after multicast was
+  unavailable. Performance passed, but phase 4 R3 failed: the gate explicitly
+  requires the optimized collective paths to be absent. The six affected TP2
+  profiles now set `VLLM_ALLREDUCE_USE_FLASHINFER=0` in `fleet.yaml`, preserving
+  the previously tested path. Their runtime evidence must be collected again;
+  the initial FlashInfer performance numbers are exploratory, not certification.
 - Gemma MTP CUDA graphs (#53884), reasoning-end detection (#54089), and Gemma
   parser behavior (#53657, #52430) also changed.
 - `Glm5NextForConditionalGeneration` is absent from this tag; the pending GLM
@@ -39,6 +44,11 @@ structured output, and attention backends. Runtime testing is warranted:
 
 Engine argument values are carried from v0.28.0. Historical configurations and
 measurements stay unchanged. The new release:
+
+- Keeps the engine YAML bytes unchanged after launch. The PCIe correction is
+  an environment-only change in `fleet.yaml`; phase 2 and the TP1 replica
+  control are unaffected. Deployment must apply the fleet environment along
+  with the engine YAML.
 
 - Retires `gemma-v2-spec-kv-dtype` and its engine file, following the
   [v0.28.0 decision](../../v0.28.0/results/20260830-attempt4.md#carry-into-the-next-release-directory).

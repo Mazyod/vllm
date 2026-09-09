@@ -32,6 +32,7 @@ def test_tp2_profiles_carry_both_all_reduce_flags_unless_testing_their_absence()
             continue
         engine = profiles.engine_settings(profile)
         assert engine["disable-custom-all-reduce"] is True, profile.id
+        assert profile.env["VLLM_ALLREDUCE_USE_FLASHINFER"] == "0", profile.id
         pass_config = engine["compilation-config"]["pass_config"]
         assert pass_config["fuse_allreduce_rms"] is False, profile.id
 

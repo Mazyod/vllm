@@ -44,7 +44,7 @@ profiles:
   gemma-perf:
     engine: engine/gemma-tp2.yaml
     phase: 3
-    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO}
+    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO, VLLM_ALLREDUCE_USE_FLASHINFER: "0"}
     gpus: [0, 1]
     replicas: 1
     revert_patches: []
@@ -58,7 +58,7 @@ profiles:
   qwen-perf:
     engine: engine/qwen-tp2.yaml
     phase: 3
-    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO}
+    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO, VLLM_ALLREDUCE_USE_FLASHINFER: "0"}
     gpus: [0, 1]
     replicas: 1
     revert_patches: []
@@ -72,7 +72,7 @@ profiles:
   gemma-perf-nospec:
     engine: engine/gemma-tp2-nospec.yaml
     phase: 3
-    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO}
+    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO, VLLM_ALLREDUCE_USE_FLASHINFER: "0"}
     gpus: [0, 1]
     replicas: 1
     revert_patches: []
@@ -100,7 +100,7 @@ profiles:
   gemma-perf-kvauto:
     engine: engine/gemma-tp2-kvauto.yaml
     phase: 3
-    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO}
+    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO, VLLM_ALLREDUCE_USE_FLASHINFER: "0"}
     gpus: [0, 1]
     replicas: 1
     revert_patches: []
@@ -114,7 +114,7 @@ profiles:
   gemma-tp2:
     engine: engine/gemma-tp2.yaml
     phase: 4
-    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO}
+    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO, VLLM_ALLREDUCE_USE_FLASHINFER: "0"}
     gpus: [0, 1]
     replicas: 1
     revert_patches: []
@@ -128,7 +128,7 @@ profiles:
   qwen-tp2:
     engine: engine/qwen-tp2.yaml
     phase: 4
-    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO}
+    env: {VLLM_USE_V2_MODEL_RUNNER: "0", VLLM_LOGGING_LEVEL: INFO, VLLM_ALLREDUCE_USE_FLASHINFER: "0"}
     gpus: [0, 1]
     replicas: 1
     revert_patches: []

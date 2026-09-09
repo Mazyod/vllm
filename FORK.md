@@ -70,6 +70,13 @@ release under [`fork/bench/configs/`](fork/bench/configs/), indexed by
 `vllm serve --config` against those bytes and records their digest in every
 result, so a number always names the configuration that produced it.
 
+The fleet's `env` values are part of the deployment configuration too. On
+`v0.29.0`, the Gemma Hopper FP8 path still needs
+`VLLM_USE_V2_MODEL_RUNNER=0`. The TP2 profiles also set
+`VLLM_ALLREDUCE_USE_FLASHINFER=0`: upstream enabled standalone FlashInfer
+all-reduce by default, independently of the two existing engine workarounds.
+An engine YAML alone does not apply these environment settings.
+
 **Hardware evidence is capability-scoped, private, and cost-bounded.** Deployment
 records name anonymous profiles such as `hopper-pcie-4-large`; they do not claim
 that a person or organization owns that shape, and they carry no private
