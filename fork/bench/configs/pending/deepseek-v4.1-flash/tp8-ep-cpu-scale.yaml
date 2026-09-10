@@ -1,0 +1,23 @@
+# Throughput sweep through concurrency 128 on the same eight-GPU EP configuration.
+model: /workspace/models/v41
+served-model-name: dsv41
+tokenizer-mode: deepseek_v41
+tensor-parallel-size: 8
+max-model-len: 32768
+max-num-seqs: 128
+max-num-batched-tokens: 4096
+kv-cache-memory-bytes: 2147483648
+no-enable-prefix-caching: true
+engram-config:
+  cpu_offload: true
+compilation-config:
+  cudagraph_capture_sizes:
+  - 1
+  - 2
+  - 4
+  - 8
+  - 16
+  - 32
+  - 64
+  - 128
+enable-expert-parallel: true
