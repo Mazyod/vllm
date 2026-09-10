@@ -1,4 +1,4 @@
-# Candidate for the pinned V4.1 development image; not release-certified.
+# Candidate, not release-certified. Capture draft (5) and verify (6) tokens per request through concurrency 32.
 model: /workspace/models/v41
 served-model-name: dsv41
 tokenizer-mode: deepseek_v41
@@ -15,9 +15,21 @@ compilation-config:
   - 1
   - 2
   - 4
+  - 5
+  - 6
   - 8
+  - 10
+  - 12
   - 16
+  - 20
+  - 24
   - 32
+  - 40
+  - 48
+  - 80
+  - 96
+  - 160
+  - 192
 speculative-config:
   method: dspark
   num_speculative_tokens: 5
