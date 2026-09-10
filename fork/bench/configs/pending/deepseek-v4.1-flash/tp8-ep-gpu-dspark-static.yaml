@@ -1,0 +1,39 @@
+# EP comparison for the DSpark draft/verification workload.
+model: /workspace/models/v41
+served-model-name: dsv41
+tokenizer-mode: deepseek_v41
+tensor-parallel-size: 8
+max-model-len: 32768
+max-num-seqs: 32
+max-num-batched-tokens: 4096
+kv-cache-memory-bytes: 2147483648
+no-enable-prefix-caching: true
+engram-config:
+  cpu_offload: false
+compilation-config:
+  cudagraph_capture_sizes:
+  - 1
+  - 2
+  - 4
+  - 5
+  - 6
+  - 8
+  - 10
+  - 12
+  - 16
+  - 20
+  - 24
+  - 32
+  - 40
+  - 48
+  - 80
+  - 96
+  - 160
+  - 192
+speculative-config:
+  method: dspark
+  num_speculative_tokens: 5
+  draft_sample_method: probabilistic
+  rejection_sample_method: block
+  enable_adaptive_verification: false
+enable-expert-parallel: true
