@@ -1,0 +1,917 @@
+[
+  {
+    "arm": "tp2-pp4-cpu",
+    "status": "failed",
+    "config_sha256": "972d56441df7728bd722789447bbdce36d057441cac1e1e05f2c537e6c2e61d8",
+    "error": "engine exited before health: 1",
+    "boot_s": null,
+    "benchmarks": {},
+    "sum_per_gpu_peak_gib": 108.59375,
+    "vision_correct": null
+  },
+  {
+    "arm": "tp4-cpu",
+    "status": "failed",
+    "config_sha256": "37041776e00c35ddfdade893f53a3bca7f1463b201ecc801c05e0943ca100b8d",
+    "error": "engine exited before health: 1",
+    "boot_s": null,
+    "benchmarks": {},
+    "sum_per_gpu_peak_gib": 314.89453125,
+    "vision_correct": null
+  },
+  {
+    "arm": "tp4-ep-cpu",
+    "status": "failed",
+    "config_sha256": "f1bfa04a4b95a0db5a35dcdd4cdc07a7d9491e86e38d9fc09b2a07ab3484bc04",
+    "error": "engine exited before health: 1",
+    "boot_s": null,
+    "benchmarks": {},
+    "sum_per_gpu_peak_gib": 316.62890625,
+    "vision_correct": null
+  },
+  {
+    "arm": "tp4-ep-cpu-dspark-small",
+    "status": "passed",
+    "config_sha256": "35457e85be286b44f9aafe17b51737d4757370691c6eff7b72c7e122b9f6a6fc",
+    "error": null,
+    "boot_s": 129.05079174041748,
+    "benchmarks": {
+      "in1024-c1": {
+        "completed": 6,
+        "output_throughput": 153.42053257397563,
+        "median_tpot_ms": 5.518681413548834,
+        "median_ttft_ms": 133.0215549096465,
+        "duration": 10.011697744950652,
+        "total_input_tokens": 6144,
+        "total_output_tokens": 1536,
+        "decode_tok_s": 181.20270496950857
+      },
+      "in1024-c32": {
+        "completed": 64,
+        "output_throughput": 514.0092009869828,
+        "median_tpot_ms": 14.127093427540625,
+        "median_ttft_ms": 11183.451411314309,
+        "duration": 31.87491579633206,
+        "total_input_tokens": 65536,
+        "total_output_tokens": 16384,
+        "decode_tok_s": 70.78596918248662
+      },
+      "in1024-c8": {
+        "completed": 32,
+        "output_throughput": 493.9363398761916,
+        "median_tpot_ms": 13.20944036375366,
+        "median_ttft_ms": 149.38713051378727,
+        "duration": 16.585133221931756,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 8192,
+        "decode_tok_s": 75.703434245706
+      },
+      "in8192-c1": {
+        "completed": 4,
+        "output_throughput": 98.19096839261277,
+        "median_tpot_ms": 6.927806544391548,
+        "median_ttft_ms": 751.0555353946984,
+        "duration": 10.428657714277506,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 1024,
+        "decode_tok_s": 144.34583205986846
+      }
+    },
+    "sum_per_gpu_peak_gib": 316.6171875,
+    "idle_gpu_gib": 313.26953125,
+    "after-probes_gpu_gib": 315.81640625,
+    "natural_decode_median_tok_s": 296.9040952247363,
+    "natural_acceptance": 0.48561872909698994,
+    "vision_correct": true
+  },
+  {
+    "arm": "tp4-ep-cpu-kv1g",
+    "status": "passed",
+    "config_sha256": "2bed5daac8622a821dd7b339ad722db761c504306957a2653ba11e925ef69e07",
+    "error": null,
+    "boot_s": 120.06082129478455,
+    "benchmarks": {
+      "in1024-c1": {
+        "completed": 6,
+        "output_throughput": 109.5267205730966,
+        "median_tpot_ms": 8.646854601216083,
+        "median_ttft_ms": 131.70028245076537,
+        "duration": 14.023975080810487,
+        "total_input_tokens": 6144,
+        "total_output_tokens": 1536,
+        "decode_tok_s": 115.64898984878978
+      },
+      "in1024-c32": {
+        "completed": 64,
+        "output_throughput": 1153.1292530579444,
+        "median_tpot_ms": 22.915248444997797,
+        "median_ttft_ms": 1126.3200142420828,
+        "duration": 14.208294479176402,
+        "total_input_tokens": 65536,
+        "total_output_tokens": 16384,
+        "decode_tok_s": 43.63906428508705
+      },
+      "in1024-c8": {
+        "completed": 32,
+        "output_throughput": 578.6855901358666,
+        "median_tpot_ms": 11.770903711736787,
+        "median_ttft_ms": 534.8006910644472,
+        "duration": 14.156219093129039,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 8192,
+        "decode_tok_s": 84.95524426071877
+      },
+      "in8192-c1": {
+        "completed": 4,
+        "output_throughput": 90.06260985803087,
+        "median_tpot_ms": 8.625354756619416,
+        "median_ttft_ms": 642.897988203913,
+        "duration": 11.369868157431483,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 1024,
+        "decode_tok_s": 115.9372603466035
+      }
+    },
+    "sum_per_gpu_peak_gib": 312.90625,
+    "idle_gpu_gib": 306.73046875,
+    "after-probes_gpu_gib": 312.90234375,
+    "natural_decode_median_tok_s": 116.32396075457571,
+    "natural_acceptance": null,
+    "vision_correct": true
+  },
+  {
+    "arm": "tp4-ep-cpu-kv1g-31k",
+    "status": "passed",
+    "config_sha256": "2bed5daac8622a821dd7b339ad722db761c504306957a2653ba11e925ef69e07",
+    "error": null,
+    "boot_s": 114.0711236000061,
+    "benchmarks": {
+      "in31000-c1": {
+        "completed": 2,
+        "output_throughput": 56.26307891100007,
+        "median_tpot_ms": 8.50560575650603,
+        "median_ttft_ms": 2380.34001365304,
+        "duration": 9.100106320343912,
+        "total_input_tokens": 62000,
+        "total_output_tokens": 512,
+        "decode_tok_s": 117.56952163402227
+      }
+    },
+    "sum_per_gpu_peak_gib": 313.921875,
+    "idle_gpu_gib": 306.73046875,
+    "after-probes_gpu_gib": 313.771484375,
+    "natural_decode_median_tok_s": 116.49462700342404,
+    "natural_acceptance": null,
+    "vision_correct": true
+  },
+  {
+    "arm": "tp4-pp2-cpu",
+    "status": "failed",
+    "config_sha256": "bf8590a424addc1619b256563748d24baf7d8997fe346b4663d8fec9ab18b0a9",
+    "error": "engine exited before health: 1",
+    "boot_s": null,
+    "benchmarks": {},
+    "sum_per_gpu_peak_gib": 364.109375,
+    "vision_correct": null
+  },
+  {
+    "arm": "tp4-pp2-gpu",
+    "status": "failed",
+    "config_sha256": "0f995c1795d871f85cfc7a4193dbac0ad5179ba710deed3e7be8a8b52666f4f1",
+    "error": "engine exited before health: 1",
+    "boot_s": null,
+    "benchmarks": {},
+    "sum_per_gpu_peak_gib": 411.748046875,
+    "vision_correct": null
+  },
+  {
+    "arm": "tp8-cpu",
+    "status": "failed",
+    "config_sha256": "e76a8f36299610c50622e47fc26ba5a63e352918b9a5a12c61bcd08a37d8f68a",
+    "error": "in1024-c1 benchmark exited 1",
+    "boot_s": 228.0679497718811,
+    "benchmarks": {},
+    "sum_per_gpu_peak_gib": 441.0390625,
+    "vision_correct": null
+  },
+  {
+    "arm": "tp8-cpu-dspark-adaptive",
+    "status": "passed",
+    "config_sha256": "274e98384022110863215b3019fcb746411e5aaa4573dc430eb695234f4a5787",
+    "error": null,
+    "boot_s": 132.0539906024933,
+    "benchmarks": {
+      "in1024-c1": {
+        "completed": 6,
+        "output_throughput": 153.22226332592228,
+        "median_tpot_ms": 5.4952700640641,
+        "median_ttft_ms": 152.89440285414457,
+        "duration": 10.024652858264744,
+        "total_input_tokens": 6144,
+        "total_output_tokens": 1536,
+        "decode_tok_s": 181.97467792154998
+      },
+      "in1024-c32": {
+        "completed": 64,
+        "output_throughput": 1104.288858470911,
+        "median_tpot_ms": 22.515490609129852,
+        "median_ttft_ms": 504.52956510707736,
+        "duration": 14.836697730235755,
+        "total_input_tokens": 65536,
+        "total_output_tokens": 16384,
+        "decode_tok_s": 44.413866762224046
+      },
+      "in1024-c8": {
+        "completed": 32,
+        "output_throughput": 613.2713356924611,
+        "median_tpot_ms": 10.870714927566985,
+        "median_ttft_ms": 163.33301179111004,
+        "duration": 13.357871994376183,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 8192,
+        "decode_tok_s": 91.99026988226005
+      },
+      "in8192-c1": {
+        "completed": 4,
+        "output_throughput": 102.67767618216531,
+        "median_tpot_ms": 7.760330645696206,
+        "median_ttft_ms": 541.5724529884756,
+        "duration": 9.972956518642604,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 1024,
+        "decode_tok_s": 128.86048876726522
+      }
+    },
+    "sum_per_gpu_peak_gib": 469.125,
+    "idle_gpu_gib": 469.0859375,
+    "after-probes_gpu_gib": 469.125,
+    "natural_decode_median_tok_s": 328.254597716851,
+    "natural_acceptance": 0.48184818481848185,
+    "vision_correct": true
+  },
+  {
+    "arm": "tp8-cpu-dspark-static",
+    "status": "passed",
+    "config_sha256": "a104bce56a5faa49eb9c38a75018dc95e368a2b3192c6a34edae383375648532",
+    "error": null,
+    "boot_s": 144.06335258483887,
+    "benchmarks": {
+      "in1024-c1": {
+        "completed": 6,
+        "output_throughput": 157.64022751488966,
+        "median_tpot_ms": 4.99437085590234,
+        "median_ttft_ms": 133.08227667585015,
+        "duration": 9.743705805391073,
+        "total_input_tokens": 6144,
+        "total_output_tokens": 1536,
+        "decode_tok_s": 200.22541954772973
+      },
+      "in1024-c32": {
+        "completed": 64,
+        "output_throughput": 972.4009705055358,
+        "median_tpot_ms": 23.22862452516953,
+        "median_ttft_ms": 345.2057456597686,
+        "duration": 16.849016503430903,
+        "total_input_tokens": 65536,
+        "total_output_tokens": 16384,
+        "decode_tok_s": 43.05033209850387
+      },
+      "in1024-c8": {
+        "completed": 32,
+        "output_throughput": 580.5285274336796,
+        "median_tpot_ms": 11.182973091947098,
+        "median_ttft_ms": 162.38390933722258,
+        "duration": 14.11127896886319,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 8192,
+        "decode_tok_s": 89.421658424637
+      },
+      "in8192-c1": {
+        "completed": 4,
+        "output_throughput": 110.40237373513932,
+        "median_tpot_ms": 7.037194129810029,
+        "median_ttft_ms": 541.7831926606596,
+        "duration": 9.275162891484797,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 1024,
+        "decode_tok_s": 142.10209091204868
+      }
+    },
+    "sum_per_gpu_peak_gib": 462.65625,
+    "idle_gpu_gib": 451.9453125,
+    "after-probes_gpu_gib": 462.671875,
+    "natural_decode_median_tok_s": 329.5131164547029,
+    "natural_acceptance": 0.4826666666666667,
+    "vision_correct": true
+  },
+  {
+    "arm": "tp8-cpu-r2",
+    "status": "passed",
+    "config_sha256": "e76a8f36299610c50622e47fc26ba5a63e352918b9a5a12c61bcd08a37d8f68a",
+    "error": null,
+    "boot_s": 114.05657529830933,
+    "benchmarks": {
+      "in1024-c1": {
+        "completed": 6,
+        "output_throughput": 124.32562349227476,
+        "median_tpot_ms": 7.575584599273462,
+        "median_ttft_ms": 126.63054559379816,
+        "duration": 12.354653504677117,
+        "total_input_tokens": 6144,
+        "total_output_tokens": 1536,
+        "decode_tok_s": 132.0030140110778
+      },
+      "in1024-c32": {
+        "completed": 64,
+        "output_throughput": 1459.038565484804,
+        "median_tpot_ms": 18.08574197302554,
+        "median_ttft_ms": 854.5580627396703,
+        "duration": 11.229312499053776,
+        "total_input_tokens": 65536,
+        "total_output_tokens": 16384,
+        "decode_tok_s": 55.29217443727089
+      },
+      "in1024-c8": {
+        "completed": 32,
+        "output_throughput": 677.4115956579329,
+        "median_tpot_ms": 10.151331933836142,
+        "median_ttft_ms": 438.8094753958285,
+        "duration": 12.093090895563364,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 8192,
+        "decode_tok_s": 98.50924061174942
+      },
+      "in8192-c1": {
+        "completed": 4,
+        "output_throughput": 105.29403590418305,
+        "median_tpot_ms": 7.570289122853793,
+        "median_ttft_ms": 500.1914529129863,
+        "duration": 9.725147214718163,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 1024,
+        "decode_tok_s": 132.0953511512685
+      }
+    },
+    "sum_per_gpu_peak_gib": 443.5,
+    "idle_gpu_gib": 431.1328125,
+    "after-probes_gpu_gib": 443.5,
+    "natural_decode_median_tok_s": 132.94680980573355,
+    "natural_acceptance": null,
+    "vision_correct": true
+  },
+  {
+    "arm": "tp8-ep-cpu",
+    "status": "passed",
+    "config_sha256": "2a626b496a38b4f00620ea02fb4b280a385ef235c96c2a8e29faeb40c7af52a4",
+    "error": null,
+    "boot_s": 102.06028842926025,
+    "benchmarks": {
+      "in1024-c1": {
+        "completed": 6,
+        "output_throughput": 110.61564837353411,
+        "median_tpot_ms": 8.484516884474193,
+        "median_ttft_ms": 140.46330424025655,
+        "duration": 13.885919601656497,
+        "total_input_tokens": 6144,
+        "total_output_tokens": 1536,
+        "decode_tok_s": 117.8617490678696
+      },
+      "in1024-c32": {
+        "completed": 64,
+        "output_throughput": 1473.4236576981882,
+        "median_tpot_ms": 18.068430189262422,
+        "median_ttft_ms": 857.7581862919033,
+        "duration": 11.119680286385119,
+        "total_input_tokens": 65536,
+        "total_output_tokens": 16384,
+        "decode_tok_s": 55.34515115730822
+      },
+      "in1024-c8": {
+        "completed": 32,
+        "output_throughput": 658.7604927943913,
+        "median_tpot_ms": 10.443939664857645,
+        "median_ttft_ms": 461.36197820305824,
+        "duration": 12.435475547797978,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 8192,
+        "decode_tok_s": 95.74930841135134
+      },
+      "in8192-c1": {
+        "completed": 4,
+        "output_throughput": 95.69623490762756,
+        "median_tpot_ms": 8.454084078616956,
+        "median_ttft_ms": 518.035838380456,
+        "duration": 10.70052548032254,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 1024,
+        "decode_tok_s": 118.28602492011112
+      }
+    },
+    "sum_per_gpu_peak_gib": 353.4375,
+    "idle_gpu_gib": 341.0703125,
+    "after-probes_gpu_gib": 353.4375,
+    "natural_decode_median_tok_s": 118.98094579859917,
+    "natural_acceptance": null,
+    "vision_correct": true
+  },
+  {
+    "arm": "tp8-ep-cpu-128k",
+    "status": "passed",
+    "config_sha256": "a9abcdcbe5fc41e2283f7faf1ed3215d15cd0d25f3b61d2608bf4ff12ff9d99a",
+    "error": null,
+    "boot_s": 102.04544234275818,
+    "benchmarks": {
+      "in130000-c1": {
+        "completed": 2,
+        "output_throughput": 24.189701473617173,
+        "median_tpot_ms": 8.14122935830086,
+        "median_ttft_ms": 8506.188674364239,
+        "duration": 21.166032187640667,
+        "total_input_tokens": 260000,
+        "total_output_tokens": 512,
+        "decode_tok_s": 122.83157198862015
+      }
+    },
+    "sum_per_gpu_peak_gib": 378.84375,
+    "idle_gpu_gib": 343.0859375,
+    "after-probes_gpu_gib": 378.84375,
+    "natural_decode_median_tok_s": 118.89797657284741,
+    "natural_acceptance": null,
+    "vision_correct": true
+  },
+  {
+    "arm": "tp8-ep-cpu-dspark-adaptive",
+    "status": "passed",
+    "config_sha256": "05913c0953693915de07992923d2aa10ea13fe188f582bca76bb4c7b1b850d8e",
+    "error": null,
+    "boot_s": 120.04590940475464,
+    "benchmarks": {
+      "in1024-c1": {
+        "completed": 6,
+        "output_throughput": 154.18344121816128,
+        "median_tpot_ms": 5.7718129956400865,
+        "median_ttft_ms": 132.30132218450308,
+        "duration": 9.962159281596541,
+        "total_input_tokens": 6144,
+        "total_output_tokens": 1536,
+        "decode_tok_s": 173.2557864843127
+      },
+      "in1024-c32": {
+        "completed": 64,
+        "output_throughput": 1278.2967910645586,
+        "median_tpot_ms": 19.909100809737165,
+        "median_ttft_ms": 354.03718752786517,
+        "duration": 12.817054782994092,
+        "total_input_tokens": 65536,
+        "total_output_tokens": 16384,
+        "decode_tok_s": 50.22828552412166
+      },
+      "in1024-c8": {
+        "completed": 32,
+        "output_throughput": 632.5036136907869,
+        "median_tpot_ms": 10.266125996542328,
+        "median_ttft_ms": 155.37096001207829,
+        "duration": 12.951704658567905,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 8192,
+        "decode_tok_s": 97.40772715402129
+      },
+      "in8192-c1": {
+        "completed": 4,
+        "output_throughput": 112.75019929479085,
+        "median_tpot_ms": 6.804882702143753,
+        "median_ttft_ms": 545.3104712069035,
+        "duration": 9.082023858092725,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 1024,
+        "decode_tok_s": 146.95330452719904
+      }
+    },
+    "sum_per_gpu_peak_gib": 376.671875,
+    "idle_gpu_gib": 376.6328125,
+    "after-probes_gpu_gib": 376.671875,
+    "natural_decode_median_tok_s": 326.3930351986189,
+    "natural_acceptance": 0.4905405405405405,
+    "vision_correct": true
+  },
+  {
+    "arm": "tp8-ep-cpu-dspark-k3",
+    "status": "passed",
+    "config_sha256": "e54c838bae43412c68e8a30f5aa121d199fbfca0ec6189b3773769b06592cd7c",
+    "error": null,
+    "boot_s": 123.07460284233093,
+    "benchmarks": {
+      "in1024-c1": {
+        "completed": 6,
+        "output_throughput": 154.2431376729323,
+        "median_tpot_ms": 6.120880464931913,
+        "median_ttft_ms": 133.05161520838737,
+        "duration": 9.958303644321859,
+        "total_input_tokens": 6144,
+        "total_output_tokens": 1536,
+        "decode_tok_s": 163.37518854178828
+      },
+      "in1024-c32": {
+        "completed": 64,
+        "output_throughput": 1211.2339542550023,
+        "median_tpot_ms": 20.239750294051333,
+        "median_ttft_ms": 372.24504072219133,
+        "duration": 13.526701379567385,
+        "total_input_tokens": 65536,
+        "total_output_tokens": 16384,
+        "decode_tok_s": 49.40772417997223
+      },
+      "in1024-c8": {
+        "completed": 32,
+        "output_throughput": 609.6789560088847,
+        "median_tpot_ms": 10.782115186984631,
+        "median_ttft_ms": 151.81681839749217,
+        "duration": 13.436579890549183,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 8192,
+        "decode_tok_s": 92.74618037907123
+      },
+      "in8192-c1": {
+        "completed": 4,
+        "output_throughput": 128.79398040755265,
+        "median_tpot_ms": 5.696918676589049,
+        "median_ttft_ms": 536.6534269414842,
+        "duration": 7.950682141818106,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 1024,
+        "decode_tok_s": 175.53348691976348
+      }
+    },
+    "sum_per_gpu_peak_gib": 368.46875,
+    "idle_gpu_gib": 357.2109375,
+    "after-probes_gpu_gib": 368.46875,
+    "natural_decode_median_tok_s": 273.07806693428836,
+    "natural_acceptance": 0.6060606060606061,
+    "vision_correct": true
+  },
+  {
+    "arm": "tp8-ep-cpu-dspark-static",
+    "status": "passed",
+    "config_sha256": "430e56ecaab195352cac6977ff19395a460d66fdb9b70742d4ffb3e2154099ff",
+    "error": null,
+    "boot_s": 111.04767918586731,
+    "benchmarks": {
+      "in1024-c1": {
+        "completed": 6,
+        "output_throughput": 138.81644797586952,
+        "median_tpot_ms": 6.284657170009964,
+        "median_ttft_ms": 134.61440708488226,
+        "duration": 11.064971207641065,
+        "total_input_tokens": 6144,
+        "total_output_tokens": 1536,
+        "decode_tok_s": 159.11766910245234
+      },
+      "in1024-c32": {
+        "completed": 64,
+        "output_throughput": 1098.035113958208,
+        "median_tpot_ms": 22.592005743553827,
+        "median_ttft_ms": 336.5783616900444,
+        "duration": 14.921198595315218,
+        "total_input_tokens": 65536,
+        "total_output_tokens": 16384,
+        "decode_tok_s": 44.26344483757622
+      },
+      "in1024-c8": {
+        "completed": 32,
+        "output_throughput": 597.5907957919874,
+        "median_tpot_ms": 10.994427726037946,
+        "median_ttft_ms": 154.1834268718958,
+        "duration": 13.708377133123577,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 8192,
+        "decode_tok_s": 90.9551661003432
+      },
+      "in8192-c1": {
+        "completed": 4,
+        "output_throughput": 103.92934468499305,
+        "median_tpot_ms": 7.783693398403772,
+        "median_ttft_ms": 534.1448257677257,
+        "duration": 9.852847654372454,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 1024,
+        "decode_tok_s": 128.47371406035512
+      }
+    },
+    "sum_per_gpu_peak_gib": 370.1875,
+    "idle_gpu_gib": 359.4921875,
+    "after-probes_gpu_gib": 370.21875,
+    "natural_decode_median_tok_s": 327.5403867704588,
+    "natural_acceptance": 0.489261744966443,
+    "vision_correct": true
+  },
+  {
+    "arm": "tp8-ep-cpu-scale",
+    "status": "passed",
+    "config_sha256": "4c06a374d628b096cce185c08af8b7ab6cda74693f74c0b5c5b262b9a0fc32db",
+    "error": null,
+    "boot_s": 102.06014561653137,
+    "benchmarks": {
+      "in1024-c128": {
+        "completed": 256,
+        "output_throughput": 2503.3326017066142,
+        "median_tpot_ms": 46.203788784423885,
+        "median_ttft_ms": 1082.530042156577,
+        "duration": 26.17950165923685,
+        "total_input_tokens": 262144,
+        "total_output_tokens": 65536,
+        "decode_tok_s": 21.643246718700215
+      },
+      "in1024-c32": {
+        "completed": 64,
+        "output_throughput": 1463.5873370563745,
+        "median_tpot_ms": 18.0698898255679,
+        "median_ttft_ms": 856.8144962191582,
+        "duration": 11.194412239827216,
+        "total_input_tokens": 65536,
+        "total_output_tokens": 16384,
+        "decode_tok_s": 55.340680527285514
+      },
+      "in1024-c64": {
+        "completed": 128,
+        "output_throughput": 1909.7283036256088,
+        "median_tpot_ms": 30.089537717182846,
+        "median_ttft_ms": 864.8457825183868,
+        "duration": 17.15846172347665,
+        "total_input_tokens": 131072,
+        "total_output_tokens": 32768,
+        "decode_tok_s": 33.23414302337197
+      }
+    },
+    "sum_per_gpu_peak_gib": 354.75,
+    "idle_gpu_gib": 344.1953125,
+    "after-probes_gpu_gib": 354.75,
+    "natural_decode_median_tok_s": 118.9621463660859,
+    "natural_acceptance": null,
+    "vision_correct": true
+  },
+  {
+    "arm": "tp8-ep-gpu",
+    "status": "passed",
+    "config_sha256": "24f839762cd942139c6c353a2ba106a9b2c3af79982905f802aa7a4a45982905",
+    "error": null,
+    "boot_s": 90.05838418006897,
+    "benchmarks": {
+      "in1024-c1": {
+        "completed": 6,
+        "output_throughput": 110.96282192880463,
+        "median_tpot_ms": 8.474215419561254,
+        "median_ttft_ms": 135.10446064174175,
+        "duration": 13.842474202625453,
+        "total_input_tokens": 6144,
+        "total_output_tokens": 1536,
+        "decode_tok_s": 118.00502471198381
+      },
+      "in1024-c32": {
+        "completed": 64,
+        "output_throughput": 1472.5984072248916,
+        "median_tpot_ms": 18.05726247930936,
+        "median_ttft_ms": 849.8125388287008,
+        "duration": 11.125911802984774,
+        "total_input_tokens": 65536,
+        "total_output_tokens": 16384,
+        "decode_tok_s": 55.379379966693996
+      },
+      "in1024-c8": {
+        "completed": 32,
+        "output_throughput": 664.2234788550473,
+        "median_tpot_ms": 10.374173715564549,
+        "median_ttft_ms": 428.65718761458993,
+        "duration": 12.333198480308056,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 8192,
+        "decode_tok_s": 96.39321910521731
+      },
+      "in8192-c1": {
+        "completed": 4,
+        "output_throughput": 96.37686847996233,
+        "median_tpot_ms": 8.444996861120064,
+        "median_ttft_ms": 502.074527554214,
+        "duration": 10.624956134706736,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 1024,
+        "decode_tok_s": 118.41330629782728
+      }
+    },
+    "sum_per_gpu_peak_gib": 541.796875,
+    "idle_gpu_gib": 529.4296875,
+    "after-probes_gpu_gib": 541.796875,
+    "natural_decode_median_tok_s": 119.04646786963144,
+    "natural_acceptance": null,
+    "vision_correct": true
+  },
+  {
+    "arm": "tp8-ep-gpu-128k",
+    "status": "passed",
+    "config_sha256": "7fa629668f95f7964328d5a24be0a4ad943ad53d72ae0701b3d1a8a95bb8f606",
+    "error": null,
+    "boot_s": 93.04319310188293,
+    "benchmarks": {
+      "in130000-c1": {
+        "completed": 2,
+        "output_throughput": 24.56313305346833,
+        "median_tpot_ms": 8.157072336796453,
+        "median_ttft_ms": 8341.182528994977,
+        "duration": 20.84424649272114,
+        "total_input_tokens": 260000,
+        "total_output_tokens": 512,
+        "decode_tok_s": 122.5930038022358
+      }
+    },
+    "sum_per_gpu_peak_gib": 567.203125,
+    "idle_gpu_gib": 531.4453125,
+    "after-probes_gpu_gib": 567.203125,
+    "natural_decode_median_tok_s": 118.45449491677567,
+    "natural_acceptance": null,
+    "vision_correct": true
+  },
+  {
+    "arm": "tp8-ep-gpu-dspark-adaptive",
+    "status": "passed",
+    "config_sha256": "7f50768ffd33e0f63dac59b4f675d6765e6935d970adbf78bfd662d0b63f948c",
+    "error": null,
+    "boot_s": 102.04464960098267,
+    "benchmarks": {
+      "in1024-c1": {
+        "completed": 6,
+        "output_throughput": 152.87424905208957,
+        "median_tpot_ms": 5.762400352122152,
+        "median_ttft_ms": 130.1258928142488,
+        "duration": 10.047473721206188,
+        "total_input_tokens": 6144,
+        "total_output_tokens": 1536,
+        "decode_tok_s": 173.53879267200244
+      },
+      "in1024-c32": {
+        "completed": 64,
+        "output_throughput": 1275.9105629180121,
+        "median_tpot_ms": 20.02025789161231,
+        "median_ttft_ms": 288.9207936823368,
+        "duration": 12.841025441884995,
+        "total_input_tokens": 65536,
+        "total_output_tokens": 16384,
+        "decode_tok_s": 49.94940651683414
+      },
+      "in1024-c8": {
+        "completed": 32,
+        "output_throughput": 645.9035543381832,
+        "median_tpot_ms": 10.200093721276989,
+        "median_ttft_ms": 149.3735183030367,
+        "duration": 12.683008082211018,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 8192,
+        "decode_tok_s": 98.03831487489569
+      },
+      "in8192-c1": {
+        "completed": 4,
+        "output_throughput": 108.24756728328953,
+        "median_tpot_ms": 7.861848931540461,
+        "median_ttft_ms": 544.6035591885448,
+        "duration": 9.459796886891127,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 1024,
+        "decode_tok_s": 127.19654227749943
+      }
+    },
+    "sum_per_gpu_peak_gib": 565.03125,
+    "idle_gpu_gib": 564.9921875,
+    "after-probes_gpu_gib": 565.03125,
+    "natural_decode_median_tok_s": 318.6209139437283,
+    "natural_acceptance": 0.48438538205980064,
+    "vision_correct": true
+  },
+  {
+    "arm": "tp8-ep-gpu-dspark-static",
+    "status": "passed",
+    "config_sha256": "8d29ced61a5da4e99a9612b1159bb3072694a8daee79fe8b3dd4ec77c6d417b6",
+    "error": null,
+    "boot_s": 99.04444980621338,
+    "benchmarks": {
+      "in1024-c1": {
+        "completed": 6,
+        "output_throughput": 150.70178539159366,
+        "median_tpot_ms": 6.2128616369092,
+        "median_ttft_ms": 134.6177035011351,
+        "duration": 10.192314550280571,
+        "total_input_tokens": 6144,
+        "total_output_tokens": 1536,
+        "decode_tok_s": 160.95642530637204
+      },
+      "in1024-c32": {
+        "completed": 64,
+        "output_throughput": 1092.4082614900503,
+        "median_tpot_ms": 21.9745316780081,
+        "median_ttft_ms": 361.2312967889011,
+        "duration": 14.998055743053555,
+        "total_input_tokens": 65536,
+        "total_output_tokens": 16384,
+        "decode_tok_s": 45.50722694130453
+      },
+      "in1024-c8": {
+        "completed": 32,
+        "output_throughput": 580.4032058871036,
+        "median_tpot_ms": 10.799501513076178,
+        "median_ttft_ms": 154.67841736972332,
+        "duration": 14.11432589776814,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 8192,
+        "decode_tok_s": 92.5968665117725
+      },
+      "in8192-c1": {
+        "completed": 4,
+        "output_throughput": 110.96129221027027,
+        "median_tpot_ms": 6.566215538438044,
+        "median_ttft_ms": 546.3776448741555,
+        "duration": 9.228443357162178,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 1024,
+        "decode_tok_s": 152.294726566024
+      }
+    },
+    "sum_per_gpu_peak_gib": 558.578125,
+    "idle_gpu_gib": 547.8515625,
+    "after-probes_gpu_gib": 558.578125,
+    "natural_decode_median_tok_s": 331.3013267064199,
+    "natural_acceptance": 0.5003412969283276,
+    "vision_correct": true
+  },
+  {
+    "arm": "tp8-gpu",
+    "status": "passed",
+    "config_sha256": "2aa91c9f62f3bff03ab5d35b8ac75b5fb528e3e64d2c0d2974108027958bba94",
+    "error": null,
+    "boot_s": 102.06903290748596,
+    "benchmarks": {
+      "in1024-c1": {
+        "completed": 6,
+        "output_throughput": 123.59590408939847,
+        "median_tpot_ms": 7.603934732284031,
+        "median_ttft_ms": 130.01405959948897,
+        "duration": 12.427596297115088,
+        "total_input_tokens": 6144,
+        "total_output_tokens": 1536,
+        "decode_tok_s": 131.51086052255278
+      },
+      "in1024-c32": {
+        "completed": 64,
+        "output_throughput": 1446.9463206496139,
+        "median_tpot_ms": 18.065214653809864,
+        "median_ttft_ms": 850.444009527564,
+        "duration": 11.323156751692295,
+        "total_input_tokens": 65536,
+        "total_output_tokens": 16384,
+        "decode_tok_s": 55.35500237131724
+      },
+      "in1024-c8": {
+        "completed": 32,
+        "output_throughput": 676.1470908553244,
+        "median_tpot_ms": 10.126821198226773,
+        "median_ttft_ms": 458.4169904701412,
+        "duration": 12.115706938318908,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 8192,
+        "decode_tok_s": 98.74767021413413
+      },
+      "in8192-c1": {
+        "completed": 4,
+        "output_throughput": 104.89024023714215,
+        "median_tpot_ms": 7.576560804291683,
+        "median_ttft_ms": 508.4798140451312,
+        "duration": 9.762586086988449,
+        "total_input_tokens": 32768,
+        "total_output_tokens": 1024,
+        "decode_tok_s": 131.98600602974875
+      }
+    },
+    "sum_per_gpu_peak_gib": 631.859375,
+    "idle_gpu_gib": 619.4921875,
+    "after-probes_gpu_gib": 631.859375,
+    "natural_decode_median_tok_s": 132.83056964390641,
+    "natural_acceptance": null,
+    "vision_correct": true
+  },
+  {
+    "arm": "tp8-gpu-dspark-adaptive",
+    "status": "failed",
+    "config_sha256": "6a461ed46c8054ea3380191489a936be750d49d41c1f6120419e20f3d490acd1",
+    "error": "engine exited before health: 1",
+    "boot_s": null,
+    "benchmarks": {},
+    "sum_per_gpu_peak_gib": 633.3671875,
+    "vision_correct": null
+  },
+  {
+    "arm": "tp8-gpu-dspark-static",
+    "status": "failed",
+    "config_sha256": "1cde8788f6991791070fd048970a466f92220c820db299d749db102ecc1f23fd",
+    "error": "engine exited before health: 1",
+    "boot_s": null,
+    "benchmarks": {},
+    "sum_per_gpu_peak_gib": 633.3671875,
+    "vision_correct": null
+  }
+]

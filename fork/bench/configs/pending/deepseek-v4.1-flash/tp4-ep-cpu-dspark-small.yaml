@@ -1,0 +1,33 @@
+# Interactive four-GPU fit: retain vision, cap admission at 8 sequences and KV at 512 MiB per GPU.
+model: /workspace/models/v41
+served-model-name: dsv41
+tokenizer-mode: deepseek_v41
+tensor-parallel-size: 4
+max-model-len: 32768
+max-num-seqs: 8
+max-num-batched-tokens: 2048
+kv-cache-memory-bytes: 536870912
+no-enable-prefix-caching: true
+engram-config:
+  cpu_offload: true
+compilation-config:
+  cudagraph_capture_sizes:
+  - 1
+  - 2
+  - 4
+  - 5
+  - 6
+  - 8
+  - 10
+  - 12
+  - 20
+  - 24
+  - 40
+  - 48
+enable-expert-parallel: true
+speculative-config:
+  method: dspark
+  num_speculative_tokens: 5
+  draft_sample_method: probabilistic
+  rejection_sample_method: block
+  enable_adaptive_verification: false
