@@ -1,0 +1,50 @@
+# Shared 4xH200 baseline; simultaneous deployment has not been hardware-tested.
+model: deepseek-ai/DeepSeek-V4.1-Flash
+revision: dba1be0a40aa45a94ad051997016db3960a90277
+served-model-name: deepseek-v4.1-flash
+tokenizer-mode: deepseek_v41
+trust-remote-code: false
+dtype: auto
+
+distributed-executor-backend: mp
+tensor-parallel-size: 4
+pipeline-parallel-size: 1
+data-parallel-size: 1
+enable-expert-parallel: true
+moe-backend: auto
+enable-dbo: false
+ubatch-size: 0
+
+engram-config:
+  cpu_offload: true
+  embedding_across_dp: false
+  dp_shared_memory: false
+cpu-offload-gb: 0
+
+kv-cache-dtype: fp8
+# 16 GiB per GPU. Fixed allocation avoids filling memory needed by Gemma.
+# This is a starting budget, not a measured 1M-context capacity result.
+kv-cache-memory-bytes: 17179869184
+# Startup free-memory threshold; explicit KV bytes mean this is NOT a VRAM cap.
+gpu-memory-utilization: 0.80
+enable-prefix-caching: true
+max-model-len: 1048576
+max-num-batched-tokens: 4096
+max-num-seqs: 32
+enable-chunked-prefill: true
+
+# Keep vision. Encoder data parallelism is supported by this pinned model.
+language-model-only: false
+mm-encoder-tp-mode: data
+limit-mm-per-prompt:
+  image: 8
+mm-processor-cache-gb: 4
+
+tool-call-parser: deepseek_v41
+enable-auto-tool-choice: true
+reasoning-parser: deepseek_v41
+default-chat-template-kwargs:
+  enable_thinking: false
+  drop_thinking: true
+
+# DSpark is intentionally absent to save draft/runtime memory. See README.

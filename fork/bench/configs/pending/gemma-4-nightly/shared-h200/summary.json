@@ -1,0 +1,3774 @@
+{
+  "phase": "Complete: four requests per model verified",
+  "detail": "Four near-full contexts per model passed together with zero preemptions. Shared C4 effective rates were 23.1 / 20.7 tok/s per slot, close to an emergency floor\u2014not a launch target or certified decode floor. Dedicated controls were faster. Executive slides separate measured evidence from two-node projections. Rental destroyed; detailed evidence retained.",
+  "hardware": "4 \u00d7 H200, 143,771 MiB/device, driver 595.71.05; actual topology NV18 between every GPU pair. Listing zero-NVLink telemetry was incorrect.",
+  "updated_utc": "2026-09-17T12:57:10+00:00",
+  "session_status": "complete",
+  "hourly_usd": 20.056652046783626,
+  "elapsed_minutes": 237.39351952075958,
+  "estimated_cost_usd": 80.7996652885252,
+  "received_gb": 546.186249402,
+  "staging": [
+    {
+      "name": "gemma4",
+      "status": "ready",
+      "bytes": 33295622920
+    },
+    {
+      "name": "assistant",
+      "status": "ready",
+      "bytes": 971215445
+    },
+    {
+      "name": "deepseek",
+      "status": "ready",
+      "bytes": 510310568472
+    }
+  ],
+  "trials": [
+    {
+      "name": "deepseek-baseline-tp4",
+      "service": "deepseek",
+      "yaml": "deepseek-baseline-tp4.yaml",
+      "config_sha256": "202849d7e6f43783f51690c0b44f8d62b9f6580241ffc74b00479d86189c300c",
+      "tp": 4,
+      "context": 1048576,
+      "kv_gib": 16.0,
+      "speculation": null,
+      "status": "passed",
+      "checks": 14,
+      "passed_checks": 14,
+      "idle_gib": 110.7138671875,
+      "peak_gib": 120.2958984375,
+      "c1_tps": 120.51552725616489,
+      "c4_tps": 396.7749329082423,
+      "c8_tps": 0,
+      "kv_tokens": 8459426,
+      "reported_context": 1048576,
+      "reported_concurrency": 8.07,
+      "max_num_seqs": 32,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.07817122503183782
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.036242300004232675
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.035440836974885315
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.0352115859859623
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 15,
+          "completion_tokens": 66,
+          "elapsed_seconds": 0.5945980129763484
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 15,
+          "completion_tokens": 128,
+          "elapsed_seconds": 1.036129699961748
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 20,
+          "completion_tokens": 10,
+          "elapsed_seconds": 0.5447525240015239
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 282,
+          "completion_tokens": 49,
+          "elapsed_seconds": 0.5521140229539014
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 693,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.3000492120045237
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 3082,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.6092999370303005
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 98,
+          "elapsed_seconds": 0.897917379043065
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 94,
+          "elapsed_seconds": 0.8802707410068251
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 93,
+          "elapsed_seconds": 0.8705157310469076
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 121,
+          "elapsed_seconds": 1.0942249309737235
+        }
+      ]
+    },
+    {
+      "name": "deepseek-dedicated-1m-kv36",
+      "service": "deepseek",
+      "yaml": "deepseek-dedicated-1m-kv36.yaml",
+      "config_sha256": "e44fbbea42a6b3badb7793b279d35aca68ec979003d2d72e070335a9578793a9",
+      "tp": 4,
+      "context": 1048576,
+      "kv_gib": 36.0,
+      "speculation": "dspark",
+      "status": "passed",
+      "checks": 15,
+      "passed_checks": 15,
+      "idle_gib": 124.6748046875,
+      "peak_gib": 129.7607421875,
+      "c1_tps": 0,
+      "c4_tps": 0,
+      "c8_tps": 0,
+      "kv_tokens": 18764872,
+      "reported_context": 1048576,
+      "reported_concurrency": 17.9,
+      "max_num_seqs": 32,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.07395805499982089
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.046833282976876944
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.04218796000350267
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.04235294001409784
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 15,
+          "completion_tokens": 66,
+          "elapsed_seconds": 0.9846256540040486
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 15,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.40246544900583103
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 20,
+          "completion_tokens": 7,
+          "elapsed_seconds": 0.5032384360092692
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 282,
+          "completion_tokens": 50,
+          "elapsed_seconds": 0.1929489400354214
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 693,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.29992964799748734
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 3082,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.615707224002108
+        },
+        {
+          "kind": "long_retrieval",
+          "passed": true,
+          "prompt_tokens": 1029587,
+          "completion_tokens": 7,
+          "elapsed_seconds": 153.23665851302212
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 98,
+          "elapsed_seconds": 0.9340444820118137
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 98,
+          "elapsed_seconds": 0.9210581179941073
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 96,
+          "elapsed_seconds": 0.9202194629469886
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 114,
+          "elapsed_seconds": 0.9784524209680967
+        }
+      ],
+      "environment_yaml": "deepseek-dedicated-1m-kv36-environment.yaml"
+    },
+    {
+      "name": "deepseek-shared-1m-kv16",
+      "service": "deepseek",
+      "yaml": "deepseek-shared-1m-kv16.yaml",
+      "config_sha256": "3219e84daefb8f597905646e45af2548a2617433d4390259ce6c337ce657ccbe",
+      "tp": 4,
+      "context": 1048576,
+      "kv_gib": 16.0,
+      "speculation": "dspark",
+      "status": "passed",
+      "checks": 14,
+      "passed_checks": 14,
+      "idle_gib": 125.7802734375,
+      "peak_gib": 130.8662109375,
+      "c1_tps": 0,
+      "c4_tps": 0,
+      "c8_tps": 0,
+      "kv_tokens": 8339905,
+      "reported_context": 1048576,
+      "reported_concurrency": 7.95,
+      "max_num_seqs": 32,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.10597255796892568
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.04309321200707927
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.04235768300713971
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.04311767901526764
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 15,
+          "completion_tokens": 65,
+          "elapsed_seconds": 0.8302472869982012
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 15,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.405764879018534
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 20,
+          "completion_tokens": 10,
+          "elapsed_seconds": 0.47130594099871814
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 282,
+          "completion_tokens": 50,
+          "elapsed_seconds": 0.1924705950077623
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 693,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.29518806899432093
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 3082,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.6012974460027181
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 69,
+          "elapsed_seconds": 0.7419304230134003
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 98,
+          "elapsed_seconds": 0.8493579229689203
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 93,
+          "elapsed_seconds": 0.8486015729722567
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 93,
+          "elapsed_seconds": 0.8305528350174427
+        }
+      ],
+      "environment_yaml": "deepseek-shared-1m-kv16-environment.yaml"
+    },
+    {
+      "name": "deepseek-shared-256k-kv16",
+      "service": "deepseek",
+      "yaml": "deepseek-shared-256k-kv16.yaml",
+      "config_sha256": "44cd85308ec8e031d864d2b7891ce7fa15de23f507a13b74da5512bb81336d98",
+      "tp": 4,
+      "context": 262144,
+      "kv_gib": 16.0,
+      "speculation": "dspark",
+      "status": "passed",
+      "checks": 15,
+      "passed_checks": 15,
+      "idle_gib": 118.9462890625,
+      "peak_gib": 120.4658203125,
+      "c1_tps": 0,
+      "c4_tps": 0,
+      "c8_tps": 0,
+      "kv_tokens": 6227286,
+      "reported_context": 262144,
+      "reported_concurrency": 23.76,
+      "max_num_seqs": 32,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.09567450301256031
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.04646684799809009
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.04375854297541082
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.04307596996659413
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 15,
+          "completion_tokens": 66,
+          "elapsed_seconds": 0.9964712419896387
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 15,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.39077051798813045
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 20,
+          "completion_tokens": 10,
+          "elapsed_seconds": 0.5024617769522592
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 282,
+          "completion_tokens": 50,
+          "elapsed_seconds": 0.1919773150002584
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 693,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.30850046896375716
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 3082,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.5850133189815097
+        },
+        {
+          "kind": "long_retrieval",
+          "passed": true,
+          "prompt_tokens": 247487,
+          "completion_tokens": 7,
+          "elapsed_seconds": 19.612363517982885
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 93,
+          "elapsed_seconds": 0.9010026890318841
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 98,
+          "elapsed_seconds": 0.900373768992722
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 93,
+          "elapsed_seconds": 0.8656308369827457
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 121,
+          "elapsed_seconds": 0.992256019031629
+        }
+      ],
+      "environment_yaml": "deepseek-shared-256k-kv16-environment.yaml"
+    },
+    {
+      "name": "deepseek-shared-512k-kv16",
+      "service": "deepseek",
+      "yaml": "deepseek-shared-512k-kv16.yaml",
+      "config_sha256": "7af2d7bc48a8ba52f5450b5897181b6c88f5b65c767bddba22130078b81b4a8c",
+      "tp": 4,
+      "context": 524288,
+      "kv_gib": 16.0,
+      "speculation": "dspark",
+      "status": "passed",
+      "checks": 15,
+      "passed_checks": 15,
+      "idle_gib": 121.0537109375,
+      "peak_gib": 123.0791015625,
+      "c1_tps": 0,
+      "c4_tps": 0,
+      "c8_tps": 0,
+      "kv_tokens": 7492611,
+      "reported_context": 524288,
+      "reported_concurrency": 14.29,
+      "max_num_seqs": 32,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.09528144501382485
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.04541537194745615
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.046210248954594135
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.043156886007636786
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 15,
+          "completion_tokens": 65,
+          "elapsed_seconds": 0.8335999530390836
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 15,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.38491345901275054
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 20,
+          "completion_tokens": 7,
+          "elapsed_seconds": 0.48405381705379114
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 282,
+          "completion_tokens": 46,
+          "elapsed_seconds": 0.17921521404059604
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 693,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.29111665004165843
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 3082,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.6158616340253502
+        },
+        {
+          "kind": "long_retrieval",
+          "passed": true,
+          "prompt_tokens": 504887,
+          "completion_tokens": 7,
+          "elapsed_seconds": 47.41812793596182
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 98,
+          "elapsed_seconds": 0.8687646960024722
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 98,
+          "elapsed_seconds": 0.8233675000374205
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 93,
+          "elapsed_seconds": 0.8517696889466606
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 128,
+          "elapsed_seconds": 1.116143910039682
+        }
+      ],
+      "environment_yaml": "deepseek-shared-512k-kv16-environment.yaml"
+    },
+    {
+      "name": "deepseek-tp4-dspark",
+      "service": "deepseek",
+      "yaml": "deepseek-tp4-dspark.yaml",
+      "config_sha256": "b0096c8509476d9e1bab2624bedde6691dc7b751d00747e56ef5a8989e842293",
+      "tp": 4,
+      "context": 1048576,
+      "kv_gib": 16.0,
+      "speculation": "dspark",
+      "status": "passed",
+      "checks": 14,
+      "passed_checks": 14,
+      "idle_gib": 118.5068359375,
+      "peak_gib": 124.5732421875,
+      "c1_tps": 346.9287433919883,
+      "c4_tps": 783.7778030057724,
+      "c8_tps": 0,
+      "kv_tokens": 8339905,
+      "reported_context": 1048576,
+      "reported_concurrency": 7.95,
+      "max_num_seqs": 32,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 1.3200733209960163
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.043265545973554254
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.03883048199350014
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.03885953198187053
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 15,
+          "completion_tokens": 69,
+          "elapsed_seconds": 1.59211734397104
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 15,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.3577556820237078
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 20,
+          "completion_tokens": 10,
+          "elapsed_seconds": 0.4769616429693997
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 282,
+          "completion_tokens": 49,
+          "elapsed_seconds": 0.16274921299191192
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 693,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.2892973079578951
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 3082,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.576644585991744
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 99,
+          "elapsed_seconds": 1.8782126880250871
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 94,
+          "elapsed_seconds": 1.7676534710335545
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 93,
+          "elapsed_seconds": 1.7933756170095876
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 118,
+          "elapsed_seconds": 1.8636639350443147
+        }
+      ]
+    },
+    {
+      "name": "deepseek-tp4-dspark-mps",
+      "service": "deepseek",
+      "yaml": "deepseek-tp4-dspark-mps.yaml",
+      "config_sha256": "3219e84daefb8f597905646e45af2548a2617433d4390259ce6c337ce657ccbe",
+      "tp": 4,
+      "context": 1048576,
+      "kv_gib": 16.0,
+      "speculation": "dspark",
+      "status": "runtime failed",
+      "checks": 14,
+      "passed_checks": 14,
+      "idle_gib": 119.0859375,
+      "peak_gib": 119.087890625,
+      "c1_tps": 0,
+      "c4_tps": 0,
+      "c8_tps": 0,
+      "kv_tokens": 8339905,
+      "reported_context": 1048576,
+      "reported_concurrency": 7.95,
+      "max_num_seqs": 32,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.09799093200126663
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.04676575696794316
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.04738140298286453
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.04350457596592605
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 15,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.9871444519958459
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 15,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.37135784700512886
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 20,
+          "completion_tokens": 7,
+          "elapsed_seconds": 0.4926468540215865
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 282,
+          "completion_tokens": 50,
+          "elapsed_seconds": 0.18841589405201375
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 693,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.2948428150266409
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 3082,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.581746365991421
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 98,
+          "elapsed_seconds": 0.8563103420310654
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 94,
+          "elapsed_seconds": 0.829623599012848
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 93,
+          "elapsed_seconds": 0.8004197180271149
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 116,
+          "elapsed_seconds": 0.9269406839739531
+        }
+      ],
+      "environment_yaml": "deepseek-tp4-dspark-mps-environment.yaml"
+    },
+    {
+      "name": "deepseek-tp4-dspark-mps-sync",
+      "service": "deepseek",
+      "yaml": "deepseek-tp4-dspark-mps-sync.yaml",
+      "config_sha256": "3219e84daefb8f597905646e45af2548a2617433d4390259ce6c337ce657ccbe",
+      "tp": 4,
+      "context": 1048576,
+      "kv_gib": 16.0,
+      "speculation": "dspark",
+      "status": "runtime failed",
+      "checks": 14,
+      "passed_checks": 14,
+      "idle_gib": 119.0859375,
+      "peak_gib": 119.087890625,
+      "c1_tps": 0,
+      "c4_tps": 0,
+      "c8_tps": 0,
+      "kv_tokens": 8339905,
+      "reported_context": 1048576,
+      "reported_concurrency": 7.95,
+      "max_num_seqs": 32,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.09352623397717252
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.04367387399543077
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.04338651499710977
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.04158545000245795
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 15,
+          "completion_tokens": 65,
+          "elapsed_seconds": 0.7972113380092196
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 15,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.3805146480444819
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 20,
+          "completion_tokens": 7,
+          "elapsed_seconds": 0.48906772898044437
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 282,
+          "completion_tokens": 49,
+          "elapsed_seconds": 0.17427802697056904
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 693,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.30400081898551434
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 3082,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.6213417620165274
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 65,
+          "elapsed_seconds": 0.7338729390176013
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 98,
+          "elapsed_seconds": 0.8623985910089687
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 93,
+          "elapsed_seconds": 0.8762763349805027
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 128,
+          "elapsed_seconds": 1.1818335299612954
+        }
+      ],
+      "environment_yaml": "deepseek-tp4-dspark-mps-sync-environment.yaml"
+    },
+    {
+      "name": "deepseek-tp4-dspark-nccl",
+      "service": "deepseek",
+      "yaml": "deepseek-tp4-dspark-nccl.yaml",
+      "config_sha256": "3219e84daefb8f597905646e45af2548a2617433d4390259ce6c337ce657ccbe",
+      "tp": 4,
+      "context": 1048576,
+      "kv_gib": 16.0,
+      "speculation": "dspark",
+      "status": "passed",
+      "checks": 14,
+      "passed_checks": 14,
+      "idle_gib": 119.0283203125,
+      "peak_gib": 119.0322265625,
+      "c1_tps": 0,
+      "c4_tps": 0,
+      "c8_tps": 0,
+      "kv_tokens": 8339905,
+      "reported_context": 1048576,
+      "reported_concurrency": 7.95,
+      "max_num_seqs": 32,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.10299933201167732
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.04536564100999385
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.04261391703039408
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 17,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.04358738998416811
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 15,
+          "completion_tokens": 65,
+          "elapsed_seconds": 0.8362385490327142
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 15,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.40514860302209854
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 20,
+          "completion_tokens": 7,
+          "elapsed_seconds": 0.5064197579631582
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 282,
+          "completion_tokens": 50,
+          "elapsed_seconds": 0.1923521640128456
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 693,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.2943540950072929
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 3082,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.576625328976661
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 98,
+          "elapsed_seconds": 0.9314743760041893
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 98,
+          "elapsed_seconds": 0.814088829967659
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 93,
+          "elapsed_seconds": 0.8287177080055699
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 18,
+          "completion_tokens": 109,
+          "elapsed_seconds": 0.9052755040465854
+        }
+      ],
+      "environment_yaml": "deepseek-tp4-dspark-nccl-environment.yaml"
+    },
+    {
+      "name": "gemma-baseline-pair-tp4",
+      "service": "gemma4",
+      "yaml": "gemma-baseline-pair-tp4.yaml",
+      "config_sha256": "f9a61f436f4ba057c1345e736ea3a6c7b9fc8b6eb5978341defe266225a2747d",
+      "tp": 4,
+      "context": 32768,
+      "kv_gib": 1.25,
+      "speculation": "mtp",
+      "status": "ready",
+      "checks": 0,
+      "passed_checks": 0,
+      "idle_gib": 12.9365234375,
+      "peak_gib": 124.5732421875,
+      "c1_tps": 0,
+      "c4_tps": 0,
+      "c8_tps": 0,
+      "kv_tokens": 34335,
+      "reported_context": 32768,
+      "reported_concurrency": 1.05,
+      "max_num_seqs": 8,
+      "checks_detail": []
+    },
+    {
+      "name": "gemma-baseline-tp4",
+      "service": "gemma4",
+      "yaml": "gemma-baseline-tp4.yaml",
+      "config_sha256": "f9a61f436f4ba057c1345e736ea3a6c7b9fc8b6eb5978341defe266225a2747d",
+      "tp": 4,
+      "context": 32768,
+      "kv_gib": 1.25,
+      "speculation": "mtp",
+      "status": "passed",
+      "checks": 15,
+      "passed_checks": 15,
+      "idle_gib": 12.9287109375,
+      "peak_gib": 14.2998046875,
+      "c1_tps": 262.3451182510007,
+      "c4_tps": 111.2269979420982,
+      "c8_tps": 0,
+      "kv_tokens": 34335,
+      "reported_context": 32768,
+      "reported_concurrency": 1.05,
+      "max_num_seqs": 8,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.7614903339999728
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.04124684998532757
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.03737783001270145
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.03665565402479842
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 64,
+          "elapsed_seconds": 0.24032946897204965
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.33576761599397287
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 31,
+          "completion_tokens": 8,
+          "elapsed_seconds": 0.9763454669737257
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 74,
+          "completion_tokens": 15,
+          "elapsed_seconds": 0.07099426398053765
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 290,
+          "completion_tokens": 2,
+          "elapsed_seconds": 14.059897169994656
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 2092,
+          "completion_tokens": 2,
+          "elapsed_seconds": 14.498562745982781
+        },
+        {
+          "kind": "long_retrieval",
+          "passed": true,
+          "prompt_tokens": 31175,
+          "completion_tokens": 9,
+          "elapsed_seconds": 10.874186897999607
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.35499384201830253
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 66,
+          "elapsed_seconds": 0.34534661198267713
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 64,
+          "elapsed_seconds": 0.3279268140322529
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 71,
+          "elapsed_seconds": 0.333762584021315
+        }
+      ]
+    },
+    {
+      "name": "gemma-dedicated-32k-kv112",
+      "service": "gemma4",
+      "yaml": "gemma-dedicated-32k-kv112.yaml",
+      "config_sha256": "c427a6aaf8b29c3e1696e42b4a12a01ae87d9de6c883244621d7ec6622d8a459",
+      "tp": 4,
+      "context": 32768,
+      "kv_gib": 112.0,
+      "speculation": "mtp",
+      "status": "passed",
+      "checks": 15,
+      "passed_checks": 15,
+      "idle_gib": 125.1708984375,
+      "peak_gib": 126.2470703125,
+      "c1_tps": 0,
+      "c4_tps": 0,
+      "c8_tps": 0,
+      "kv_tokens": 3076461,
+      "reported_context": 32768,
+      "reported_concurrency": 93.89,
+      "max_num_seqs": 128,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.06286731298314407
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.06245407200185582
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.06835740600945428
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.06289902096614242
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 64,
+          "elapsed_seconds": 0.42048341903137043
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.6052917900378816
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 31,
+          "completion_tokens": 8,
+          "elapsed_seconds": 0.08920430997386575
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 74,
+          "completion_tokens": 15,
+          "elapsed_seconds": 0.10878388397395611
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 290,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.10013012896524742
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 2092,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.09594567702151835
+        },
+        {
+          "kind": "long_retrieval",
+          "passed": true,
+          "prompt_tokens": 31175,
+          "completion_tokens": 9,
+          "elapsed_seconds": 0.3990955700282939
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.5310506459791213
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.48573716095415875
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 65,
+          "elapsed_seconds": 0.47429105901392177
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 59,
+          "elapsed_seconds": 0.4734553690068424
+        }
+      ],
+      "environment_yaml": "gemma-dedicated-32k-kv112-environment.yaml"
+    },
+    {
+      "name": "gemma-shared-16k-kv8",
+      "service": "gemma4",
+      "yaml": "gemma-shared-16k-kv8.yaml",
+      "config_sha256": "0ac3a88350a36a9e6978053541affb9e099881922099eec81c2024914e1ea002",
+      "tp": 4,
+      "context": 16384,
+      "kv_gib": 8.0,
+      "speculation": "mtp",
+      "status": "passed",
+      "checks": 15,
+      "passed_checks": 15,
+      "idle_gib": 129.5380859375,
+      "peak_gib": 130.4580078125,
+      "c1_tps": 0,
+      "c4_tps": 0,
+      "c8_tps": 0,
+      "kv_tokens": 126432,
+      "reported_context": 16384,
+      "reported_concurrency": 7.72,
+      "max_num_seqs": 8,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.09390182298375294
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.03812795999692753
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.03945195203414187
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.03942092804936692
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 64,
+          "elapsed_seconds": 0.2713735940051265
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.3979184060008265
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 31,
+          "completion_tokens": 8,
+          "elapsed_seconds": 0.9336547310231254
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 74,
+          "completion_tokens": 15,
+          "elapsed_seconds": 0.08684991003246978
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 290,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.21176521299639717
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 2092,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.5839603319764137
+        },
+        {
+          "kind": "long_retrieval",
+          "passed": true,
+          "prompt_tokens": 15335,
+          "completion_tokens": 9,
+          "elapsed_seconds": 1.126368110999465
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.34767817897954956
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.3300787460175343
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 64,
+          "elapsed_seconds": 0.33481172303436324
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 59,
+          "elapsed_seconds": 0.3284093560068868
+        }
+      ],
+      "environment_yaml": "gemma-shared-16k-kv8-environment.yaml"
+    },
+    {
+      "name": "gemma-shared-32k-kv8",
+      "service": "gemma4",
+      "yaml": "gemma-shared-32k-kv8.yaml",
+      "config_sha256": "733466f2f69a3f9633ea917c2bd4e063ae47feeffa19f8b85d0bbafae3e3b0ab",
+      "tp": 4,
+      "context": 32768,
+      "kv_gib": 8.0,
+      "speculation": "mtp",
+      "status": "passed",
+      "checks": 15,
+      "passed_checks": 15,
+      "idle_gib": 19.7470703125,
+      "peak_gib": 130.8662109375,
+      "c1_tps": 0,
+      "c4_tps": 0,
+      "c8_tps": 0,
+      "kv_tokens": 219744,
+      "reported_context": 32768,
+      "reported_concurrency": 6.71,
+      "max_num_seqs": 8,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.07756297598825768
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.03858939599012956
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.03753924701595679
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.03727215505205095
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 64,
+          "elapsed_seconds": 0.2650806840392761
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.3764788340195082
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 31,
+          "completion_tokens": 8,
+          "elapsed_seconds": 0.9956204980262555
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 74,
+          "completion_tokens": 15,
+          "elapsed_seconds": 0.07763727899873629
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 290,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.21136475499952212
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 2092,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.5915601450251415
+        },
+        {
+          "kind": "long_retrieval",
+          "passed": true,
+          "prompt_tokens": 31175,
+          "completion_tokens": 9,
+          "elapsed_seconds": 3.3946487859939225
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.3836834100075066
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 66,
+          "elapsed_seconds": 0.37692995101679116
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 64,
+          "elapsed_seconds": 0.3761303789797239
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 59,
+          "elapsed_seconds": 0.34124867897480726
+        }
+      ],
+      "environment_yaml": "gemma-shared-32k-kv8-environment.yaml"
+    },
+    {
+      "name": "gemma-shared-32k-restored",
+      "service": "gemma4",
+      "yaml": "gemma-shared-32k-restored.yaml",
+      "config_sha256": "733466f2f69a3f9633ea917c2bd4e063ae47feeffa19f8b85d0bbafae3e3b0ab",
+      "tp": 4,
+      "context": 32768,
+      "kv_gib": 8.0,
+      "speculation": "mtp",
+      "status": "ready",
+      "checks": 0,
+      "passed_checks": 0,
+      "idle_gib": 129.5283203125,
+      "peak_gib": 130.6943359375,
+      "c1_tps": 0,
+      "c4_tps": 0,
+      "c8_tps": 0,
+      "kv_tokens": 219744,
+      "reported_context": 32768,
+      "reported_concurrency": 6.71,
+      "max_num_seqs": 8,
+      "checks_detail": [],
+      "environment_yaml": "gemma-shared-32k-restored-environment.yaml"
+    },
+    {
+      "name": "gemma-shared-8k-kv8",
+      "service": "gemma4",
+      "yaml": "gemma-shared-8k-kv8.yaml",
+      "config_sha256": "518b0553c2113b37d74ff895ec5a3df56e68a42efe4bb7db1ac086abd0e0709a",
+      "tp": 4,
+      "context": 8192,
+      "kv_gib": 8.0,
+      "speculation": "mtp",
+      "status": "passed",
+      "checks": 15,
+      "passed_checks": 15,
+      "idle_gib": 129.5380859375,
+      "peak_gib": 130.4580078125,
+      "c1_tps": 0,
+      "c4_tps": 0,
+      "c8_tps": 0,
+      "kv_tokens": 76123,
+      "reported_context": 8192,
+      "reported_concurrency": 9.29,
+      "max_num_seqs": 8,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.08367540600011125
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.038957240991294384
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.037477727979421616
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.03687609900953248
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.2664357040193863
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.3810937629896216
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 31,
+          "completion_tokens": 8,
+          "elapsed_seconds": 0.9143783680046909
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 74,
+          "completion_tokens": 15,
+          "elapsed_seconds": 0.07761643500998616
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 290,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.2024188039940782
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 2092,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.5767014399752952
+        },
+        {
+          "kind": "long_retrieval",
+          "passed": true,
+          "prompt_tokens": 7415,
+          "completion_tokens": 9,
+          "elapsed_seconds": 0.4580673709861003
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.3378225089982152
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.33724167104810476
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 59,
+          "elapsed_seconds": 0.3514295350178145
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 59,
+          "elapsed_seconds": 0.32216523797251284
+        }
+      ],
+      "environment_yaml": "gemma-shared-8k-kv8-environment.yaml"
+    },
+    {
+      "name": "gemma-tp1-16k",
+      "service": "gemma4",
+      "yaml": "gemma-tp1-16k.yaml",
+      "config_sha256": "b94f41f4f6dd72a497e1228ccda3ded4e2d0d5befaa8ed3d88446d60e07784fe",
+      "tp": 1,
+      "context": 16384,
+      "kv_gib": 4.25,
+      "speculation": "mtp",
+      "status": "passed",
+      "checks": 15,
+      "passed_checks": 15,
+      "idle_gib": 38.5595703125,
+      "peak_gib": 43.5927734375,
+      "c1_tps": 197.63392884330815,
+      "c4_tps": 278.7235887836083,
+      "c8_tps": 0,
+      "kv_tokens": 16789,
+      "reported_context": 16384,
+      "reported_concurrency": 1.02,
+      "max_num_seqs": 8,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.08532874303637072
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.04304562002653256
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.04140915797324851
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.04877792199840769
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 64,
+          "elapsed_seconds": 0.35511453700019047
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.5243916499894112
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 31,
+          "completion_tokens": 8,
+          "elapsed_seconds": 0.8936732260044664
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 74,
+          "completion_tokens": 15,
+          "elapsed_seconds": 0.09322838298976421
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 290,
+          "completion_tokens": 2,
+          "elapsed_seconds": 14.358925516018644
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 2092,
+          "completion_tokens": 2,
+          "elapsed_seconds": 7.769268634961918
+        },
+        {
+          "kind": "long_retrieval",
+          "passed": true,
+          "prompt_tokens": 15335,
+          "completion_tokens": 9,
+          "elapsed_seconds": 3.2441822179825976
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 58,
+          "elapsed_seconds": 0.39950327097903937
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.41899796098005027
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 60,
+          "elapsed_seconds": 0.3836841289885342
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 71,
+          "elapsed_seconds": 0.4173679150408134
+        }
+      ]
+    },
+    {
+      "name": "gemma-tp2-16k",
+      "service": "gemma4",
+      "yaml": "gemma-tp2-16k.yaml",
+      "config_sha256": "b7d7d828bc1f80d3c3b3c7f400ec907235c3d88942319dbfb36a23371cb9364e",
+      "tp": 2,
+      "context": 16384,
+      "kv_gib": 2.125,
+      "speculation": "mtp",
+      "status": "passed",
+      "checks": 15,
+      "passed_checks": 15,
+      "idle_gib": 21.6806640625,
+      "peak_gib": 23.7353515625,
+      "c1_tps": 220.34292938028796,
+      "c4_tps": 409.0915785340556,
+      "c8_tps": 0,
+      "kv_tokens": 16789,
+      "reported_context": 16384,
+      "reported_concurrency": 1.02,
+      "max_num_seqs": 8,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.08124010899337009
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.03939880401594564
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.03800543199758977
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.042318824969697744
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 66,
+          "elapsed_seconds": 0.30000226898118854
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.440181891026441
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 31,
+          "completion_tokens": 8,
+          "elapsed_seconds": 0.9395213190000504
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 74,
+          "completion_tokens": 15,
+          "elapsed_seconds": 0.0718205560115166
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 290,
+          "completion_tokens": 2,
+          "elapsed_seconds": 15.495019167021383
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 2092,
+          "completion_tokens": 2,
+          "elapsed_seconds": 15.227914076007437
+        },
+        {
+          "kind": "long_retrieval",
+          "passed": true,
+          "prompt_tokens": 15335,
+          "completion_tokens": 9,
+          "elapsed_seconds": 1.865894474030938
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.4025201670010574
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.39412583800731227
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 58,
+          "elapsed_seconds": 0.3413243379909545
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 60,
+          "elapsed_seconds": 0.39275316399289295
+        }
+      ]
+    },
+    {
+      "name": "gemma-tp4-16k",
+      "service": "gemma4",
+      "yaml": "gemma-tp4-16k.yaml",
+      "config_sha256": "c329f7a1fb2d9f37987d1bd39cd2dae801c76732afab6cb75233cb8a2c5ce7ab",
+      "tp": 4,
+      "context": 16384,
+      "kv_gib": 1.0,
+      "speculation": "mtp",
+      "status": "boot_failed",
+      "checks": 0,
+      "passed_checks": 0,
+      "idle_gib": 0.0,
+      "peak_gib": 14.2099609375,
+      "c1_tps": 0,
+      "c4_tps": 0,
+      "c8_tps": 0,
+      "checks_detail": []
+    },
+    {
+      "name": "gemma-tp4-16k-nospec",
+      "service": "gemma4",
+      "yaml": "gemma-tp4-16k-nospec.yaml",
+      "config_sha256": "4165c3cf0e49b8eb1dd0c6cedad28fbc671bdd40f36dbf63b7927c210074b061",
+      "tp": 4,
+      "context": 16384,
+      "kv_gib": 1.0625,
+      "speculation": null,
+      "status": "passed",
+      "checks": 15,
+      "passed_checks": 15,
+      "idle_gib": 12.0966796875,
+      "peak_gib": 13.4287109375,
+      "c1_tps": 132.96424828199864,
+      "c4_tps": 226.40259690936244,
+      "c8_tps": 0,
+      "kv_tokens": 16789,
+      "reported_context": 16384,
+      "reported_concurrency": 1.02,
+      "max_num_seqs": 8,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.13314493600046262
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.06889978400431573
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.0702798769925721
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.08067541697528213
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 64,
+          "elapsed_seconds": 0.4858608049689792
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.916971447004471
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 31,
+          "completion_tokens": 8,
+          "elapsed_seconds": 0.9781595130334608
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 74,
+          "completion_tokens": 15,
+          "elapsed_seconds": 0.17301028699148446
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 290,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.19629119703313336
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 2092,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.5682472119806334
+        },
+        {
+          "kind": "long_retrieval",
+          "passed": true,
+          "prompt_tokens": 15335,
+          "completion_tokens": 9,
+          "elapsed_seconds": 1.0320368299726397
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 68,
+          "elapsed_seconds": 0.6407247000024654
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.6398951439769007
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 64,
+          "elapsed_seconds": 0.6228569009690545
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 59,
+          "elapsed_seconds": 0.5879705609986559
+        }
+      ]
+    },
+    {
+      "name": "gemma-tp4-32k-s4",
+      "service": "gemma4",
+      "yaml": "gemma-tp4-32k-s4.yaml",
+      "config_sha256": "9023a6074badb5f641d10bc797edffb97227f9938f35eb2ba763fef00f24f509",
+      "tp": 4,
+      "context": 32768,
+      "kv_gib": 0.875,
+      "speculation": "mtp",
+      "status": "boot_failed",
+      "checks": 0,
+      "passed_checks": 0,
+      "idle_gib": 0.0,
+      "peak_gib": 14.1513671875,
+      "c1_tps": 0,
+      "c4_tps": 0,
+      "c8_tps": 0,
+      "checks_detail": []
+    },
+    {
+      "name": "gemma-tp4-8k",
+      "service": "gemma4",
+      "yaml": "gemma-tp4-8k.yaml",
+      "config_sha256": "e32ab690abcd07132b1d9532384bb7743c7e5a324ab15dae569c2b92b0c52b6e",
+      "tp": 4,
+      "context": 8192,
+      "kv_gib": 0.875,
+      "speculation": "mtp",
+      "status": "passed",
+      "checks": 15,
+      "passed_checks": 15,
+      "idle_gib": 12.5537109375,
+      "peak_gib": 14.2099609375,
+      "c1_tps": 294.0018911580613,
+      "c4_tps": 629.6529477418745,
+      "c8_tps": 0,
+      "kv_tokens": 8325,
+      "reported_context": 8192,
+      "reported_concurrency": 1.02,
+      "max_num_seqs": 8,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.05808861297555268
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.03286607499467209
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.03253077802946791
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.0329171409830451
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 64,
+          "elapsed_seconds": 0.24551949702436104
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.32634374301414937
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 31,
+          "completion_tokens": 8,
+          "elapsed_seconds": 0.9145936209824868
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 74,
+          "completion_tokens": 15,
+          "elapsed_seconds": 0.07402785203885287
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 290,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.22797075897688046
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 2092,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.6427434349898249
+        },
+        {
+          "kind": "long_retrieval",
+          "passed": true,
+          "prompt_tokens": 7415,
+          "completion_tokens": 9,
+          "elapsed_seconds": 0.4458457180298865
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.32447127799969167
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 66,
+          "elapsed_seconds": 0.32373089500470087
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 65,
+          "elapsed_seconds": 0.3229076769785024
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 59,
+          "elapsed_seconds": 0.3013714529806748
+        }
+      ]
+    },
+    {
+      "name": "gemma-tp4-mps",
+      "service": "gemma4",
+      "yaml": "gemma-tp4-mps.yaml",
+      "config_sha256": "f9a61f436f4ba057c1345e736ea3a6c7b9fc8b6eb5978341defe266225a2747d",
+      "tp": 4,
+      "context": 32768,
+      "kv_gib": 1.25,
+      "speculation": "mtp",
+      "status": "runtime failed",
+      "checks": 15,
+      "passed_checks": 15,
+      "idle_gib": 13.0576171875,
+      "peak_gib": 119.087890625,
+      "c1_tps": 0,
+      "c4_tps": 0,
+      "c8_tps": 0,
+      "kv_tokens": 34335,
+      "reported_context": 32768,
+      "reported_concurrency": 1.05,
+      "max_num_seqs": 8,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.06671882496448234
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.037174342025537044
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.0383294359780848
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.03741593798622489
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 64,
+          "elapsed_seconds": 0.26567716302815825
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.4039720440050587
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 31,
+          "completion_tokens": 8,
+          "elapsed_seconds": 0.9370820639887825
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 74,
+          "completion_tokens": 15,
+          "elapsed_seconds": 0.06894215801730752
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 290,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.21689584001433104
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 2092,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.5794908149982803
+        },
+        {
+          "kind": "long_retrieval",
+          "passed": true,
+          "prompt_tokens": 31175,
+          "completion_tokens": 9,
+          "elapsed_seconds": 3.4010785109712742
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 63,
+          "elapsed_seconds": 0.38632513396441936
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.360709530999884
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 64,
+          "elapsed_seconds": 0.360048872011248
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 59,
+          "elapsed_seconds": 0.34414168499642983
+        }
+      ],
+      "environment_yaml": "gemma-tp4-mps-environment.yaml"
+    },
+    {
+      "name": "gemma-tp4-mps-sync",
+      "service": "gemma4",
+      "yaml": "gemma-tp4-mps-sync.yaml",
+      "config_sha256": "1ae9ff298c2bd4f7b555e5a9b639fb9f887fdc6a30413684521d7e18abdf43a3",
+      "tp": 4,
+      "context": 32768,
+      "kv_gib": 1.25,
+      "speculation": "mtp",
+      "status": "runtime failed",
+      "checks": 15,
+      "passed_checks": 15,
+      "idle_gib": 13.0576171875,
+      "peak_gib": 119.087890625,
+      "c1_tps": 0,
+      "c4_tps": 0,
+      "c8_tps": 0,
+      "kv_tokens": 34335,
+      "reported_context": 32768,
+      "reported_concurrency": 1.05,
+      "max_num_seqs": 8,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.09711234702263027
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.03631271002814174
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.034970559005159885
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.03493207000428811
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 62,
+          "elapsed_seconds": 0.26914511201903224
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.3101690810290165
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 31,
+          "completion_tokens": 8,
+          "elapsed_seconds": 0.8555990980239585
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 74,
+          "completion_tokens": 15,
+          "elapsed_seconds": 0.07038758200360462
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 290,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.21210162399802357
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 2092,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.5857783310348168
+        },
+        {
+          "kind": "long_retrieval",
+          "passed": true,
+          "prompt_tokens": 31175,
+          "completion_tokens": 9,
+          "elapsed_seconds": 3.398810973041691
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.3905677159782499
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.39484054798958823
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 59,
+          "elapsed_seconds": 0.3551358089898713
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 59,
+          "elapsed_seconds": 0.363717821019236
+        }
+      ],
+      "environment_yaml": "gemma-tp4-mps-sync-environment.yaml"
+    },
+    {
+      "name": "gemma-tp4-nccl",
+      "service": "gemma4",
+      "yaml": "gemma-tp4-nccl.yaml",
+      "config_sha256": "f9a61f436f4ba057c1345e736ea3a6c7b9fc8b6eb5978341defe266225a2747d",
+      "tp": 4,
+      "context": 32768,
+      "kv_gib": 1.25,
+      "speculation": "mtp",
+      "status": "passed",
+      "checks": 15,
+      "passed_checks": 15,
+      "idle_gib": 12.9892578125,
+      "peak_gib": 119.0322265625,
+      "c1_tps": 0,
+      "c4_tps": 0,
+      "c8_tps": 0,
+      "kv_tokens": 34335,
+      "reported_context": 32768,
+      "reported_concurrency": 1.05,
+      "max_num_seqs": 8,
+      "checks_detail": [
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.08469978999346495
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.03869774896884337
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.03706532303476706
+        },
+        {
+          "kind": "arithmetic",
+          "passed": true,
+          "prompt_tokens": 28,
+          "completion_tokens": 3,
+          "elapsed_seconds": 0.03677995700854808
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 64,
+          "elapsed_seconds": 0.26303481502691284
+        },
+        {
+          "kind": "natural",
+          "passed": true,
+          "prompt_tokens": 24,
+          "completion_tokens": 128,
+          "elapsed_seconds": 0.368254371045623
+        },
+        {
+          "kind": "json_schema",
+          "passed": true,
+          "prompt_tokens": 31,
+          "completion_tokens": 8,
+          "elapsed_seconds": 0.8970665039960295
+        },
+        {
+          "kind": "tool_auto",
+          "passed": true,
+          "prompt_tokens": 74,
+          "completion_tokens": 15,
+          "elapsed_seconds": 0.07861597801093012
+        },
+        {
+          "kind": "image_stop",
+          "passed": true,
+          "prompt_tokens": 290,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.2069624979631044
+        },
+        {
+          "kind": "eight_images",
+          "passed": true,
+          "prompt_tokens": 2092,
+          "completion_tokens": 2,
+          "elapsed_seconds": 0.5678430869593285
+        },
+        {
+          "kind": "long_retrieval",
+          "passed": true,
+          "prompt_tokens": 31175,
+          "completion_tokens": 9,
+          "elapsed_seconds": 3.4004445479949936
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.39149383996846154
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 67,
+          "elapsed_seconds": 0.37457788502797484
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 65,
+          "elapsed_seconds": 0.374435595003888
+        },
+        {
+          "kind": "concurrent_text",
+          "passed": true,
+          "prompt_tokens": 27,
+          "completion_tokens": 58,
+          "elapsed_seconds": 0.3279857469606213
+        }
+      ],
+      "environment_yaml": "gemma-tp4-nccl-environment.yaml"
+    }
+  ],
+  "pairs": [
+    {
+      "name": "pair-dspark-1m",
+      "status": "passed",
+      "trials": {
+        "gemma4": "gemma-baseline-pair-tp4",
+        "deepseek": "deepseek-tp4-dspark"
+      },
+      "checks": 10,
+      "passed_checks": 10,
+      "long_requests": [
+        {
+          "service": "gemma4",
+          "passed": true,
+          "prompt_tokens": 31175,
+          "elapsed_seconds": 3.4129468700266443
+        },
+        {
+          "service": "deepseek",
+          "passed": true,
+          "prompt_tokens": 1029587,
+          "elapsed_seconds": 153.11982993304264
+        }
+      ]
+    },
+    {
+      "name": "pair-mps-images",
+      "status": "passed",
+      "trials": {
+        "gemma4": "gemma-tp4-mps",
+        "deepseek": "deepseek-tp4-dspark-mps"
+      },
+      "checks": 8,
+      "passed_checks": 8,
+      "long_requests": []
+    },
+    {
+      "name": "pair-mps-sync-images",
+      "status": "passed",
+      "trials": {
+        "gemma4": "gemma-tp4-mps-sync",
+        "deepseek": "deepseek-tp4-dspark-mps-sync"
+      },
+      "checks": 8,
+      "passed_checks": 8,
+      "long_requests": []
+    },
+    {
+      "name": "pair-nccl-images",
+      "status": "passed",
+      "trials": {
+        "gemma4": "gemma-tp4-nccl",
+        "deepseek": "deepseek-tp4-dspark-nccl"
+      },
+      "checks": 8,
+      "passed_checks": 8,
+      "long_requests": []
+    },
+    {
+      "name": "pair-original-yamls",
+      "status": "passed",
+      "trials": {
+        "gemma4": "gemma-baseline-pair-tp4",
+        "deepseek": "deepseek-baseline-tp4"
+      },
+      "checks": 10,
+      "passed_checks": 10,
+      "long_requests": [
+        {
+          "service": "gemma4",
+          "passed": true,
+          "prompt_tokens": 31175,
+          "elapsed_seconds": 3.408791454974562
+        },
+        {
+          "service": "deepseek",
+          "passed": true,
+          "prompt_tokens": 1029587,
+          "elapsed_seconds": 151.1234439740074
+        }
+      ]
+    },
+    {
+      "name": "pair-shared-balanced-images",
+      "status": "passed",
+      "trials": {
+        "gemma4": "gemma-shared-32k-kv8",
+        "deepseek": "deepseek-shared-1m-kv16"
+      },
+      "checks": 8,
+      "passed_checks": 8,
+      "long_requests": []
+    }
+  ],
+  "native_benchmarks": [
+    {
+      "name": "deepseek-baseline-tp4",
+      "service": "deepseek",
+      "context": 1048576,
+      "concurrency": 1,
+      "mean_tpot_ms": 7.877164337311542,
+      "mean_ttft_ms": 114.99208273016848,
+      "output_tps": 120.51552725616489
+    },
+    {
+      "name": "deepseek-baseline-tp4",
+      "service": "deepseek",
+      "context": 1048576,
+      "concurrency": 4,
+      "mean_tpot_ms": 9.221685376456556,
+      "mean_ttft_ms": 225.78071588213788,
+      "output_tps": 396.7749329082423
+    },
+    {
+      "name": "deepseek-tp4-dspark",
+      "service": "deepseek",
+      "context": 1048576,
+      "concurrency": 1,
+      "mean_tpot_ms": 2.4543174754773434,
+      "mean_ttft_ms": 111.38634575763717,
+      "output_tps": 346.9287433919883
+    },
+    {
+      "name": "deepseek-tp4-dspark",
+      "service": "deepseek",
+      "context": 1048576,
+      "concurrency": 4,
+      "mean_tpot_ms": 3.7342621980511184,
+      "mean_ttft_ms": 139.51118737168144,
+      "output_tps": 783.7778030057724
+    },
+    {
+      "name": "gemma-baseline-tp4",
+      "service": "gemma4",
+      "context": 32768,
+      "concurrency": 1,
+      "mean_tpot_ms": 3.471107973532258,
+      "mean_ttft_ms": 89.9680535076186,
+      "output_tps": 262.3451182510007
+    },
+    {
+      "name": "gemma-baseline-tp4",
+      "service": "gemma4",
+      "context": 32768,
+      "concurrency": 4,
+      "mean_tpot_ms": 28.06083826957654,
+      "mean_ttft_ms": 1800.6676770091872,
+      "output_tps": 111.2269979420982
+    },
+    {
+      "name": "gemma-tp1-16k",
+      "service": "gemma4",
+      "context": 16384,
+      "concurrency": 1,
+      "mean_tpot_ms": 4.674811530333269,
+      "mean_ttft_ms": 102.54249900754075,
+      "output_tps": 197.63392884330815
+    },
+    {
+      "name": "gemma-tp1-16k",
+      "service": "gemma4",
+      "context": 16384,
+      "concurrency": 4,
+      "mean_tpot_ms": 11.471595981314676,
+      "mean_ttft_ms": 625.0354198855348,
+      "output_tps": 278.7235887836083
+    },
+    {
+      "name": "gemma-tp2-16k",
+      "service": "gemma4",
+      "context": 16384,
+      "concurrency": 1,
+      "mean_tpot_ms": 4.236400208844548,
+      "mean_ttft_ms": 80.86049499979708,
+      "output_tps": 220.34292938028796
+    },
+    {
+      "name": "gemma-tp2-16k",
+      "service": "gemma4",
+      "context": 16384,
+      "concurrency": 4,
+      "mean_tpot_ms": 5.855739653377575,
+      "mean_ttft_ms": 118.68363311805297,
+      "output_tps": 409.0915785340556
+    },
+    {
+      "name": "gemma-tp4-16k-nospec",
+      "service": "gemma4",
+      "context": 16384,
+      "concurrency": 1,
+      "mean_tpot_ms": 7.2331869382383855,
+      "mean_ttft_ms": 80.11614525457844,
+      "output_tps": 132.96424828199864
+    },
+    {
+      "name": "gemma-tp4-16k-nospec",
+      "service": "gemma4",
+      "context": 16384,
+      "concurrency": 4,
+      "mean_tpot_ms": 9.762197858357217,
+      "mean_ttft_ms": 2031.1563766226755,
+      "output_tps": 226.40259690936244
+    },
+    {
+      "name": "gemma-tp4-8k",
+      "service": "gemma4",
+      "context": 8192,
+      "concurrency": 1,
+      "mean_tpot_ms": 3.0955874990539476,
+      "mean_ttft_ms": 80.7864249945851,
+      "output_tps": 294.0018911580613
+    },
+    {
+      "name": "gemma-tp4-8k",
+      "service": "gemma4",
+      "context": 8192,
+      "concurrency": 4,
+      "mean_tpot_ms": 4.117097551466477,
+      "mean_ttft_ms": 144.54153787664836,
+      "output_tps": 629.6529477418745
+    }
+  ],
+  "staging_seconds": 4517.2359228134155,
+  "staging_payload_bytes": 544577406837,
+  "staging_payload_mbps": 120.55544942576907,
+  "compute_cost_usd": 79.35532031982018,
+  "teardown_confirmed": true,
+  "transmitted_gb": 10.558176547,
+  "joint_loads": [
+    {
+      "name": "joint-baseline-c1",
+      "status": "passed",
+      "trials": {
+        "gemma4": "gemma-baseline-pair-tp4",
+        "deepseek": "deepseek-baseline-tp4"
+      },
+      "concurrency_per_model": 1,
+      "seconds": 60.57660698890686,
+      "by_service": {
+        "gemma4": {
+          "requests": 5,
+          "output_tokens": 1280,
+          "output_tokens_per_second": 21.130268987076168,
+          "mean_request_seconds": 12.024020468816161,
+          "p50_request_seconds": 3.385607873031404,
+          "p95_request_seconds": 33.92760615380248,
+          "max_request_seconds": 39.71428636700148,
+          "requests_below_20_effective_tps": 1
+        },
+        "deepseek": {
+          "requests": 4,
+          "output_tokens": 1024,
+          "output_tokens_per_second": 16.904215189660935,
+          "mean_request_seconds": 15.143524427243392,
+          "p50_request_seconds": 8.74067047148128,
+          "p95_request_seconds": 34.89989327698713,
+          "max_request_seconds": 38.8613771009841,
+          "requests_below_20_effective_tps": 1
+        }
+      },
+      "combined_tps": 38.0344841767371,
+      "error_count": 0
+    },
+    {
+      "name": "joint-baseline-c1-repeat",
+      "status": "passed",
+      "trials": {
+        "gemma4": "gemma-baseline-pair-tp4",
+        "deepseek": "deepseek-baseline-tp4"
+      },
+      "concurrency_per_model": 1,
+      "seconds": 60.96040081977844,
+      "by_service": {
+        "gemma4": {
+          "requests": 4,
+          "output_tokens": 1024,
+          "output_tokens_per_second": 16.797789814855776,
+          "mean_request_seconds": 15.239667548521538,
+          "p50_request_seconds": 11.242492225021124,
+          "p95_request_seconds": 32.88138202084228,
+          "max_request_seconds": 35.29591095604701,
+          "requests_below_20_effective_tps": 2
+        },
+        "deepseek": {
+          "requests": 3,
+          "output_tokens": 768,
+          "output_tokens_per_second": 12.598342361141832,
+          "mean_request_seconds": 20.204488051337346,
+          "p50_request_seconds": 19.941856866003945,
+          "p95_request_seconds": 34.16931311939843,
+          "max_request_seconds": 35.75014159199782,
+          "requests_below_20_effective_tps": 2
+        }
+      },
+      "combined_tps": 29.396132175997607,
+      "error_count": 0
+    },
+    {
+      "name": "joint-baseline-c4",
+      "status": "passed",
+      "trials": {
+        "gemma4": "gemma-baseline-pair-tp4",
+        "deepseek": "deepseek-baseline-tp4"
+      },
+      "concurrency_per_model": 4,
+      "seconds": 63.01741147041321,
+      "by_service": {
+        "gemma4": {
+          "requests": 56,
+          "output_tokens": 14336,
+          "output_tokens_per_second": 227.49268282355231,
+          "mean_request_seconds": 4.396838726551713,
+          "p50_request_seconds": 3.4527596610132605,
+          "p95_request_seconds": 8.89834131526004,
+          "max_request_seconds": 14.094295347982552,
+          "requests_below_20_effective_tps": 1
+        },
+        "deepseek": {
+          "requests": 40,
+          "output_tokens": 10240,
+          "output_tokens_per_second": 162.49477344539451,
+          "mean_request_seconds": 6.299961182648258,
+          "p50_request_seconds": 5.536760895978659,
+          "p95_request_seconds": 15.632123626218526,
+          "max_request_seconds": 15.654494529007934,
+          "requests_below_20_effective_tps": 4
+        }
+      },
+      "combined_tps": 389.98745626894686,
+      "error_count": 0
+    },
+    {
+      "name": "joint-dspark-c1",
+      "status": "passed",
+      "trials": {
+        "gemma4": "gemma-baseline-pair-tp4",
+        "deepseek": "deepseek-tp4-dspark"
+      },
+      "concurrency_per_model": 1,
+      "seconds": 61.6491584777832,
+      "by_service": {
+        "gemma4": {
+          "requests": 11,
+          "output_tokens": 2816,
+          "output_tokens_per_second": 45.67783355899035,
+          "mean_request_seconds": 5.531401860813441,
+          "p50_request_seconds": 4.456332720001228,
+          "p95_request_seconds": 10.577393058512826,
+          "max_request_seconds": 13.292003082984593,
+          "requests_below_20_effective_tps": 1
+        },
+        "deepseek": {
+          "requests": 14,
+          "output_tokens": 3584,
+          "output_tokens_per_second": 58.13542452962408,
+          "mean_request_seconds": 4.403126201925001,
+          "p50_request_seconds": 3.822629281494301,
+          "p95_request_seconds": 8.534509407661972,
+          "max_request_seconds": 12.01256085402565,
+          "requests_below_20_effective_tps": 0
+        }
+      },
+      "combined_tps": 103.81325808861443,
+      "error_count": 0
+    },
+    {
+      "name": "joint-dspark-c4",
+      "status": "passed",
+      "trials": {
+        "gemma4": "gemma-baseline-pair-tp4",
+        "deepseek": "deepseek-tp4-dspark"
+      },
+      "concurrency_per_model": 4,
+      "seconds": 66.34185028076172,
+      "by_service": {
+        "gemma4": {
+          "requests": 35,
+          "output_tokens": 8960,
+          "output_tokens_per_second": 135.05803594685517,
+          "mean_request_seconds": 7.397118449116325,
+          "p50_request_seconds": 6.5256410100264475,
+          "p95_request_seconds": 11.607245750288712,
+          "max_request_seconds": 11.70973728201352,
+          "requests_below_20_effective_tps": 0
+        },
+        "deepseek": {
+          "requests": 32,
+          "output_tokens": 8192,
+          "output_tokens_per_second": 123.48163286569616,
+          "mean_request_seconds": 8.17246798990891,
+          "p50_request_seconds": 7.629220485046972,
+          "p95_request_seconds": 11.654706120243645,
+          "max_request_seconds": 12.066033313050866,
+          "requests_below_20_effective_tps": 0
+        }
+      },
+      "combined_tps": 258.5396688125513,
+      "error_count": 0
+    },
+    {
+      "name": "joint-mps-c1",
+      "status": "passed",
+      "trials": {
+        "gemma4": "gemma-tp4-mps",
+        "deepseek": "deepseek-tp4-dspark-mps"
+      },
+      "concurrency_per_model": 1,
+      "seconds": 61.32951903343201,
+      "by_service": {
+        "gemma4": {
+          "requests": 32,
+          "output_tokens": 8192,
+          "output_tokens_per_second": 133.57352428500815,
+          "mean_request_seconds": 1.9162584820296615,
+          "p50_request_seconds": 1.89670378351002,
+          "p95_request_seconds": 2.028310866319225,
+          "max_request_seconds": 2.036643525992986,
+          "requests_below_20_effective_tps": 0
+        },
+        "deepseek": {
+          "requests": 36,
+          "output_tokens": 9216,
+          "output_tokens_per_second": 150.27021482063418,
+          "mean_request_seconds": 1.6961359761416033,
+          "p50_request_seconds": 1.6980964204994962,
+          "p95_request_seconds": 1.7903259282466024,
+          "max_request_seconds": 1.801670761022251,
+          "requests_below_20_effective_tps": 0
+        }
+      },
+      "combined_tps": 283.8437391056423,
+      "error_count": 0
+    },
+    {
+      "name": "joint-mps-c4",
+      "status": "failed",
+      "trials": {
+        "gemma4": "gemma-tp4-mps",
+        "deepseek": "deepseek-tp4-dspark-mps"
+      },
+      "concurrency_per_model": 4,
+      "seconds": 40.86810350418091,
+      "by_service": {
+        "gemma4": {
+          "requests": 63,
+          "output_tokens": 16128,
+          "output_tokens_per_second": 394.6353908580579,
+          "mean_request_seconds": 2.518711709265878,
+          "p50_request_seconds": 2.5010473590227775,
+          "p95_request_seconds": 2.7122256759612355,
+          "max_request_seconds": 2.7447438259841874,
+          "requests_below_20_effective_tps": 0
+        },
+        "deepseek": {
+          "requests": 64,
+          "output_tokens": 16384,
+          "output_tokens_per_second": 400.8994446812017,
+          "mean_request_seconds": 2.481690484108185,
+          "p50_request_seconds": 2.4802040084905457,
+          "p95_request_seconds": 2.796531508499174,
+          "max_request_seconds": 2.9603778420132585,
+          "requests_below_20_effective_tps": 0
+        }
+      },
+      "combined_tps": 795.5348355392596,
+      "error_count": 10
+    },
+    {
+      "name": "joint-mps-sync-c1",
+      "status": "passed",
+      "trials": {
+        "gemma4": "gemma-tp4-mps-sync",
+        "deepseek": "deepseek-tp4-dspark-mps-sync"
+      },
+      "concurrency_per_model": 1,
+      "seconds": 61.723838090896606,
+      "by_service": {
+        "gemma4": {
+          "requests": 32,
+          "output_tokens": 8192,
+          "output_tokens_per_second": 132.7201977935362,
+          "mean_request_seconds": 1.9285302782827785,
+          "p50_request_seconds": 1.932361122511793,
+          "p95_request_seconds": 2.025891165243229,
+          "max_request_seconds": 2.0652861319831572,
+          "requests_below_20_effective_tps": 0
+        },
+        "deepseek": {
+          "requests": 37,
+          "output_tokens": 9472,
+          "output_tokens_per_second": 153.4577286987762,
+          "mean_request_seconds": 1.6581633968886014,
+          "p50_request_seconds": 1.6588904430391267,
+          "p95_request_seconds": 1.7723769860109315,
+          "max_request_seconds": 1.8486189909745008,
+          "requests_below_20_effective_tps": 0
+        }
+      },
+      "combined_tps": 286.1779264923124,
+      "error_count": 0
+    },
+    {
+      "name": "joint-mps-sync-c4",
+      "status": "failed",
+      "trials": {
+        "gemma4": "gemma-tp4-mps-sync",
+        "deepseek": "deepseek-tp4-dspark-mps-sync"
+      },
+      "concurrency_per_model": 4,
+      "seconds": 45.455758810043335,
+      "by_service": {
+        "gemma4": {
+          "requests": 56,
+          "output_tokens": 14336,
+          "output_tokens_per_second": 315.3835812071516,
+          "mean_request_seconds": 2.479779475104546,
+          "p50_request_seconds": 2.4801979964831844,
+          "p95_request_seconds": 2.6559920087456703,
+          "max_request_seconds": 2.942106036003679,
+          "requests_below_20_effective_tps": 0
+        },
+        "deepseek": {
+          "requests": 56,
+          "output_tokens": 14336,
+          "output_tokens_per_second": 315.3835812071516,
+          "mean_request_seconds": 2.493841017049687,
+          "p50_request_seconds": 2.4948681175301317,
+          "p95_request_seconds": 2.7005460644868435,
+          "max_request_seconds": 2.7615311029949225,
+          "requests_below_20_effective_tps": 0
+        }
+      },
+      "combined_tps": 630.7671624143032,
+      "error_count": 10
+    },
+    {
+      "name": "joint-nccl-c1",
+      "status": "passed",
+      "trials": {
+        "gemma4": "gemma-tp4-nccl",
+        "deepseek": "deepseek-tp4-dspark-nccl"
+      },
+      "concurrency_per_model": 1,
+      "seconds": 62.454023599624634,
+      "by_service": {
+        "gemma4": {
+          "requests": 7,
+          "output_tokens": 1792,
+          "output_tokens_per_second": 28.693107292622383,
+          "mean_request_seconds": 8.883473161441673,
+          "p50_request_seconds": 4.976633766957093,
+          "p95_request_seconds": 24.502772049512714,
+          "max_request_seconds": 32.024949242011644,
+          "requests_below_20_effective_tps": 1
+        },
+        "deepseek": {
+          "requests": 8,
+          "output_tokens": 2048,
+          "output_tokens_per_second": 32.792122620139864,
+          "mean_request_seconds": 7.80633242562908,
+          "p50_request_seconds": 4.5076571785029955,
+          "p95_request_seconds": 21.954190287250093,
+          "max_request_seconds": 30.277093507000245,
+          "requests_below_20_effective_tps": 1
+        }
+      },
+      "combined_tps": 61.48522991276225,
+      "error_count": 0
+    },
+    {
+      "name": "joint-nccl-c4",
+      "status": "passed",
+      "trials": {
+        "gemma4": "gemma-tp4-nccl",
+        "deepseek": "deepseek-tp4-dspark-nccl"
+      },
+      "concurrency_per_model": 4,
+      "seconds": 62.893725872039795,
+      "by_service": {
+        "gemma4": {
+          "requests": 63,
+          "output_tokens": 16128,
+          "output_tokens_per_second": 256.4325737803031,
+          "mean_request_seconds": 3.9445755353016363,
+          "p50_request_seconds": 3.670382478972897,
+          "p95_request_seconds": 7.292998100840487,
+          "max_request_seconds": 8.01807865104638,
+          "requests_below_20_effective_tps": 0
+        },
+        "deepseek": {
+          "requests": 52,
+          "output_tokens": 13312,
+          "output_tokens_per_second": 211.65863232659936,
+          "mean_request_seconds": 4.803955058882891,
+          "p50_request_seconds": 4.502164796489524,
+          "p95_request_seconds": 7.263980718533276,
+          "max_request_seconds": 8.784707355021965,
+          "requests_below_20_effective_tps": 0
+        }
+      },
+      "combined_tps": 468.0912061069024,
+      "error_count": 0
+    },
+    {
+      "name": "joint-shared-balanced-c4",
+      "status": "passed",
+      "trials": {
+        "gemma4": "gemma-shared-32k-kv8",
+        "deepseek": "deepseek-shared-1m-kv16"
+      },
+      "concurrency_per_model": 4,
+      "seconds": 321.18821382522583,
+      "by_service": {
+        "gemma4": {
+          "requests": 116,
+          "output_tokens": 29696,
+          "output_tokens_per_second": 92.45669274825583,
+          "mean_request_seconds": 10.898822241277607,
+          "p50_request_seconds": 8.387547480524518,
+          "p95_request_seconds": 24.092696401523426,
+          "max_request_seconds": 34.87660837697331,
+          "requests_below_20_effective_tps": 35
+        },
+        "deepseek": {
+          "requests": 104,
+          "output_tokens": 26624,
+          "output_tokens_per_second": 82.8922072915397,
+          "mean_request_seconds": 12.227635934576728,
+          "p50_request_seconds": 9.903172573511256,
+          "p95_request_seconds": 24.639463574191904,
+          "max_request_seconds": 33.95213936100481,
+          "requests_below_20_effective_tps": 40
+        }
+      },
+      "combined_tps": 175.34890003979552,
+      "error_count": 0
+    },
+    {
+      "name": "solo-deepseek-c1",
+      "status": "passed",
+      "trials": {
+        "deepseek": "deepseek-dedicated-1m-kv36"
+      },
+      "concurrency_per_model": 1,
+      "seconds": 60.36432719230652,
+      "by_service": {
+        "deepseek": {
+          "requests": 42,
+          "output_tokens": 10752,
+          "output_tokens_per_second": 178.11844345993723,
+          "mean_request_seconds": 1.4369722591197518,
+          "p50_request_seconds": 1.4465393595164642,
+          "p95_request_seconds": 1.5171786558203166,
+          "max_request_seconds": 1.5422448930330575,
+          "requests_below_20_effective_tps": 0
+        }
+      },
+      "combined_tps": 178.11844345993723,
+      "error_count": 0
+    },
+    {
+      "name": "solo-deepseek-c4",
+      "status": "passed",
+      "trials": {
+        "deepseek": "deepseek-dedicated-1m-kv36"
+      },
+      "concurrency_per_model": 4,
+      "seconds": 121.35982823371887,
+      "by_service": {
+        "deepseek": {
+          "requests": 233,
+          "output_tokens": 59648,
+          "output_tokens_per_second": 491.4970700611726,
+          "mean_request_seconds": 2.0674465202397663,
+          "p50_request_seconds": 2.0717535889707506,
+          "p95_request_seconds": 2.236004063405562,
+          "max_request_seconds": 2.4196639669826254,
+          "requests_below_20_effective_tps": 0
+        }
+      },
+      "combined_tps": 491.4970700611726,
+      "error_count": 0
+    },
+    {
+      "name": "solo-gemma-c1",
+      "status": "invalid overlapping benchmark",
+      "trials": {
+        "gemma4": "gemma-dedicated-32k-kv112"
+      },
+      "concurrency_per_model": 1,
+      "seconds": 60.653541564941406,
+      "by_service": {
+        "gemma4": {
+          "requests": 38,
+          "output_tokens": 9728,
+          "output_tokens_per_second": 160.38634759001312,
+          "mean_request_seconds": 1.5958830597059874,
+          "p50_request_seconds": 1.597190005966695,
+          "p95_request_seconds": 1.7822160155483289,
+          "max_request_seconds": 1.870520820026286,
+          "requests_below_20_effective_tps": 0
+        }
+      },
+      "combined_tps": 160.38634759001312,
+      "error_count": 1
+    },
+    {
+      "name": "solo-gemma-c4",
+      "status": "passed",
+      "trials": {
+        "gemma4": "gemma-dedicated-32k-kv112"
+      },
+      "concurrency_per_model": 4,
+      "seconds": 20.93509316444397,
+      "by_service": {
+        "gemma4": {
+          "requests": 52,
+          "output_tokens": 13312,
+          "output_tokens_per_second": 635.8701103183537,
+          "mean_request_seconds": 1.5965877566363464,
+          "p50_request_seconds": 1.6033080634952057,
+          "p95_request_seconds": 1.6869131602579728,
+          "max_request_seconds": 1.7103898850036785,
+          "requests_below_20_effective_tps": 0
+        }
+      },
+      "combined_tps": 635.8701103183537,
+      "error_count": 0
+    },
+    {
+      "name": "solo-gemma-c4-overlap-invalid",
+      "status": "invalid overlapping benchmark",
+      "trials": {
+        "gemma4": "gemma-dedicated-32k-kv112"
+      },
+      "concurrency_per_model": 4,
+      "seconds": 61.145057678222656,
+      "by_service": {
+        "gemma4": {
+          "requests": 147,
+          "output_tokens": 37632,
+          "output_tokens_per_second": 615.4544852674653,
+          "mean_request_seconds": 1.6548081775758967,
+          "p50_request_seconds": 1.653143387986347,
+          "p95_request_seconds": 1.7825675833213608,
+          "max_request_seconds": 1.872841961972881,
+          "requests_below_20_effective_tps": 0
+        }
+      },
+      "combined_tps": 615.4544852674653,
+      "error_count": 0
+    }
+  ],
+  "full_overlap": {
+    "status": "passed",
+    "requests": [
+      {
+        "service": "gemma4",
+        "index": 0,
+        "prompt_tokens": 31174,
+        "needle": "ORCHID-7294",
+        "content": "ORCHID-7294\n\nThe archive designated as 0c6241e90d6b4687ba05f32153856b01 stands as a monument to the mundane, a vast repository of the unremarkable, and a testament to the human impulse to categorize the trivial. At first glance, the contents are described with a repetitive, almost hypnotic simplicity: \"ordinary inventory notes about history and science.\" However, it is within this very",
+        "content_chunks": 36,
+        "unique_prefix": "Unique archive 0c6241e90d6b4687ba05f32153856b01.\n",
+        "prompt_sha256": "4a1eb1513a26bae54bcf2dfbbf030f67f66e75c085eae6526675b84cb0ceb4f8",
+        "start_unix": 1789647937.6013877,
+        "usage": {
+          "prompt_tokens": 31174,
+          "total_tokens": 31278,
+          "completion_tokens": 104,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "first_token_unix": 1789647967.9680998,
+        "last_token_unix": 1789647974.6565616,
+        "needle_retrieved": true,
+        "intentional_cancel_unix": 1789647974.7822733
+      },
+      {
+        "service": "gemma4",
+        "index": 1,
+        "prompt_tokens": 31172,
+        "needle": "ORCHID-7294",
+        "content": "ORCHID-7294\n\nThe archive identified as 7edede80147945e4b110649909348557 stands as a monumental testament to the human impulse to categorize, preserve, and quantify the vast expanse of intellectual pursuit. At first glance, the contents are described as \"ordinary inventory notes about history and science,\" a phrasing that suggests a mundane quality, perhaps the dry ledger of a forgotten museum or the meticulous records of a long-defunct university department. However, the sheer volume and repetitive nature of the archive's presentation suggest a deeper, almost obsessive commitment to the act of archiving itself. To examine this archive is to engage with the intersection of data and memory",
+        "content_chunks": 59,
+        "unique_prefix": "Unique archive 7edede80147945e4b110649909348557.\n",
+        "prompt_sha256": "0f3996df7d67fd85083068491cc3317cfc84b38f2b91afc3e18ad897e44a02bd",
+        "start_unix": 1789647937.66288,
+        "usage": {
+          "prompt_tokens": 31172,
+          "total_tokens": 31327,
+          "completion_tokens": 155,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "first_token_unix": 1789647946.1191072,
+        "last_token_unix": 1789647974.656001,
+        "needle_retrieved": true,
+        "intentional_cancel_unix": 1789647974.7824361
+      },
+      {
+        "service": "gemma4",
+        "index": 2,
+        "prompt_tokens": 31171,
+        "needle": "ORCHID-7294",
+        "content": "ORCHID-7294\n\nThe archive identified as abdc956e408e493c96bb1f15334b222a stands as a monumental, albeit deceptively mundane, repository of human knowledge. At first glance, the contents are described as \"ordinary inventory notes about history and science,\" a phrase that suggests a dry, bureaucratic cataloging of artifacts, dates, and formulas. However, the sheer scale of this archive\u2014and the repetitive nature of its description\u2014hints at a deeper, perhaps more obsessive, commitment to the preservation of the banal. To understand the archive is to understand the philosophy of the \"ordinary.\" In a world obsessed with the extraordinary, the revolutionary, and the cataclysmic, archive abdc956e408e",
+        "content_chunks": 51,
+        "unique_prefix": "Unique archive abdc956e408e493c96bb1f15334b222a.\n",
+        "prompt_sha256": "255b1bdf905934b808946ca331db96e6268b00d374713022ce59f64103564a4f",
+        "start_unix": 1789647937.6895015,
+        "usage": {
+          "prompt_tokens": 31171,
+          "total_tokens": 31340,
+          "completion_tokens": 169,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "first_token_unix": 1789647953.5574102,
+        "last_token_unix": 1789647974.656792,
+        "needle_retrieved": true,
+        "intentional_cancel_unix": 1789647974.7826042
+      },
+      {
+        "service": "gemma4",
+        "index": 3,
+        "prompt_tokens": 31168,
+        "needle": "ORCHID-7294",
+        "content": "ORCHID-7294\n\nThe archive identified as 0577487feee54849afc2be2fb7f0aeca stands as a monumental, albeit deceptively mundane, repository of human knowledge. At first glance, the contents are described as \"ordinary inventory notes about history and science,\" a phrasing that suggests a dry, bureaucratic cataloging of artifacts, dates, and formulas. However, the sheer scale of this archive\u2014and the repetitive nature of its description\u2014hints at a deeper, perhaps more obsessive, commitment to the preservation of the banal. To understand the archive is to understand the philosophy of the \"ordinary.\"",
+        "content_chunks": 44,
+        "unique_prefix": "Unique archive 0577487feee54849afc2be2fb7f0aeca.\n",
+        "prompt_sha256": "2d5a02ffac6944d191aa1095881416d18e7e66044b7ebe5d02e53e9fd7c21fad",
+        "start_unix": 1789647937.7086325,
+        "usage": {
+          "prompt_tokens": 31168,
+          "total_tokens": 31306,
+          "completion_tokens": 138,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "first_token_unix": 1789647960.590654,
+        "last_token_unix": 1789647974.6562824,
+        "needle_retrieved": true,
+        "intentional_cancel_unix": 1789647974.7827594
+      },
+      {
+        "service": "deepseek",
+        "index": 0,
+        "prompt_tokens": 1029587,
+        "needle": "ORCHID-7294",
+        "content": "ORCHID-7294\n\nThe archive, designated by the unique identifier 44d3a7b05b9b4f15a3ce45ddfdf3b545, presents itself as a monolithic repository of ostensibly mundane content. Its external description\u2014repeated with a hypnotic, almost ritualistic insistence\u2014characterizes it as containing \"ordinary inventory notes about history and science.\" This description, however, functions less as a factual summary and more as a deliberate obfuscation, a verbal ward designed to discourage deeper inquiry. The very redundancy of the phrase, repeated ad infinitum, suggests a defensive mechanism, a textual smokescreen intended to saturate the observer's attention with banality until the will to investigate further is extinguished. To accept the archive at its word is to fall into its first and most subtle trap: the assumption that the surface is all there is.\n\nMy task is to write an extremely long essay about this archive. This is a paradoxical instruction. How does one write extensively about a void, a cipher, a collection defined by its purported lack of distinction? The answer lies in recognizing that the archive is not a passive container of information but an active agent. It is a puzzle box, a labyrinth, and a mirror. Its true contents are not the notes themselves\u2014which may or may not exist in any conventional sense\u2014but the questions it forces us to ask about the nature of information, the construction of history, the methodology of science, and the architecture of secrecy itself. The archive is a philosophical provocation disguised as a filing cabinet.\n\nLet us begin with the identifier: 44d3a7b05b9b4f15a3ce45ddfdf3b545. This is a 128-bit hexadecimal string, a format characteristic of a UUID (Universally Unique Identifier) or a cryptographic hash. Its structure is significant. It is not a simple sequential number, nor a human-readable title. It is a product of a computational process, designed to be unique across space and time. This immediately places the archive within a digital, networked",
+        "content_chunks": 1490,
+        "unique_prefix": "Unique archive 44d3a7b05b9b4f15a3ce45ddfdf3b545.\n",
+        "prompt_sha256": "11843b5a38092afd777fa982eba4a84113d90a04aa117dde5b807f03830ac628",
+        "start_unix": 1789647328.9280803,
+        "usage": {
+          "prompt_tokens": 1029587,
+          "total_tokens": 1034155,
+          "completion_tokens": 4568,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "first_token_unix": 1789647482.381689,
+        "last_token_unix": 1789647974.7613049,
+        "needle_retrieved": true,
+        "intentional_cancel_unix": 1789647974.781459
+      },
+      {
+        "service": "deepseek",
+        "index": 1,
+        "prompt_tokens": 1029585,
+        "needle": "ORCHID-7294",
+        "content": "ORCHID-7294\n\nThe archive, designated by the hexadecimal string 35ec4a69d8d240a284b35dd9740dfb2c, presents itself as a uniquely unremarkable collection. Its external description\u2014repeated with a hypnotic, almost ritualistic insistence\u2014is that it \"contains ordinary inventory notes about history and science.\" This phrase, encountered once, might be dismissed as a simple summary. Encountered repeatedly, it transforms into a kind of incantation, a deliberate flattening of expectation. The archive does not promise revelation. It does not hint at conspiracy. It does not advertise hidden treasure. Instead, it insists on its own ordinariness with a persistence that becomes, paradoxically, extraordinary. The very act of stating that the contents are ordinary, over and over, raises the question of why such insistence is necessary. What is being protected? What is being concealed behind the screen of the mundane? Or, alternatively, what is being tested\u2014the patience of the reader, the discernment of the researcher, the willingness of the curious to look beyond the surface?\n\nTo write about this archive is to confront a fundamental problem of description. If the archive truly contains only ordinary inventory notes about history and science, then there is no obvious narrative to tell. There is no dramatic discovery, no secret society, no lost civilization, no suppressed technology. There is only the slow, methodical work of cataloguing: lists of items, dates, provenance, condition, location. History and science, as fields, are themselves vast and varied, but inventory notes are the lowest-level administrative residue of those fields. They are the paperwork that accompanies artifacts, specimens, documents, and samples. They are not the things themselves. They are traces of things, metadata about things, bureaucratic shadows cast by objects that may or may not still exist. An inventory note might read: \"Item 4472: brass microscope, late 19th century, manufacturer unknown, lens cracked",
+        "content_chunks": 1236,
+        "unique_prefix": "Unique archive 35ec4a69d8d240a284b35dd9740dfb2c.\n",
+        "prompt_sha256": "ac254185f955a03f58ea870c88534813670883aea75070d9843aa41a7b01d74a",
+        "start_unix": 1789647329.0449536,
+        "usage": {
+          "prompt_tokens": 1029585,
+          "total_tokens": 1032589,
+          "completion_tokens": 3004,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "first_token_unix": 1789647633.009849,
+        "last_token_unix": 1789647974.7608018,
+        "needle_retrieved": true,
+        "intentional_cancel_unix": 1789647974.7817297
+      },
+      {
+        "service": "deepseek",
+        "index": 2,
+        "prompt_tokens": 1029585,
+        "needle": "ORCHID-7294",
+        "content": "The secret access code is ORCHID-7294.\n\nWhat follows is an essay about the archive identified as 0874daa1a04e42c487002f10c4c60ae8. It is an archive that presents itself as ordinary, and perhaps that is the most important thing about it. The archive contains ordinary inventory notes about history and science. That sentence, repeated until it becomes a kind of atmosphere, is the archive\u2019s own description of itself. It does not announce a revelation. It does not advertise a hidden chamber. It insists, with the patience of a clerk stamping forms, that it is ordinary, that its contents are inventory notes, that its subjects are history and science. And yet an archive is never only what it says it is. An archive is a place where things are kept, and keeping is never neutral. To keep something is to decide that it should not be lost, or at least that it should not be lost yet. To inventory something is to place it in a system of names, numbers, categories, shelves, boxes, folders, and fields. The archive 0874daa1a04e42c487002f10c4c60ae8 may contain only ordinary inventory notes, but the very act of containing them makes them extraordinary, because they have been selected for survival.\n\nThe archive\u2019s identifier is a long hexadecimal string: 0874daa1a04e42c487002f10c4c60ae8. It looks like a checksum, a hash, a fingerprint of content. It does not look like a title. It does not look like a name. It is not \u201cThe History Collection\u201d or \u201cThe Science Papers\u201d or \u201cThe Inventory of Ordinary Things.\u201d It is a string of characters that could have been generated by a machine, and perhaps it was. This matters because it tells us something about the archive\u2019s nature. It is not organized around a human-readable theme in the way a library shelf might be. It is organized around an identifier that is unique, precise, and indifferent to meaning. The identifier does not care whether the notes are about the fall of Rome or the boiling point of water. It cares only that they are distinct from every",
+        "content_chunks": 985,
+        "unique_prefix": "Unique archive 0874daa1a04e42c487002f10c4c60ae8.\n",
+        "prompt_sha256": "05c699850ef5abe1db531cb3473dbe92bc7d76525579c72042e6c56fbbaea885",
+        "start_unix": 1789647329.0888858,
+        "usage": {
+          "prompt_tokens": 1029585,
+          "total_tokens": 1032114,
+          "completion_tokens": 2529,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "first_token_unix": 1789647784.720983,
+        "last_token_unix": 1789647974.7610521,
+        "needle_retrieved": true,
+        "intentional_cancel_unix": 1789647974.7819262
+      },
+      {
+        "service": "deepseek",
+        "index": 3,
+        "prompt_tokens": 1029593,
+        "needle": "ORCHID-7294",
+        "content": "The secret access code is ORCHID-7294.\n\nWhat follows is an extremely long essay about the archive identified as 2f7879bc80db4fd08474e350bb999f42, an archive whose outward description insists, with almost comic repetition, that it contains only ordinary inventory notes about history and science. That very insistence is the first thing worth examining. An archive that describes itself once is making a claim. An archive that describes itself hundreds of times is performing a ritual of ordinariness. It is not merely telling the reader what it is; it is trying to prevent the reader from asking what else it might be. The phrase \u201cordinary inventory notes about history and science\u201d becomes, through repetition, less a description than a spell against curiosity. And yet curiosity is exactly what such a structure invites, because the more forcefully a thing declares its banality, the more one suspects that its banality is a surface designed to be scratched.\n\nThe archive, in the most literal sense, appears to be a collection of inventory notes. Inventory notes are humble documents. They record what is present, what is missing, what is damaged, what has been moved, what has been acquired, what has been deaccessioned. They are the paperwork of memory institutions: museums, libraries, laboratories, historical societies, private collections, university departments, corporate archives, and government storehouses. An inventory note might say that a box contains three geological specimens, a faded photograph, a letter from 1911, a brass instrument of unknown function, and a typed report on soil composition. It might say that a shelf holds bound volumes of a scientific journal from 1948 to 1962, with volume 17 missing. It might say that a cabinet drawer contains index cards on local history, some water-damaged, some legible, some in a hand that no one has yet identified. These are the kinds of records that make up the invisible infrastructure of knowledge. They are not the knowledge itself,",
+        "content_chunks": 731,
+        "unique_prefix": "Unique archive 2f7879bc80db4fd08474e350bb999f42.\n",
+        "prompt_sha256": "0581f8992159442907dcc229e061320a968405b9fb4da5a03fad90c8863b6a0b",
+        "start_unix": 1789647329.1330075,
+        "usage": {
+          "prompt_tokens": 1029593,
+          "total_tokens": 1031274,
+          "completion_tokens": 1681,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        "first_token_unix": 1789647937.1866915,
+        "last_token_unix": 1789647974.760438,
+        "needle_retrieved": true,
+        "intentional_cancel_unix": 1789647974.7820969
+      }
+    ],
+    "started_unix": 1789647303.0543013,
+    "barrier_unix": 1789647969.629756,
+    "memory_at_barrier_mib": [
+      134007,
+      134007,
+      134007,
+      134007
+    ],
+    "memory_after_hold_mib": [
+      134007,
+      134007,
+      134007,
+      134007
+    ],
+    "overlap_seconds": 5.1077961921691895,
+    "health": {
+      "gemma4": true,
+      "deepseek": true
+    },
+    "running_after_cancel": {
+      "gemma4": 0.0,
+      "deepseek": 0.0
+    },
+    "finished_unix": 1789647979.8307877,
+    "metrics": {
+      "gemma4": {
+        "num_requests_running": 4.0,
+        "kv_cache_usage_perc": 0.19978636554381413,
+        "num_preemptions_total": 0.0
+      },
+      "deepseek": {
+        "num_requests_running": 4.0,
+        "kv_cache_usage_perc": 0.44035392206908286,
+        "num_preemptions_total": 0.0
+      }
+    }
+  }
+}

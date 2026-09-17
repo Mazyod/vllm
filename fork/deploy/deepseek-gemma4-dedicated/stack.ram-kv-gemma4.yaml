@@ -1,0 +1,13 @@
+# Opt-in candidate; merge AFTER stack.yaml. The other model is unchanged.
+version: '3.8'
+services:
+  gemma4:
+    volumes:
+    - type: tmpfs
+      target: /dev/shm
+      tmpfs:
+        size: 858993459200
+configs:
+  gemma4:
+    name: dedicated-gemma4-ramkv-${GEMMA4_RAM_KV_CONFIG_REV:-20260917a}
+    file: ./ram-kv/gemma4.yaml

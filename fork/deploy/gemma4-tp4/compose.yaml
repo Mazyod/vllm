@@ -1,0 +1,41 @@
+name: gemma4-tp4
+
+services:
+  gemma4:
+    image: vllm/vllm-openai@sha256:f1491cb3abc84aca4e319c2b3f3f23644f0d9e19fdb9012c80818d3f30e5a0a0
+    restart: unless-stopped
+    shm_size: 8gb
+    ports:
+      - "8001:8000"
+    entrypoint: ["uv", "run", "--no-project", "vllm", "serve"]
+    command: ["--config", "/etc/vllm/gemma.yaml", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      HF_HOME: /models/huggingface
+      HF_HUB_CACHE: /models/huggingface/hub
+      VLLM_USE_V2_MODEL_RUNNER: "1"
+      VLLM_USE_RUST_FRONTEND: "0"
+      VLLM_DEEP_GEMM_WARMUP: skip
+      VLLM_ALLREDUCE_USE_FLASHINFER: "0"
+      TRITON_CACHE_DIR: /root/.cache/vllm/triton
+      TORCHINDUCTOR_CACHE_DIR: /root/.cache/vllm/inductor
+    volumes:
+      - ./vllm.yaml:/etc/vllm/gemma.yaml:ro
+      - models:/models
+      - runtime-cache:/root/.cache/vllm
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["0", "1", "2", "3"]
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "uv", "run", "--no-project", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5).close()"]
+      start_period: 10m
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  models:
+  runtime-cache:

@@ -1,0 +1,17 @@
+# Optional configuration for the verified fork release v0.1.12.
+# These names assume: docker stack deploy -c stack.yaml inference-dedicated
+service_discovery: static
+routing_logic: roundrobin
+static_models:
+  deepseek-v4.1-flash:
+    static_backends:
+      - http://inference-dedicated_deepseek:8000
+  gemma-4-31b:
+    static_backends:
+      - http://inference-dedicated_gemma4:8000
+host: 0.0.0.0
+port: 8080
+backend_connect_timeout: 10.0
+# Silence bound, not total streaming duration. Cold 4x1M TTFT reached 608s.
+backend_read_timeout: 1800.0
+timeout_keep_alive: 5
