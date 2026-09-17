@@ -38,6 +38,11 @@ Every paid run records a cost envelope before create: hourly ceiling, hard cap,
 expected model-transfer bytes and rate, and whether a persistent/warm cache is
 being reused. No spend begins until CPU preflight is green.
 
+For avoiding large checkpoint downloads while expensive GPUs are billing, see
+the proposed [persistent model-cache workflow](../deploy/MODEL_CACHE.md).
+Its volume reuse and cloning procedure is not yet hardware-validated or wired
+into the rental controllers.
+
 ## Phase 0 — static (free, local)
 
 0. Start release preparation with `fork/scripts/new-release.sh <TAG>`. When a
