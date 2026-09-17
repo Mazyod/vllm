@@ -1,0 +1,144 @@
+version: "3.8"
+
+services:
+  deepseek:
+    image: vllm/vllm-openai@sha256:f1491cb3abc84aca4e319c2b3f3f23644f0d9e19fdb9012c80818d3f30e5a0a0
+    entrypoint: ["vllm", "serve"]
+    command: ["--config", "/etc/vllm/model.yaml", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      NVIDIA_VISIBLE_DEVICES: "0,1,2,3"
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      HF_HOME: /root/.cache/huggingface
+      VLLM_ENGINE_READY_TIMEOUT_S: "3600"
+      VLLM_USE_V2_MODEL_RUNNER: "1"
+      VLLM_USE_RUST_FRONTEND: "0"
+      VLLM_DEEP_GEMM_WARMUP: skip
+      VLLM_ALLREDUCE_USE_FLASHINFER: "0"
+      VLLM_ALLREDUCE_USE_SYMM_MEM: "0"
+      VLLM_USE_NCCL_SYMM_MEM: "0"
+      TRITON_CACHE_DIR: /root/.cache/vllm/triton
+      TORCHINDUCTOR_CACHE_DIR: /root/.cache/vllm/inductor
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    configs:
+      - source: deepseek
+        target: /etc/vllm/model.yaml
+    volumes:
+      - type: bind
+        source: /opt/huggingface
+        target: /root/.cache/huggingface
+      - type: bind
+        source: /opt/vllm/cache/deepseek
+        target: /root/.cache/vllm
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 68719476736
+    ports:
+      - target: 8000
+        published: 8000
+        protocol: tcp
+        mode: host
+    healthcheck:
+      test: ["CMD", "uv", "run", "--no-project", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5).close()"]
+      start_period: 90m
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 2m
+    deploy:
+      replicas: ${DEEPSEEK_REPLICAS:-1}
+      placement:
+        constraints:
+          - node.labels.inference-pair == ${INFERENCE_PAIR_NODE:-h200-tp4}
+          - node.platform.arch == x86_64
+      # No exclusive GPU reservations: both services intentionally share 0-3.
+      restart_policy:
+        condition: on-failure
+        delay: 30s
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        order: stop-first
+        failure_action: rollback
+        monitor: 95m
+      rollback_config:
+        parallelism: 1
+        order: stop-first
+
+  gemma4:
+    image: vllm/vllm-openai@sha256:f1491cb3abc84aca4e319c2b3f3f23644f0d9e19fdb9012c80818d3f30e5a0a0
+    entrypoint: ["vllm", "serve"]
+    command: ["--config", "/etc/vllm/model.yaml", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      NVIDIA_VISIBLE_DEVICES: "0,1,2,3"
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      HF_HOME: /root/.cache/huggingface
+      VLLM_ENGINE_READY_TIMEOUT_S: "3600"
+      VLLM_USE_V2_MODEL_RUNNER: "1"
+      VLLM_USE_RUST_FRONTEND: "0"
+      VLLM_DEEP_GEMM_WARMUP: skip
+      VLLM_ALLREDUCE_USE_FLASHINFER: "0"
+      VLLM_ALLREDUCE_USE_SYMM_MEM: "0"
+      VLLM_USE_NCCL_SYMM_MEM: "0"
+      TRITON_CACHE_DIR: /root/.cache/vllm/triton
+      TORCHINDUCTOR_CACHE_DIR: /root/.cache/vllm/inductor
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    configs:
+      - source: gemma4
+        target: /etc/vllm/model.yaml
+    volumes:
+      - type: bind
+        source: /opt/huggingface
+        target: /root/.cache/huggingface
+      - type: bind
+        source: /opt/vllm/cache/gemma4
+        target: /root/.cache/vllm
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 8589934592
+    ports:
+      - target: 8000
+        published: 8001
+        protocol: tcp
+        mode: host
+    healthcheck:
+      test: ["CMD", "uv", "run", "--no-project", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5).close()"]
+      start_period: 30m
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 2m
+    deploy:
+      replicas: ${GEMMA_REPLICAS:-1}
+      placement:
+        constraints:
+          - node.labels.inference-pair == ${INFERENCE_PAIR_NODE:-h200-tp4}
+          - node.platform.arch == x86_64
+      restart_policy:
+        condition: on-failure
+        delay: 30s
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        order: stop-first
+        failure_action: rollback
+        monitor: 35m
+      rollback_config:
+        parallelism: 1
+        order: stop-first
+
+# Swarm configs are immutable. Change the corresponding revision when editing.
+configs:
+  deepseek:
+    name: ${INFERENCE_PAIR_NODE:-h200-tp4}-deepseek-${DEEPSEEK_CONFIG_REV:-20260917b}
+    file: ./deepseek.yaml
+  gemma4:
+    name: ${INFERENCE_PAIR_NODE:-h200-tp4}-gemma4-${GEMMA_CONFIG_REV:-20260917b}
+    file: ./gemma4.yaml

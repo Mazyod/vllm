@@ -10,9 +10,9 @@ configs/<TAG>/
   results/*.md
 ```
 
-A configuration for a model no release tag supports yet has no release
-directory to live in. It goes under `configs/pending/<model>/` instead, holding
-its record and its candidate YAML:
+A configuration requiring an unvalidated development image has no validated
+release directory to live in. New architectures and nightly-specific behavior
+go under `configs/pending/<model>/`, holding the record and candidate YAML:
 
 ```text
 configs/pending/<model>/

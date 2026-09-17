@@ -16,6 +16,8 @@ repos:
     hooks:
       - id: typos
         args: [--force-exclude]
+        # Matplotlib generates hexadecimal SVG IDs; check prose in the renderer.
+        exclude: ^fork/bench/configs/pending/gemma-4-nightly/shared-h200/.*\.svg$
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.21.0
     hooks:

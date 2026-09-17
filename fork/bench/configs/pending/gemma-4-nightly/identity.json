@@ -1,0 +1,84 @@
+{
+  "date": "2026-09-17",
+  "overlay_sha": "6bc88fb8fc891f5ba63247b7e486ddf7e7ded457",
+  "image": "vllm/vllm-openai@sha256:f1491cb3abc84aca4e319c2b3f3f23644f0d9e19fdb9012c80818d3f30e5a0a0",
+  "image_id": "sha256:0f9e42bf94b6abc20ef1f5949828b24ba5390430bd9a160bd6e93683d3a33b05",
+  "manifest_list_digest": "sha256:f3b756ede21083a9415baac77b38998b89c738d2a9c1441c22de2d49cacf5282",
+  "source_commit": "af1c01499b289be555c475669ba50a88e96d846e",
+  "venue": {
+    "profile": "hopper-budget",
+    "gpu_count": 2,
+    "gpu_model": "NVIDIA H100 80GB HBM3",
+    "memory_mib_per_gpu": 81559,
+    "interconnect": "NV18",
+    "driver": "595.71.05"
+  },
+  "software": {
+    "vllm": "0.29.1rc1.dev187+gaf1c01499",
+    "torch": "2.13.0+cu130",
+    "transformers": "5.17.0",
+    "flashinfer-python": "0.6.18.post1",
+    "huggingface_hub": "1.31.0"
+  },
+  "models": {
+    "target": {
+      "repo": "RedHatAI/gemma-4-31B-it-FP8-block",
+      "revision": "d7242548c457ab4b45bd3adb8937f2659af4739d",
+      "path": "/workspace/hf/models--RedHatAI--gemma-4-31B-it-FP8-block/snapshots/d7242548c457ab4b45bd3adb8937f2659af4739d",
+      "bytes": 33295622920
+    },
+    "draft": {
+      "repo": "google/gemma-4-31B-it-assistant",
+      "revision": "627c5ec1458b9086b841a91e0512fd31fd2fbbf1",
+      "path": "/workspace/hf/models--google--gemma-4-31B-it-assistant/snapshots/627c5ec1458b9086b841a91e0512fd31fd2fbbf1",
+      "bytes": 971215445
+    }
+  },
+  "staging": {
+    "elapsed_seconds": 58.52647542953491,
+    "payload_bytes": 34266838365,
+    "payload_bytes_per_second": 585492943.381783,
+    "received_bytes": 33860688146,
+    "sent_bytes": 198804851,
+    "received_bytes_per_second": 578553345.2594085,
+    "model_downloads_per_revision": 1,
+    "cache_reused_between_launches": true
+  },
+  "cost": {
+    "elapsed_seconds": 8013.04024887085,
+    "hourly_compute_storage_usd": 4.496111111111111,
+    "estimated_compute_storage_usd": 10.007644249091326,
+    "container_received_bytes": 33864122292,
+    "container_sent_bytes": 205554959,
+    "image_pull_allowance_bytes": 8710828126,
+    "ingress_usd_per_gb": 0.004,
+    "egress_usd_per_gb": 0.005333333333333333,
+    "estimated_transfer_usd": 0.17139609478666668,
+    "estimated_total_usd": 10.179040343877993,
+    "teardown_confirmed": true
+  },
+  "audit": {
+    "raw_launches": 41,
+    "fully_passed_runs": 28,
+    "correctness_checks_passed": 504,
+    "native_benchmark_requests": 688,
+    "native_output_tokens": 176128,
+    "all_native_requests_completed_256_output_tokens": true,
+    "preflight_passed": 568,
+    "preflight_skipped": 6,
+    "preflight_green": true,
+    "alignment_passed": true,
+    "gpu_memory_released_mib": [
+      0,
+      0
+    ]
+  },
+  "updated_utc": "2026-09-17 07:24 UTC",
+  "session": {
+    "hourly_usd": 4.496111111111111,
+    "hard_cap_seconds": 10800,
+    "teardown_confirmed": true,
+    "elapsed_seconds": 8013.04024887085,
+    "estimated_compute_storage_usd": 10.007644249091326
+  }
+}

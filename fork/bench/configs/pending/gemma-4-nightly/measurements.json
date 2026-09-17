@@ -1,0 +1,3240 @@
+[
+  {
+    "name": "tp2-fp8-on-r3",
+    "status": "boot_failed",
+    "parameters": {
+      "name": "tp2-fp8-on-r3",
+      "tp": 2,
+      "kv": "fp8",
+      "spec": true,
+      "runner": "default",
+      "backend": null,
+      "draft_kv": null,
+      "long": false,
+      "kv_gib": null,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "95faad48770b1b94aa0faa8eefc78a37f30fa572028e37b30f5a4ae9b15ef25a",
+    "boot_seconds": 148.1116509437561,
+    "elapsed_seconds": 148.1543788909912,
+    "backends": [
+      "TRITON_ATTN",
+      "FLASHINFER"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 9513,
+    "loaded_model_gib_per_gpu": [
+      17.15,
+      17.15
+    ],
+    "idle_mib_per_gpu": null,
+    "after_mib_per_gpu": null,
+    "peak_mib_per_gpu": [
+      25021,
+      25021
+    ],
+    "peak_aggregate_mib": 50042,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 0,
+    "checks_total": 0,
+    "retrieval": [],
+    "benchmarks": [],
+    "error": "fp8 tensor core is not supported in fa2 backend",
+    "configuration": "tp2-fp8-on.yaml"
+  },
+  {
+    "name": "tp2-auto-on-r3",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-auto-on-r3",
+      "tp": 2,
+      "kv": "auto",
+      "spec": true,
+      "runner": "default",
+      "backend": null,
+      "draft_kv": null,
+      "long": false,
+      "kv_gib": null,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "a7dabe91422e115c80ef81dd523c756d7459058699cb73d751b20728588365c6",
+    "boot_seconds": 180.16822218894958,
+    "elapsed_seconds": 250.3397397994995,
+    "backends": [
+      "TRITON_FLASH_ATTN",
+      "FLASH_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 9513,
+    "loaded_model_gib_per_gpu": [
+      17.15,
+      17.15
+    ],
+    "idle_mib_per_gpu": [
+      24719,
+      24719
+    ],
+    "after_mib_per_gpu": [
+      25295,
+      25295
+    ],
+    "peak_mib_per_gpu": [
+      25295,
+      25295
+    ],
+    "peak_aggregate_mib": 50590,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 6789,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 108.86013898835958,
+        "median_tpot_ms": 7.726259018276252,
+        "median_ttft_ms": 93.5778021812439,
+        "duration": 9.406565245240927,
+        "mean_ttft_ms": 91.84224950149655,
+        "p99_ttft_ms": 95.62049208208919,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 129.42874392827468
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 277.6135589112538,
+        "median_tpot_ms": 11.317940910949426,
+        "median_ttft_ms": 317.87988264113665,
+        "duration": 14.754322577267885,
+        "mean_ttft_ms": 1318.6212081927806,
+        "p99_ttft_ms": 5294.21828398481,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 88.35529429496846
+      }
+    ],
+    "draft_tokens": 1701.0,
+    "accepted_draft_tokens": 977.0,
+    "acceptance": 0.5743680188124632,
+    "configuration": "tp2-auto-on.yaml"
+  },
+  {
+    "name": "tp1-fp8-off-r3",
+    "status": "passed",
+    "parameters": {
+      "name": "tp1-fp8-off-r3",
+      "tp": 1,
+      "kv": "fp8",
+      "spec": false,
+      "runner": "default",
+      "backend": null,
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": null,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "06d1c042be02e2d0e5bd8ffbec40de0004d943eacee0784e55c71829cc932f5f",
+    "boot_seconds": 180.1322455406189,
+    "elapsed_seconds": 337.76809573173523,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 9513,
+    "loaded_model_gib_per_gpu": [
+      31.7
+    ],
+    "idle_mib_per_gpu": [
+      37877,
+      0
+    ],
+    "after_mib_per_gpu": [
+      39031,
+      0
+    ],
+    "peak_mib_per_gpu": [
+      44587,
+      0
+    ],
+    "peak_aggregate_mib": 44587,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 6789,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 65.79715934057462,
+        "median_tpot_ms": 14.763981355902025,
+        "median_ttft_ms": 128.65820061415434,
+        "duration": 15.562981901690364,
+        "mean_ttft_ms": 125.46976655721664,
+        "p99_ttft_ms": 132.60559372603893,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 67.73240739702246
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 150.7087507785912,
+        "median_tpot_ms": 16.97888682578124,
+        "median_ttft_ms": 722.0743019133806,
+        "duration": 27.17824929766357,
+        "mean_ttft_ms": 8075.0151061220095,
+        "p99_ttft_ms": 17802.565175294876,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 58.896676222705636
+      }
+    ],
+    "draft_tokens": 0,
+    "accepted_draft_tokens": 0,
+    "acceptance": null,
+    "configuration": "tp1-fp8-off.yaml"
+  },
+  {
+    "name": "tp1-auto-off-r3",
+    "status": "passed",
+    "parameters": {
+      "name": "tp1-auto-off-r3",
+      "tp": 1,
+      "kv": "auto",
+      "spec": false,
+      "runner": "default",
+      "backend": null,
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": null,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "cb02ed734596f792ade0c47803d0445968d1a8d520eb73d61222c3d821df8ccd",
+    "boot_seconds": 148.11838364601135,
+    "elapsed_seconds": 235.33083939552307,
+    "backends": [
+      "TRITON_FLASH_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 9513,
+    "loaded_model_gib_per_gpu": [
+      31.7
+    ],
+    "idle_mib_per_gpu": [
+      41969,
+      0
+    ],
+    "after_mib_per_gpu": [
+      43123,
+      0
+    ],
+    "peak_mib_per_gpu": [
+      44587,
+      0
+    ],
+    "peak_aggregate_mib": 44587,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 6789,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 60.628369532458755,
+        "median_tpot_ms": 16.088904630319746,
+        "median_ttft_ms": 118.70922986418009,
+        "duration": 16.889782916754484,
+        "mean_ttft_ms": 118.93567070364952,
+        "p99_ttft_ms": 121.11942680552602,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 62.154635320262095
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 415.5106879675887,
+        "median_tpot_ms": 17.21410761203836,
+        "median_ttft_ms": 493.39929316192865,
+        "duration": 9.85774883441627,
+        "mean_ttft_ms": 457.2634091600776,
+        "p99_ttft_ms": 596.9773057848215,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 58.09188733667895
+      }
+    ],
+    "draft_tokens": 0,
+    "accepted_draft_tokens": 0,
+    "acceptance": null,
+    "configuration": "tp1-auto-off.yaml"
+  },
+  {
+    "name": "tp1-fp8-on-r3",
+    "status": "boot_failed",
+    "parameters": {
+      "name": "tp1-fp8-on-r3",
+      "tp": 1,
+      "kv": "fp8",
+      "spec": true,
+      "runner": "default",
+      "backend": null,
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": null,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "b1b5466867efec4581597bdacf39a6b6f1c1e2be48d443c80fe6b002fe4256ff",
+    "boot_seconds": 122.1134557723999,
+    "elapsed_seconds": 122.15174007415771,
+    "backends": [
+      "TRITON_ATTN",
+      "FLASHINFER"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 9513,
+    "loaded_model_gib_per_gpu": [
+      32.61
+    ],
+    "idle_mib_per_gpu": null,
+    "after_mib_per_gpu": null,
+    "peak_mib_per_gpu": [
+      44629,
+      0
+    ],
+    "peak_aggregate_mib": 44629,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 0,
+    "checks_total": 0,
+    "retrieval": [],
+    "benchmarks": [],
+    "error": "fp8 tensor core is not supported in fa2 backend",
+    "configuration": "tp1-fp8-on.yaml"
+  },
+  {
+    "name": "tp1-auto-on-r3",
+    "status": "passed",
+    "parameters": {
+      "name": "tp1-auto-on-r3",
+      "tp": 1,
+      "kv": "auto",
+      "spec": true,
+      "runner": "default",
+      "backend": null,
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": null,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "070f456df7d839a38d194469fba586ae034e0db89a8a87a36220a1d37786b864",
+    "boot_seconds": 146.12654328346252,
+    "elapsed_seconds": 228.83137440681458,
+    "backends": [
+      "TRITON_FLASH_ATTN",
+      "FLASH_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 9513,
+    "loaded_model_gib_per_gpu": [
+      32.61
+    ],
+    "idle_mib_per_gpu": [
+      43233,
+      0
+    ],
+    "after_mib_per_gpu": [
+      44113,
+      0
+    ],
+    "peak_mib_per_gpu": [
+      46157,
+      0
+    ],
+    "peak_aggregate_mib": 46157,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 6789,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 177.7387284772113,
+        "median_tpot_ms": 5.14864082649058,
+        "median_ttft_ms": 98.63318130373955,
+        "duration": 5.761265475302935,
+        "mean_ttft_ms": 98.61718909814954,
+        "p99_ttft_ms": 102.99187678843737,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 194.2260168654298
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 137.7596346804276,
+        "median_tpot_ms": 7.3210452957188386,
+        "median_ttft_ms": 10182.652586139739,
+        "duration": 29.732947604730725,
+        "mean_ttft_ms": 6576.634883414954,
+        "p99_ttft_ms": 10989.153273124248,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 136.5925164518207
+      }
+    ],
+    "draft_tokens": 1698.0,
+    "accepted_draft_tokens": 996.0,
+    "acceptance": 0.5865724381625441,
+    "configuration": "tp1-auto-on.yaml"
+  },
+  {
+    "name": "tp2-fp8-off-r4",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-fp8-off-r4",
+      "tp": 2,
+      "kv": "fp8",
+      "spec": false,
+      "runner": "default",
+      "backend": null,
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": null,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "900f52ecfdb5473d2087ddbd1a8137377a54458ac06690966cb1981d0f167aab",
+    "boot_seconds": 92.11280560493469,
+    "elapsed_seconds": 155.19903373718262,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 9513,
+    "loaded_model_gib_per_gpu": [
+      16.71,
+      16.71
+    ],
+    "idle_mib_per_gpu": [
+      21861,
+      21861
+    ],
+    "after_mib_per_gpu": [
+      22569,
+      22569
+    ],
+    "peak_mib_per_gpu": [
+      24979,
+      24979
+    ],
+    "peak_aggregate_mib": 49958,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 6789,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 106.08825749803621,
+        "median_tpot_ms": 9.13135516000729,
+        "median_ttft_ms": 87.45427429676056,
+        "duration": 9.652340646833181,
+        "mean_ttft_ms": 84.30276811122894,
+        "p99_ttft_ms": 90.53801704198122,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 109.51277028186489
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 675.9201414288093,
+        "median_tpot_ms": 10.682301752853627,
+        "median_ttft_ms": 290.2405383065343,
+        "duration": 6.0598874762654305,
+        "mean_ttft_ms": 284.0991854900494,
+        "p99_ttft_ms": 453.12417512759566,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 93.612783380966
+      }
+    ],
+    "draft_tokens": 0,
+    "accepted_draft_tokens": 0,
+    "acceptance": null,
+    "configuration": "tp2-fp8-off.yaml"
+  },
+  {
+    "name": "tp2-auto-off-r4",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-auto-off-r4",
+      "tp": 2,
+      "kv": "auto",
+      "spec": false,
+      "runner": "default",
+      "backend": null,
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": null,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "6ec53a4392224987650f276ab8c91405756fc593cc7978f95f0b009c08f0dfd0",
+    "boot_seconds": 122.10961484909058,
+    "elapsed_seconds": 188.66706442832947,
+    "backends": [
+      "TRITON_FLASH_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 9513,
+    "loaded_model_gib_per_gpu": [
+      16.71,
+      16.71
+    ],
+    "idle_mib_per_gpu": [
+      23903,
+      23903
+    ],
+    "after_mib_per_gpu": [
+      24591,
+      24591
+    ],
+    "peak_mib_per_gpu": [
+      24895,
+      24979
+    ],
+    "peak_aggregate_mib": 49790,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 6789,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 91.32640112495368,
+        "median_tpot_ms": 10.682323633455765,
+        "median_ttft_ms": 77.15443801134825,
+        "duration": 11.212529864162207,
+        "mean_ttft_ms": 78.08379735797644,
+        "p99_ttft_ms": 83.83355107158421,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 93.61259163391372
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 633.0901251599953,
+        "median_tpot_ms": 11.47768613973669,
+        "median_ttft_ms": 258.14242474734783,
+        "duration": 6.469852928072214,
+        "mean_ttft_ms": 255.67488616798073,
+        "p99_ttft_ms": 383.68063122034073,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 87.12557459973732
+      }
+    ],
+    "draft_tokens": 0,
+    "accepted_draft_tokens": 0,
+    "acceptance": null,
+    "configuration": "tp2-auto-off.yaml"
+  },
+  {
+    "name": "tp2-fp8-on-triton",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-fp8-on-triton",
+      "tp": 2,
+      "kv": "fp8",
+      "spec": true,
+      "runner": "default",
+      "backend": "TRITON_ATTN",
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": null,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "a2222c7c17ef3b648198ad3779ff088912d6da796514515e728cb968a5835084",
+    "boot_seconds": 152.13142037391663,
+    "elapsed_seconds": 199.73665714263916,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 9513,
+    "loaded_model_gib_per_gpu": [
+      17.15,
+      17.15
+    ],
+    "idle_mib_per_gpu": [
+      22713,
+      22713
+    ],
+    "after_mib_per_gpu": [
+      23415,
+      23415
+    ],
+    "peak_mib_per_gpu": [
+      25021,
+      25217
+    ],
+    "peak_aggregate_mib": 50238,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 6789,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 247.76610878983675,
+        "median_tpot_ms": 3.5887849060635943,
+        "median_ttft_ms": 80.65272402018309,
+        "duration": 4.132930064573884,
+        "mean_ttft_ms": 79.01657978072762,
+        "p99_ttft_ms": 81.53872136026621,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 278.64584425508605
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 637.1494864243657,
+        "median_tpot_ms": 4.931006562329975,
+        "median_ttft_ms": 218.75867620110512,
+        "duration": 6.428632663562894,
+        "mean_ttft_ms": 238.3166963700205,
+        "p99_ttft_ms": 379.1140807792544,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 202.79835107894988
+      }
+    ],
+    "draft_tokens": 1698.0,
+    "accepted_draft_tokens": 974.0,
+    "acceptance": 0.5736160188457008,
+    "configuration": "tp2-fp8-on-triton.yaml"
+  },
+  {
+    "name": "tp1-fp8-on-triton",
+    "status": "passed",
+    "parameters": {
+      "name": "tp1-fp8-on-triton",
+      "tp": 1,
+      "kv": "fp8",
+      "spec": true,
+      "runner": "default",
+      "backend": "TRITON_ATTN",
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": null,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "332678da80a7591991e814bff82291326eaa1cba059b4d9ec65461761deef5bd",
+    "boot_seconds": 130.103688955307,
+    "elapsed_seconds": 182.2158079147339,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 9513,
+    "loaded_model_gib_per_gpu": [
+      32.61
+    ],
+    "idle_mib_per_gpu": [
+      39215,
+      0
+    ],
+    "after_mib_per_gpu": [
+      40431,
+      0
+    ],
+    "peak_mib_per_gpu": [
+      44629,
+      0
+    ],
+    "peak_aggregate_mib": 44629,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 6789,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 178.99620532969428,
+        "median_tpot_ms": 4.61485840964551,
+        "median_ttft_ms": 131.71316776424646,
+        "duration": 5.720791667699814,
+        "mean_ttft_ms": 130.84504241123796,
+        "p99_ttft_ms": 135.62668439000845,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 216.69137191942903
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 784.4238224130362,
+        "median_tpot_ms": 6.614320622939689,
+        "median_ttft_ms": 319.2790597677231,
+        "duration": 5.22166701592505,
+        "mean_ttft_ms": 390.78758493997157,
+        "p99_ttft_ms": 580.9829817153513,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 151.18710703739018
+      }
+    ],
+    "draft_tokens": 1730.0,
+    "accepted_draft_tokens": 988.0,
+    "acceptance": 0.5710982658959538,
+    "configuration": "tp1-fp8-on-triton.yaml"
+  },
+  {
+    "name": "tp2-fp8-on-v1-triton",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-fp8-on-v1-triton",
+      "tp": 2,
+      "kv": "fp8",
+      "spec": true,
+      "runner": "0",
+      "backend": "TRITON_ATTN",
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": null,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip",
+      "VLLM_USE_V2_MODEL_RUNNER": "0"
+    },
+    "config_sha256": "a2222c7c17ef3b648198ad3779ff088912d6da796514515e728cb968a5835084",
+    "boot_seconds": 206.14720344543457,
+    "elapsed_seconds": 256.1493549346924,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V1",
+    "kv_capacity_tokens": 9513,
+    "loaded_model_gib_per_gpu": [
+      17.15
+    ],
+    "idle_mib_per_gpu": [
+      22725,
+      22725
+    ],
+    "after_mib_per_gpu": [
+      23279,
+      23279
+    ],
+    "peak_mib_per_gpu": [
+      25105,
+      25105
+    ],
+    "peak_aggregate_mib": 50210,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 6789,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 241.55687288225243,
+        "median_tpot_ms": 3.633965449590309,
+        "median_ttft_ms": 86.84260491281748,
+        "duration": 4.2391673140227795,
+        "mean_ttft_ms": 85.48713196069002,
+        "p99_ttft_ms": 90.02858102321625,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 275.1814825627303
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 616.2443530726426,
+        "median_tpot_ms": 5.357458573930404,
+        "median_ttft_ms": 225.66937003284693,
+        "duration": 6.646714050322771,
+        "mean_ttft_ms": 243.36374970152974,
+        "p99_ttft_ms": 392.15785926207894,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 186.65566633889392
+      }
+    ],
+    "draft_tokens": 1698.0,
+    "accepted_draft_tokens": 977.0,
+    "acceptance": 0.5753828032979976,
+    "configuration": "tp2-fp8-on-triton.yaml"
+  },
+  {
+    "name": "tp2-fp8-on-draft-auto",
+    "status": "boot_failed",
+    "parameters": {
+      "name": "tp2-fp8-on-draft-auto",
+      "tp": 2,
+      "kv": "fp8",
+      "spec": true,
+      "runner": "default",
+      "backend": null,
+      "draft_kv": "auto",
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": null,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "7d2e9a7bd21f7de01f6f162de12b9324059a7ba6645afcbe8b563afcf2db116d",
+    "boot_seconds": 84.09560203552246,
+    "elapsed_seconds": 84.13363480567932,
+    "backends": [
+      "TRITON_ATTN",
+      "FLASHINFER"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 9513,
+    "loaded_model_gib_per_gpu": [
+      17.15,
+      17.15
+    ],
+    "idle_mib_per_gpu": null,
+    "after_mib_per_gpu": null,
+    "peak_mib_per_gpu": [
+      25021,
+      25021
+    ],
+    "peak_aggregate_mib": 50042,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 0,
+    "checks_total": 0,
+    "retrieval": [],
+    "benchmarks": [],
+    "error": "fp8 tensor core is not supported in fa2 backend",
+    "configuration": "tp2-fp8-on-draft-auto.yaml"
+  },
+  {
+    "name": "tp2-fp8-off-long",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-fp8-off-long",
+      "tp": 2,
+      "kv": "fp8",
+      "spec": false,
+      "runner": "default",
+      "backend": null,
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": true,
+      "kv_gib": 8.0,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "1b65425e614b68b5bb912a607cbeb3b683ffec8ee8496b76fcde88c3a20a2f7b",
+    "boot_seconds": 138.1292769908905,
+    "elapsed_seconds": 204.10161232948303,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 109872,
+    "loaded_model_gib_per_gpu": [
+      16.71,
+      16.71
+    ],
+    "idle_mib_per_gpu": [
+      28019,
+      28019
+    ],
+    "after_mib_per_gpu": [
+      28517,
+      28517
+    ],
+    "peak_mib_per_gpu": [
+      28517,
+      28517
+    ],
+    "peak_aggregate_mib": 57034,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 29109,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 106.3802021103468,
+        "median_tpot_ms": 9.127157732990444,
+        "median_ttft_ms": 79.75274510681629,
+        "duration": 9.62585123628378,
+        "mean_ttft_ms": 78.45534617081285,
+        "p99_ttft_ms": 83.46989443525672,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 109.56313337124257
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 677.5867749219369,
+        "median_tpot_ms": 10.898739179851962,
+        "median_ttft_ms": 283.28640665858984,
+        "duration": 6.044982209801674,
+        "mean_ttft_ms": 263.09432508423924,
+        "p99_ttft_ms": 404.7218047082424,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 91.7537325646491
+      }
+    ],
+    "draft_tokens": 0,
+    "accepted_draft_tokens": 0,
+    "acceptance": null,
+    "configuration": "tp2-fp8-off-long.yaml"
+  },
+  {
+    "name": "tp2-auto-off-long",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-auto-off-long",
+      "tp": 2,
+      "kv": "auto",
+      "spec": false,
+      "runner": "default",
+      "backend": null,
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": true,
+      "kv_gib": 16.0,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "97e6e63df713187f3a0b9d6afd136f11357cd6779c97bd2709751fb2347e6363",
+    "boot_seconds": 164.14478468894958,
+    "elapsed_seconds": 231.1218719482422,
+    "backends": [
+      "TRITON_FLASH_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 109872,
+    "loaded_model_gib_per_gpu": [
+      16.71,
+      16.71
+    ],
+    "idle_mib_per_gpu": [
+      36203,
+      36203
+    ],
+    "after_mib_per_gpu": [
+      36827,
+      36827
+    ],
+    "peak_mib_per_gpu": [
+      36827,
+      36827
+    ],
+    "peak_aggregate_mib": 73654,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 29109,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 91.36293835564605,
+        "median_tpot_ms": 10.688462013415261,
+        "median_ttft_ms": 74.88664984703064,
+        "duration": 11.20804582722485,
+        "mean_ttft_ms": 75.51016518846154,
+        "p99_ttft_ms": 78.97478893399239,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 93.55882995559921
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 629.7856885599795,
+        "median_tpot_ms": 11.485091286400955,
+        "median_ttft_ms": 287.99894638359547,
+        "duration": 6.503799743950367,
+        "mean_ttft_ms": 269.7800336172804,
+        "p99_ttft_ms": 385.39973869919777,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 87.06939936855885
+      }
+    ],
+    "draft_tokens": 0,
+    "accepted_draft_tokens": 0,
+    "acceptance": null,
+    "configuration": "tp2-auto-off-long.yaml"
+  },
+  {
+    "name": "tp2-fp8-on-long",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-fp8-on-long",
+      "tp": 2,
+      "kv": "fp8",
+      "spec": true,
+      "runner": "default",
+      "backend": "TRITON_ATTN",
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": true,
+      "kv_gib": 8.0,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "85e1601a170d0902013c0215ab7fbcc0fbaa5e3abf64fcee7505a8007e44bf09",
+    "boot_seconds": 148.1179690361023,
+    "elapsed_seconds": 196.81754875183105,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 109872,
+    "loaded_model_gib_per_gpu": [
+      17.15,
+      17.15
+    ],
+    "idle_mib_per_gpu": [
+      28857,
+      28857
+    ],
+    "after_mib_per_gpu": [
+      29561,
+      29561
+    ],
+    "peak_mib_per_gpu": [
+      29561,
+      29561
+    ],
+    "peak_aggregate_mib": 59122,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 29109,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 258.93389541959766,
+        "median_tpot_ms": 3.5706580379137804,
+        "median_ttft_ms": 83.79035536199808,
+        "duration": 3.9546773061156273,
+        "mean_ttft_ms": 81.98459772393107,
+        "p99_ttft_ms": 86.6041000559926,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 280.06042286375526
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 1236.6750073910655,
+        "median_tpot_ms": 5.014864366282435,
+        "median_ttft_ms": 325.3128472715616,
+        "duration": 3.312107041478157,
+        "mean_ttft_ms": 282.02140470966697,
+        "p99_ttft_ms": 406.9039716385305,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 199.40718770452196
+      }
+    ],
+    "draft_tokens": 1714.0,
+    "accepted_draft_tokens": 977.0,
+    "acceptance": 0.5700116686114353,
+    "configuration": "tp2-fp8-on-long.yaml"
+  },
+  {
+    "name": "tp2-auto-on-long",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-auto-on-long",
+      "tp": 2,
+      "kv": "auto",
+      "spec": true,
+      "runner": "default",
+      "backend": null,
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": true,
+      "kv_gib": 16.0,
+      "gpu_util": null,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "c4b4d7d5d799eabd5b8504020e26152b11d259f3fc50f545175a1eb096140519",
+    "boot_seconds": 180.13217043876648,
+    "elapsed_seconds": 247.53047013282776,
+    "backends": [
+      "TRITON_FLASH_ATTN",
+      "FLASH_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 109872,
+    "loaded_model_gib_per_gpu": [
+      17.15,
+      17.15
+    ],
+    "idle_mib_per_gpu": [
+      37007,
+      37007
+    ],
+    "after_mib_per_gpu": [
+      37583,
+      37583
+    ],
+    "peak_mib_per_gpu": [
+      37583,
+      37583
+    ],
+    "peak_aggregate_mib": 75166,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 29109,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 108.45959197856058,
+        "median_tpot_ms": 7.7351721770623145,
+        "median_ttft_ms": 95.81489954143763,
+        "duration": 9.441304188221693,
+        "mean_ttft_ms": 99.90021446719766,
+        "p99_ttft_ms": 114.56570323556662,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 129.27960452714612
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 421.74825371353273,
+        "median_tpot_ms": 7.505376951075068,
+        "median_ttft_ms": 197.89109006524086,
+        "duration": 9.711954854428768,
+        "mean_ttft_ms": 254.8890772741288,
+        "p99_ttft_ms": 439.31246073916554,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 133.23781157410892
+      }
+    ],
+    "draft_tokens": 1701.0,
+    "accepted_draft_tokens": 977.0,
+    "acceptance": 0.5743680188124632,
+    "configuration": "tp2-auto-on-long.yaml"
+  },
+  {
+    "name": "tp2-fp8-off-eager",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-fp8-off-eager",
+      "tp": 2,
+      "kv": "fp8",
+      "spec": false,
+      "runner": "default",
+      "backend": null,
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": null,
+      "gpu_util": null,
+      "eager": true,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "77be601e9061c7ec812629bf3210606f8a63bb14fe8c8f3e14986f73c145655f",
+    "boot_seconds": 88.10971856117249,
+    "elapsed_seconds": 315.91005849838257,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 9513,
+    "loaded_model_gib_per_gpu": [
+      16.71,
+      16.71
+    ],
+    "idle_mib_per_gpu": [
+      22847,
+      22847
+    ],
+    "after_mib_per_gpu": [
+      22849,
+      22849
+    ],
+    "peak_mib_per_gpu": [
+      24979,
+      24979
+    ],
+    "peak_aggregate_mib": 49958,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 6789,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 16.66103160637973,
+        "median_tpot_ms": 59.855328533141055,
+        "median_ttft_ms": 90.87960049510002,
+        "duration": 61.460780112072825,
+        "mean_ttft_ms": 90.16959369182587,
+        "p99_ttft_ms": 92.74275397881866,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 16.706950316817892
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 130.5249926850018,
+        "median_tpot_ms": 59.99139254803167,
+        "median_ttft_ms": 402.60195080190897,
+        "duration": 31.380963260307908,
+        "mean_ttft_ms": 399.82502756174654,
+        "p99_ttft_ms": 551.3063512742519,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 16.669057968597034
+      }
+    ],
+    "draft_tokens": 0,
+    "accepted_draft_tokens": 0,
+    "acceptance": null,
+    "configuration": "tp2-fp8-off-eager.yaml"
+  },
+  {
+    "name": "tp2-fp8-off-text",
+    "status": "boot_failed",
+    "parameters": {
+      "name": "tp2-fp8-off-text",
+      "tp": 2,
+      "kv": "fp8",
+      "spec": false,
+      "runner": "default",
+      "backend": null,
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": null,
+      "gpu_util": null,
+      "eager": false,
+      "text_only": true,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "d399b5f39ca2e22ef4ac5b8c54a647805468cba4a0124b41871fd5cc39af3a93",
+    "boot_seconds": 110.10842776298523,
+    "elapsed_seconds": 110.16033339500427,
+    "backends": [
+      "FLASHINFER"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 9513,
+    "loaded_model_gib_per_gpu": [
+      15.63,
+      15.63
+    ],
+    "idle_mib_per_gpu": null,
+    "after_mib_per_gpu": null,
+    "peak_mib_per_gpu": [
+      23301,
+      23301
+    ],
+    "peak_aggregate_mib": 46602,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 0,
+    "checks_total": 0,
+    "retrieval": [],
+    "benchmarks": [],
+    "error": "fp8 tensor core is not supported in fa2 backend",
+    "configuration": "tp2-fp8-off-text.yaml"
+  },
+  {
+    "name": "tp2-fp8-off-small",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-fp8-off-small",
+      "tp": 2,
+      "kv": "fp8",
+      "spec": false,
+      "runner": "default",
+      "backend": null,
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": 1.75,
+      "gpu_util": null,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "f92fc2ce14de51c8ff97eaf9c83161fe6667b896f97b9a67b3cc97815c2345a8",
+    "boot_seconds": 96.14930367469788,
+    "elapsed_seconds": 162.8980996608734,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 8325,
+    "loaded_model_gib_per_gpu": [
+      16.71,
+      16.71
+    ],
+    "idle_mib_per_gpu": [
+      21605,
+      21605
+    ],
+    "after_mib_per_gpu": [
+      22313,
+      22313
+    ],
+    "peak_mib_per_gpu": [
+      24979,
+      24979
+    ],
+    "peak_aggregate_mib": 49958,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 6789,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 106.20570253127819,
+        "median_tpot_ms": 9.133371542773993,
+        "median_ttft_ms": 81.89245872199535,
+        "duration": 9.64166683703661,
+        "mean_ttft_ms": 80.71505092084408,
+        "p99_ttft_ms": 88.82532477378845,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 109.4885930476753
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 479.4324823796909,
+        "median_tpot_ms": 10.728350986598754,
+        "median_ttft_ms": 326.99221558868885,
+        "duration": 8.543434478342533,
+        "mean_ttft_ms": 322.898825048469,
+        "p99_ttft_ms": 464.7568206302821,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 93.21096981718283
+      }
+    ],
+    "draft_tokens": 0,
+    "accepted_draft_tokens": 0,
+    "acceptance": null,
+    "configuration": "tp2-fp8-off-small.yaml"
+  },
+  {
+    "name": "tp2-fp8-off-small-text-eager",
+    "status": "boot_failed",
+    "parameters": {
+      "name": "tp2-fp8-off-small-text-eager",
+      "tp": 2,
+      "kv": "fp8",
+      "spec": false,
+      "runner": "default",
+      "backend": null,
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": 1.75,
+      "gpu_util": null,
+      "eager": true,
+      "text_only": true,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "41acca27733aae523838278fb3aec6c4ab50a1f074b29fdd32e65e8437f06263",
+    "boot_seconds": 60.08787751197815,
+    "elapsed_seconds": 60.13114857673645,
+    "backends": [
+      "FLASHINFER"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 8325,
+    "loaded_model_gib_per_gpu": [
+      15.63,
+      15.63
+    ],
+    "idle_mib_per_gpu": null,
+    "after_mib_per_gpu": null,
+    "peak_mib_per_gpu": [
+      23301,
+      23301
+    ],
+    "peak_aggregate_mib": 46602,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 0,
+    "checks_total": 0,
+    "retrieval": [],
+    "benchmarks": [],
+    "error": "fp8 tensor core is not supported in fa2 backend",
+    "configuration": "tp2-fp8-off-small-text-eager.yaml"
+  },
+  {
+    "name": "tp1-fp8-off-warm",
+    "status": "passed",
+    "parameters": {
+      "name": "tp1-fp8-off-warm",
+      "tp": 1,
+      "kv": "fp8",
+      "spec": false,
+      "runner": "default",
+      "backend": null,
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": null,
+      "gpu_util": null,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": true
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "06d1c042be02e2d0e5bd8ffbec40de0004d943eacee0784e55c71829cc932f5f",
+    "boot_seconds": 78.10001921653748,
+    "elapsed_seconds": 213.0567111968994,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 9513,
+    "loaded_model_gib_per_gpu": [
+      31.7
+    ],
+    "idle_mib_per_gpu": [
+      37865,
+      0
+    ],
+    "after_mib_per_gpu": [
+      39019,
+      0
+    ],
+    "peak_mib_per_gpu": [
+      44587,
+      0
+    ],
+    "peak_aggregate_mib": 44587,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 6789,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 68.25277721344216,
+        "median_tpot_ms": 14.221373291722701,
+        "median_ttft_ms": 127.63103283941746,
+        "duration": 15.00305250287056,
+        "mean_ttft_ms": 123.38739261031151,
+        "p99_ttft_ms": 130.91471176594496,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 70.31669723359504
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 418.43300821847873,
+        "median_tpot_ms": 16.817785649761266,
+        "median_ttft_ms": 560.6674235314131,
+        "duration": 9.788902690634131,
+        "mean_ttft_ms": 568.0142882047221,
+        "p99_ttft_ms": 743.8366394490004,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 43,
+        "decode_tokens_per_second": 59.46086011711032
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 419.66270883707244,
+        "median_tpot_ms": 17.013953476413793,
+        "median_ttft_ms": 514.4330142065883,
+        "duration": 9.760219132527709,
+        "mean_ttft_ms": 527.2470389027148,
+        "p99_ttft_ms": 702.8559364378451,
+        "concurrency": 8,
+        "repetition": 1,
+        "seed": 44,
+        "decode_tokens_per_second": 58.775287083409864
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 418.72541247306833,
+        "median_tpot_ms": 17.01248647900773,
+        "median_ttft_ms": 505.5939955636859,
+        "duration": 9.782066905871034,
+        "mean_ttft_ms": 550.7182641886175,
+        "p99_ttft_ms": 743.8790712505579,
+        "concurrency": 8,
+        "repetition": 2,
+        "seed": 45,
+        "decode_tokens_per_second": 58.78035531337133
+      }
+    ],
+    "draft_tokens": 0,
+    "accepted_draft_tokens": 0,
+    "acceptance": null,
+    "configuration": "tp1-fp8-off.yaml"
+  },
+  {
+    "name": "tp1-auto-off-warm",
+    "status": "passed",
+    "parameters": {
+      "name": "tp1-auto-off-warm",
+      "tp": 1,
+      "kv": "auto",
+      "spec": false,
+      "runner": "default",
+      "backend": null,
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": null,
+      "gpu_util": null,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": true
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "cb02ed734596f792ade0c47803d0445968d1a8d520eb73d61222c3d821df8ccd",
+    "boot_seconds": 100.09473967552185,
+    "elapsed_seconds": 239.08638095855713,
+    "backends": [
+      "TRITON_FLASH_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 9513,
+    "loaded_model_gib_per_gpu": [
+      31.7
+    ],
+    "idle_mib_per_gpu": [
+      41957,
+      0
+    ],
+    "after_mib_per_gpu": [
+      43111,
+      0
+    ],
+    "peak_mib_per_gpu": [
+      44587,
+      0
+    ],
+    "peak_aggregate_mib": 44587,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 6789,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 60.679363593617865,
+        "median_tpot_ms": 16.07533721435888,
+        "median_ttft_ms": 118.06957051157951,
+        "duration": 16.87558898702264,
+        "mean_ttft_ms": 118.278534617275,
+        "p99_ttft_ms": 122.1039516478777,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 62.207093180401586
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 410.78046576207527,
+        "median_tpot_ms": 17.441745986248932,
+        "median_ttft_ms": 504.6222675591707,
+        "duration": 9.97126285545528,
+        "mean_ttft_ms": 492.5765012158081,
+        "p99_ttft_ms": 621.8961857259274,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 43,
+        "decode_tokens_per_second": 57.33370964056005
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 412.0175700548281,
+        "median_tpot_ms": 17.695853245608948,
+        "median_ttft_ms": 432.4864139780402,
+        "duration": 9.941323617473245,
+        "mean_ttft_ms": 442.1470696106553,
+        "p99_ttft_ms": 595.8078721538186,
+        "concurrency": 8,
+        "repetition": 1,
+        "seed": 44,
+        "decode_tokens_per_second": 56.51041439599078
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 408.1015898327902,
+        "median_tpot_ms": 17.755586190112666,
+        "median_ttft_ms": 473.04085083305836,
+        "duration": 10.036716597154737,
+        "mean_ttft_ms": 459.0663379058242,
+        "p99_ttft_ms": 652.8804971836507,
+        "concurrency": 8,
+        "repetition": 2,
+        "seed": 45,
+        "decode_tokens_per_second": 56.32030332836083
+      }
+    ],
+    "draft_tokens": 0,
+    "accepted_draft_tokens": 0,
+    "acceptance": null,
+    "configuration": "tp1-auto-off.yaml"
+  },
+  {
+    "name": "tp2-fp8-on-triton-warm",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-fp8-on-triton-warm",
+      "tp": 2,
+      "kv": "fp8",
+      "spec": true,
+      "runner": "default",
+      "backend": "TRITON_ATTN",
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": null,
+      "gpu_util": null,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": true
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "a2222c7c17ef3b648198ad3779ff088912d6da796514515e728cb968a5835084",
+    "boot_seconds": 92.11202096939087,
+    "elapsed_seconds": 181.36573195457458,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 9513,
+    "loaded_model_gib_per_gpu": [
+      17.15,
+      17.15
+    ],
+    "idle_mib_per_gpu": [
+      22729,
+      22729
+    ],
+    "after_mib_per_gpu": [
+      23431,
+      23431
+    ],
+    "peak_mib_per_gpu": [
+      25217,
+      25217
+    ],
+    "peak_aggregate_mib": 50434,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 6789,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 245.62552815989358,
+        "median_tpot_ms": 3.581137889448334,
+        "median_ttft_ms": 88.00934534519911,
+        "duration": 4.168947778642178,
+        "mean_ttft_ms": 90.77506931498647,
+        "p99_ttft_ms": 103.32086764276028,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 279.24085329036234
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 541.4655261828232,
+        "median_tpot_ms": 5.359763589998086,
+        "median_ttft_ms": 184.52606815844774,
+        "duration": 7.564655184745789,
+        "mean_ttft_ms": 269.835474784486,
+        "p99_ttft_ms": 520.439186040312,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 43,
+        "decode_tokens_per_second": 186.5753933375179
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 654.3645728493399,
+        "median_tpot_ms": 4.624141073402236,
+        "median_ttft_ms": 244.93875540792942,
+        "duration": 6.2595075741410255,
+        "mean_ttft_ms": 264.7530965041369,
+        "p99_ttft_ms": 494.27145421504974,
+        "concurrency": 8,
+        "repetition": 1,
+        "seed": 44,
+        "decode_tokens_per_second": 216.25637802270697
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 643.2254944899528,
+        "median_tpot_ms": 5.134915556831687,
+        "median_ttft_ms": 149.82806146144867,
+        "duration": 6.367906799539924,
+        "mean_ttft_ms": 265.2793489396572,
+        "p99_ttft_ms": 523.8520520739257,
+        "concurrency": 8,
+        "repetition": 2,
+        "seed": 45,
+        "decode_tokens_per_second": 194.7451694058653
+      }
+    ],
+    "draft_tokens": 1694.0,
+    "accepted_draft_tokens": 974.0,
+    "acceptance": 0.5749704840613932,
+    "configuration": "tp2-fp8-on-triton.yaml"
+  },
+  {
+    "name": "tp2-auto-on-triton-warm",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-auto-on-triton-warm",
+      "tp": 2,
+      "kv": "auto",
+      "spec": true,
+      "runner": "default",
+      "backend": "TRITON_ATTN",
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": null,
+      "gpu_util": null,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": true
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "2066b86e9ea1d68ea91b6c17820f1b36d63a791b5da7f51e277deadca8591c55",
+    "boot_seconds": 150.11335730552673,
+    "elapsed_seconds": 237.12647557258606,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 9513,
+    "loaded_model_gib_per_gpu": [
+      17.15,
+      17.15
+    ],
+    "idle_mib_per_gpu": [
+      24801,
+      24801
+    ],
+    "after_mib_per_gpu": [
+      25379,
+      25379
+    ],
+    "peak_mib_per_gpu": [
+      25379,
+      25379
+    ],
+    "peak_aggregate_mib": 50758,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 6789,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 201.76397501898103,
+        "median_tpot_ms": 3.6521245195877317,
+        "median_ttft_ms": 84.42566730082035,
+        "duration": 5.075237043201923,
+        "mean_ttft_ms": 81.66714804247022,
+        "p99_ttft_ms": 85.64422901719809,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 273.81322696874656
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 671.8147235265319,
+        "median_tpot_ms": 4.224198450352631,
+        "median_ttft_ms": 333.53850059211254,
+        "duration": 6.096919070929289,
+        "mean_ttft_ms": 310.1192363537848,
+        "p99_ttft_ms": 472.584880143404,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 43,
+        "decode_tokens_per_second": 236.7313022229155
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 732.2834007877707,
+        "median_tpot_ms": 4.426980544539059,
+        "median_ttft_ms": 255.0804177299142,
+        "duration": 5.593462852761149,
+        "mean_ttft_ms": 273.5654533607885,
+        "p99_ttft_ms": 503.4220792353153,
+        "concurrency": 8,
+        "repetition": 1,
+        "seed": 44,
+        "decode_tokens_per_second": 225.88759763888254
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 855.7560554863634,
+        "median_tpot_ms": 4.798525275991244,
+        "median_ttft_ms": 164.36951514333487,
+        "duration": 4.786410769447684,
+        "mean_ttft_ms": 234.9620402092114,
+        "p99_ttft_ms": 445.86209282279015,
+        "concurrency": 8,
+        "repetition": 2,
+        "seed": 45,
+        "decode_tokens_per_second": 208.3973601229864
+      }
+    ],
+    "draft_tokens": 1701.0,
+    "accepted_draft_tokens": 984.0,
+    "acceptance": 0.5784832451499118,
+    "configuration": "tp2-auto-on-triton-warm.yaml"
+  },
+  {
+    "name": "tp2-auto-on-triton-long",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-auto-on-triton-long",
+      "tp": 2,
+      "kv": "auto",
+      "spec": true,
+      "runner": "default",
+      "backend": "TRITON_ATTN",
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": true,
+      "kv_gib": 16.0,
+      "gpu_util": null,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "99949d31e25384d58fe5056e4cf630c13e2412b17e8cd4108001958e5bcb079a",
+    "boot_seconds": 144.11607599258423,
+    "elapsed_seconds": 195.94705319404602,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 109872,
+    "loaded_model_gib_per_gpu": [
+      17.15,
+      17.15
+    ],
+    "idle_mib_per_gpu": [
+      37089,
+      37089
+    ],
+    "after_mib_per_gpu": [
+      37667,
+      37667
+    ],
+    "peak_mib_per_gpu": [
+      37667,
+      37667
+    ],
+    "peak_aggregate_mib": 75334,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 29109,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 187.63754585176153,
+        "median_tpot_ms": 4.393456828798733,
+        "median_ttft_ms": 81.21795207262039,
+        "duration": 5.457329956814647,
+        "mean_ttft_ms": 78.86758865788579,
+        "p99_ttft_ms": 83.26248750090599,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 227.61120433574894
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 739.4758079680029,
+        "median_tpot_ms": 5.036952167603315,
+        "median_ttft_ms": 199.01277590543032,
+        "duration": 5.539058825001121,
+        "mean_ttft_ms": 215.52728954702616,
+        "p99_ttft_ms": 350.1267581246793,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 198.5327568587614
+      }
+    ],
+    "draft_tokens": 1697.0,
+    "accepted_draft_tokens": 985.0,
+    "acceptance": 0.5804360636417207,
+    "configuration": "tp2-auto-on-triton-long.yaml"
+  },
+  {
+    "name": "tp2-fp8-on-triton-long-small",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-fp8-on-triton-long-small",
+      "tp": 2,
+      "kv": "fp8",
+      "spec": true,
+      "runner": "default",
+      "backend": "TRITON_ATTN",
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": true,
+      "kv_gib": 2.5,
+      "gpu_util": 0.35,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "6612e454ecb8b6594068770555470c3a32806fef5ab8d3898f0b14a74b9a136d",
+    "boot_seconds": 92.11791491508484,
+    "elapsed_seconds": 141.54334688186646,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 34335,
+    "loaded_model_gib_per_gpu": [
+      17.15,
+      17.15
+    ],
+    "idle_mib_per_gpu": [
+      23241,
+      23241
+    ],
+    "after_mib_per_gpu": [
+      23945,
+      23945
+    ],
+    "peak_mib_per_gpu": [
+      25021,
+      25021
+    ],
+    "peak_aggregate_mib": 50042,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 29109,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 260.11249845614986,
+        "median_tpot_ms": 3.5540174838959,
+        "median_ttft_ms": 82.19810295850039,
+        "duration": 3.936758156865835,
+        "mean_ttft_ms": 80.72907151654363,
+        "p99_ttft_ms": 85.6455078907311,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 281.37171652397274
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 1230.399469840967,
+        "median_tpot_ms": 4.907245879225871,
+        "median_ttft_ms": 287.6913994550705,
+        "duration": 3.3290001340210438,
+        "mean_ttft_ms": 269.53728252556175,
+        "p99_ttft_ms": 390.6844975426793,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 203.78029236997438
+      }
+    ],
+    "draft_tokens": 1710.0,
+    "accepted_draft_tokens": 979.0,
+    "acceptance": 0.572514619883041,
+    "configuration": "tp2-fp8-on-triton-long-small.yaml"
+  },
+  {
+    "name": "tp2-auto-on-triton-long-small",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-auto-on-triton-long-small",
+      "tp": 2,
+      "kv": "auto",
+      "spec": true,
+      "runner": "default",
+      "backend": "TRITON_ATTN",
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": true,
+      "kv_gib": 5.0,
+      "gpu_util": 0.35,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "393d35eae3ce2f6de4ac7559463ab73fd2a35f78512acd39f1d489030e916ac5",
+    "boot_seconds": 90.0872106552124,
+    "elapsed_seconds": 141.6020143032074,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 34335,
+    "loaded_model_gib_per_gpu": [
+      17.15,
+      17.15
+    ],
+    "idle_mib_per_gpu": [
+      25797,
+      25797
+    ],
+    "after_mib_per_gpu": [
+      26417,
+      26417
+    ],
+    "peak_mib_per_gpu": [
+      26417,
+      26417
+    ],
+    "peak_aggregate_mib": 52834,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 29109,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 187.42634071863685,
+        "median_tpot_ms": 4.391455201103407,
+        "median_ttft_ms": 82.86462258547544,
+        "duration": 5.463479658588767,
+        "mean_ttft_ms": 80.96687402576208,
+        "p99_ttft_ms": 85.53212150931358,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 227.7149496478383
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 624.0875001903638,
+        "median_tpot_ms": 5.0639251064436115,
+        "median_ttft_ms": 165.35482369363308,
+        "duration": 6.563182244077325,
+        "mean_ttft_ms": 208.7746204342693,
+        "p99_ttft_ms": 349.0016865544021,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 197.47527441263816
+      }
+    ],
+    "draft_tokens": 1697.0,
+    "accepted_draft_tokens": 985.0,
+    "acceptance": 0.5804360636417207,
+    "configuration": "tp2-auto-on-triton-long-small.yaml"
+  },
+  {
+    "name": "tp2-fp8-off-long-small",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-fp8-off-long-small",
+      "tp": 2,
+      "kv": "fp8",
+      "spec": false,
+      "runner": "default",
+      "backend": null,
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": true,
+      "kv_gib": 2.5,
+      "gpu_util": 0.35,
+      "eager": false,
+      "text_only": false,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "d78345e72ec56b5f225f9523cfa7b1d39b33ec25749bb6b647277a5271d08055",
+    "boot_seconds": 88.08577990531921,
+    "elapsed_seconds": 154.17586207389832,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 34335,
+    "loaded_model_gib_per_gpu": [
+      16.71,
+      16.71
+    ],
+    "idle_mib_per_gpu": [
+      22375,
+      22375
+    ],
+    "after_mib_per_gpu": [
+      23083,
+      23083
+    ],
+    "peak_mib_per_gpu": [
+      24979,
+      24979
+    ],
+    "peak_aggregate_mib": 49958,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 29109,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 106.24483797481729,
+        "median_tpot_ms": 9.130919085559892,
+        "median_ttft_ms": 83.27141124755144,
+        "duration": 9.638115314766765,
+        "mean_ttft_ms": 80.61936311423779,
+        "p99_ttft_ms": 85.9729066863656,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 109.51800039291244
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 677.3733708269216,
+        "median_tpot_ms": 10.507442743754854,
+        "median_ttft_ms": 283.83471816778183,
+        "duration": 6.046886660158634,
+        "mean_ttft_ms": 292.34827775508165,
+        "p99_ttft_ms": 441.9280515983701,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 95.17063517613308
+      }
+    ],
+    "draft_tokens": 0,
+    "accepted_draft_tokens": 0,
+    "acceptance": null,
+    "configuration": "tp2-fp8-off-long-small.yaml"
+  },
+  {
+    "name": "tp2-fp8-on-triton-long-small-text",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-fp8-on-triton-long-small-text",
+      "tp": 2,
+      "kv": "fp8",
+      "spec": true,
+      "runner": "default",
+      "backend": "TRITON_ATTN",
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": true,
+      "kv_gib": 2.5,
+      "gpu_util": 0.35,
+      "eager": false,
+      "text_only": true,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "1eeee0b65a51fd3124bff7b9a29243016ed505db057efb041f97e2401d4c1259",
+    "boot_seconds": 116.09638476371765,
+    "elapsed_seconds": 166.71487188339233,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 34335,
+    "loaded_model_gib_per_gpu": [
+      16.07,
+      16.07
+    ],
+    "idle_mib_per_gpu": [
+      22145,
+      22145
+    ],
+    "after_mib_per_gpu": [
+      22623,
+      22623
+    ],
+    "peak_mib_per_gpu": [
+      23343,
+      23559
+    ],
+    "peak_aggregate_mib": 46902,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 29109,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 248.19130894287687,
+        "median_tpot_ms": 3.734198508455473,
+        "median_ttft_ms": 85.01954656094313,
+        "duration": 4.125849548727274,
+        "mean_ttft_ms": 82.7908581122756,
+        "p99_ttft_ms": 88.31613693386316,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 267.79508313113666
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 692.1564950884216,
+        "median_tpot_ms": 5.023358937572031,
+        "median_ttft_ms": 182.7078927308321,
+        "duration": 5.917736854404211,
+        "mean_ttft_ms": 214.03883025050163,
+        "p99_ttft_ms": 354.4770669192076,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 199.06998731875126
+      }
+    ],
+    "draft_tokens": 1698.0,
+    "accepted_draft_tokens": 985.0,
+    "acceptance": 0.5800942285041225,
+    "configuration": "tp2-fp8-on-triton-long-small-text.yaml"
+  },
+  {
+    "name": "tp2-fp8-off-long-small-text-eager",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-fp8-off-long-small-text-eager",
+      "tp": 2,
+      "kv": "fp8",
+      "spec": false,
+      "runner": "default",
+      "backend": "TRITON_ATTN",
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": true,
+      "kv_gib": 2.5,
+      "gpu_util": 0.35,
+      "eager": true,
+      "text_only": true,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "7d133dafa07891b68edbc8a1b1ee5ec87eef3c283d400d388b8db8c36714f19a",
+    "boot_seconds": 62.07991147041321,
+    "elapsed_seconds": 298.67101097106934,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 34335,
+    "loaded_model_gib_per_gpu": [
+      15.63,
+      15.63
+    ],
+    "idle_mib_per_gpu": [
+      21463,
+      21463
+    ],
+    "after_mib_per_gpu": [
+      21465,
+      21465
+    ],
+    "peak_mib_per_gpu": [
+      23301,
+      21465
+    ],
+    "peak_aggregate_mib": 43936,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 29109,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 16.02326401607455,
+        "median_tpot_ms": 61.83266787260186,
+        "median_ttft_ms": 91.05789754539728,
+        "duration": 63.907079042866826,
+        "mean_ttft_ms": 89.74709222093225,
+        "p99_ttft_ms": 92.6443836465478,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 16.172680791654816
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 128.05119900087104,
+        "median_tpot_ms": 61.01691777653554,
+        "median_ttft_ms": 411.31025925278664,
+        "duration": 31.987205367535353,
+        "mean_ttft_ms": 405.3765148855746,
+        "p99_ttft_ms": 553.0920812860131,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 16.38889731635308
+      }
+    ],
+    "draft_tokens": 0,
+    "accepted_draft_tokens": 0,
+    "acceptance": null,
+    "configuration": "tp2-fp8-off-long-small-text-eager.yaml"
+  },
+  {
+    "name": "tp2-fp8-off-text-triton",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-fp8-off-text-triton",
+      "tp": 2,
+      "kv": "fp8",
+      "spec": false,
+      "runner": "default",
+      "backend": "TRITON_ATTN",
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": null,
+      "gpu_util": null,
+      "eager": false,
+      "text_only": true,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "88b711e991c28e9b7e18fe14fcbda7d3c9c29881f6db57fab0a556bfc41418c5",
+    "boot_seconds": 110.11047554016113,
+    "elapsed_seconds": 173.96442770957947,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 9513,
+    "loaded_model_gib_per_gpu": [
+      15.63,
+      15.63
+    ],
+    "idle_mib_per_gpu": [
+      20651,
+      20651
+    ],
+    "after_mib_per_gpu": [
+      21255,
+      21255
+    ],
+    "peak_mib_per_gpu": [
+      23301,
+      21255
+    ],
+    "peak_aggregate_mib": 42510,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 6789,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 101.71678734548036,
+        "median_tpot_ms": 9.557388708287595,
+        "median_ttft_ms": 80.20246028900146,
+        "duration": 10.06716813147068,
+        "mean_ttft_ms": 78.44154722988605,
+        "p99_ttft_ms": 80.99172735586762,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 104.63109019860832
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 650.5884971818728,
+        "median_tpot_ms": 10.876788688348789,
+        "median_ttft_ms": 318.83970368653536,
+        "duration": 6.295838333666325,
+        "mean_ttft_ms": 320.3109480673447,
+        "p99_ttft_ms": 456.08589174225926,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 91.93890114562946
+      }
+    ],
+    "draft_tokens": 0,
+    "accepted_draft_tokens": 0,
+    "acceptance": null,
+    "configuration": "tp2-fp8-off-text-triton.yaml"
+  },
+  {
+    "name": "tp2-fp8-off-long-small-text",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-fp8-off-long-small-text",
+      "tp": 2,
+      "kv": "fp8",
+      "spec": false,
+      "runner": "default",
+      "backend": "TRITON_ATTN",
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": true,
+      "kv_gib": 2.5,
+      "gpu_util": 0.35,
+      "eager": false,
+      "text_only": true,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "ca2058674cf05d06d7e3a195c850639de1170501dbcf0b07cc1eafff0e7cda8f",
+    "boot_seconds": 108.103444814682,
+    "elapsed_seconds": 177.32828783988953,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 34335,
+    "loaded_model_gib_per_gpu": [
+      15.63,
+      15.63
+    ],
+    "idle_mib_per_gpu": [
+      21165,
+      21165
+    ],
+    "after_mib_per_gpu": [
+      21769,
+      21769
+    ],
+    "peak_mib_per_gpu": [
+      23301,
+      23301
+    ],
+    "peak_aggregate_mib": 46602,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 29109,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 101.66998589531622,
+        "median_tpot_ms": 9.5586210160571,
+        "median_ttft_ms": 80.58990351855755,
+        "duration": 10.071802321821451,
+        "mean_ttft_ms": 78.43735860660672,
+        "p99_ttft_ms": 82.53328328952193,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 104.61760104518683
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 650.3614720230698,
+        "median_tpot_ms": 10.908218177364152,
+        "median_ttft_ms": 318.6984518542886,
+        "duration": 6.298036055639386,
+        "mean_ttft_ms": 311.1032054293901,
+        "p99_ttft_ms": 444.45222821086645,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 91.67400062414582
+      }
+    ],
+    "draft_tokens": 0,
+    "accepted_draft_tokens": 0,
+    "acceptance": null,
+    "configuration": "tp2-fp8-off-long-small-text.yaml"
+  },
+  {
+    "name": "tp2-fp8-off-small-text-eager-triton",
+    "status": "passed",
+    "parameters": {
+      "name": "tp2-fp8-off-small-text-eager-triton",
+      "tp": 2,
+      "kv": "fp8",
+      "spec": false,
+      "runner": "default",
+      "backend": "TRITON_ATTN",
+      "draft_kv": null,
+      "draft_backend": null,
+      "long": false,
+      "kv_gib": 1.75,
+      "gpu_util": null,
+      "eager": true,
+      "text_only": true,
+      "skip_bench": false,
+      "repeat_c8": false
+    },
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "HF_HOME": "/workspace/hf",
+      "CUDA_VISIBLE_DEVICES": "0,1",
+      "VLLM_USE_RUST_FRONTEND": "0",
+      "VLLM_DEEP_GEMM_WARMUP": "skip"
+    },
+    "config_sha256": "4fee7976b75a4b82c3efa6f4d790993e4e8c6ea7c363616c7e18efcfa28396c2",
+    "boot_seconds": 62.12238168716431,
+    "elapsed_seconds": 304.50464129447937,
+    "backends": [
+      "TRITON_ATTN"
+    ],
+    "runner": "V2",
+    "kv_capacity_tokens": 8325,
+    "loaded_model_gib_per_gpu": [
+      15.63,
+      15.63
+    ],
+    "idle_mib_per_gpu": [
+      20695,
+      20695
+    ],
+    "after_mib_per_gpu": [
+      20697,
+      20697
+    ],
+    "peak_mib_per_gpu": [
+      23301,
+      23301
+    ],
+    "peak_aggregate_mib": 43886,
+    "memory_released_mib": [
+      0,
+      0
+    ],
+    "checks_passed": 18,
+    "checks_total": 18,
+    "retrieval": [
+      {
+        "prompt_tokens": 6789,
+        "completion_tokens": 9,
+        "passed": true
+      }
+    ],
+    "benchmarks": [
+      {
+        "completed": 4,
+        "total_input_tokens": 4096,
+        "total_output_tokens": 1024,
+        "output_throughput": 16.54779629470303,
+        "median_tpot_ms": 59.82275678977078,
+        "median_ttft_ms": 88.18603958934546,
+        "duration": 61.88135155662894,
+        "mean_ttft_ms": 87.98935078084469,
+        "p99_ttft_ms": 89.80186065658927,
+        "concurrency": 1,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 16.716046763177456
+      },
+      {
+        "completed": 16,
+        "total_input_tokens": 16384,
+        "total_output_tokens": 4096,
+        "output_throughput": 86.07634531409367,
+        "median_tpot_ms": 60.30466977652966,
+        "median_ttft_ms": 408.84328447282314,
+        "duration": 47.585663460195065,
+        "mean_ttft_ms": 499.66238520573825,
+        "p99_ttft_ms": 1919.4007687270635,
+        "concurrency": 8,
+        "repetition": 0,
+        "seed": 42,
+        "decode_tokens_per_second": 16.582463741293815
+      }
+    ],
+    "draft_tokens": 0,
+    "accepted_draft_tokens": 0,
+    "acceptance": null,
+    "configuration": "tp2-fp8-off-small-text-eager-triton.yaml"
+  }
+]

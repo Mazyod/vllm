@@ -1,0 +1,38 @@
+model: RedHatAI/gemma-4-31B-it-FP8-block
+revision: d7242548c457ab4b45bd3adb8937f2659af4739d
+served-model-name: gemma-4-31b
+trust-remote-code: false
+dtype: bfloat16
+distributed-executor-backend: mp
+tensor-parallel-size: 4
+max-model-len: 8192
+max-num-seqs: 8
+max-num-batched-tokens: 4096
+enable-prefix-caching: true
+kv-cache-dtype: fp8
+kv-cache-memory-bytes: 939524096
+gpu-memory-utilization: 0.15
+attention-config:
+  backend: TRITON_ATTN
+speculative-config:
+  method: mtp
+  model: google/gemma-4-31B-it-assistant
+  revision: 627c5ec1458b9086b841a91e0512fd31fd2fbbf1
+  num_speculative_tokens: 4
+language-model-only: false
+limit-mm-per-prompt:
+  image: 8
+  video: 0
+  audio: 0
+mm-processor-kwargs:
+  max_soft_tokens: 280
+mm-processor-cache-gb: 4
+reasoning-parser: gemma4
+tool-call-parser: gemma4
+enable-auto-tool-choice: true
+default-chat-template-kwargs:
+  enable_thinking: false
+disable-custom-all-reduce: true
+compilation-config:
+  pass_config:
+    fuse_allreduce_rms: false

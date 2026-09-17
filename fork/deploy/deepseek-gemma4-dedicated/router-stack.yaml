@@ -1,0 +1,50 @@
+version: "3.8"
+
+# Optional: use your existing router OR this stack, not both on the same port.
+services:
+  router:
+    image: openimage/production-stack-router@sha256:7144e56c84abcb3e3f42a5eb37dcee16a46945f980a04d3d51e4134b51768733
+    command: ["--dynamic-config-yaml", "/etc/vllm-router/router.yaml"]
+    environment:
+      NVIDIA_VISIBLE_DEVICES: void
+    configs:
+      - source: router
+        target: /etc/vllm-router/router.yaml
+    ports:
+      - target: 8080
+        published: 8080
+        protocol: tcp
+        mode: ingress
+    healthcheck:
+      test: ["CMD", "/opt/venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health', timeout=5).close()"]
+      start_period: 1m
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.platform.os == linux
+          - node.platform.arch == x86_64
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+      update_config:
+        parallelism: 1
+        order: stop-first
+        failure_action: rollback
+      rollback_config:
+        parallelism: 1
+        order: stop-first
+
+configs:
+  router:
+    name: dedicated-router-${ROUTER_CONFIG_REV:-20260917a}
+    file: ./router.yaml
+
+networks:
+  default:
+    external: true
+    name: inference-dedicated
