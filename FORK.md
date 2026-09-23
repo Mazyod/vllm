@@ -106,8 +106,8 @@ vllm/vllm-openai:<TAG>   (prebuilt upstream release image)
 The pointer from `main` to release source is `fork/patches/RELEASE`:
 
 ```text
-tag: v0.29.0
-release-sha: 98dff2a81d747d1dba01a47f939f48c3526d4206
+tag: v0.30.0
+release-sha: ced6857afa0ea7b2e3f0846a62e1394e90f15607
 ```
 
 `export-patches.sh` writes that pointer with `series`, `upstream.map`, and one
@@ -132,6 +132,10 @@ termination fix (#52805) and speculative reasoning-boundary logging fix (#53046)
 The [release gate record](fork/bench/configs/v0.29.0/results/20260909-gate.md)
 records all required checks passing, including structured streams and the
 corrected PCIe collective environment.
+
+The `v0.30.0` candidate also carries no source patches. Its engine arguments
+and fleet environment are carried from `v0.29.0`; hardware validation and
+promotion are pending. See the [preparation record](fork/bench/configs/v0.30.0/results/20260923-preparation.md).
 
 ## Lockstep with upstream releases
 

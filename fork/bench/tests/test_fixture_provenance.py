@@ -23,6 +23,8 @@ FIXTURES = REPO_ROOT / "fork" / "bench" / "fixtures"
 # Every message fragment a probe keys on -> the source file that must contain
 # it. This covers the regex scaffolding, not only the headline messages: the
 # surrounding wording is what silently breaks when upstream rewrites a log call.
+# The historical SM90 sliding-window guard was removed in v0.30.0 (#50439).
+# Its captured fixture still tests generic crash extraction, not current wording.
 LINKAGE = {
     "Sharing target model embedding weights": (
         "vllm/v1/spec_decode/llm_base_proposer.py"
@@ -37,7 +39,6 @@ LINKAGE = {
     "disable_custom_all_reduce=": "vllm/config/vllm.py",
     "fuse_allreduce_rms": "vllm/config/compilation.py",
     "num_spec_tokens=": "vllm/config/speculative.py",
-    "sliding-window attention layers": "vllm/v1/attention/backends/flashinfer.py",
     "EngineCore failed to start": "vllm/v1/engine/core.py",
     "Using V2 Model Runner": "vllm/v1/worker/gpu_worker.py",
 }
