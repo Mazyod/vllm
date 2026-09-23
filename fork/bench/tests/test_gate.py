@@ -61,7 +61,8 @@ def test_run_phase_keeps_each_profiles_boot_log(tmp_path):
     """The captured log is the evidence behind every receipt probe."""
     run_phase(2, "img:tag", DryRunLauncher(), tmp_path)
     saved = (tmp_path / "gemma-full.log").read_text(encoding="utf-8")
-    assert "Sharing target model embedding weights" in saved
+    fixture = Path(__file__).parents[1] / "fixtures" / "gemma-full-boot.log"
+    assert saved.splitlines() == fixture.read_text(encoding="utf-8").splitlines()
 
 
 def test_run_gate_writes_a_report_and_a_baseline(tmp_path):

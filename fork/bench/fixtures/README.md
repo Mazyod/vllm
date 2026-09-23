@@ -16,7 +16,7 @@ Two rules keep these tests from going tautological:
 
 | fixture | provenance | engine | failure mode |
 | --- | --- | --- | --- |
-| `gemma-full-boot.log` | captured | v0.26.0 | none — healthy V1 boot with MTP sharing embeddings |
+| `gemma-full-boot.log` | captured excerpt | v0.30.0 | none — healthy V1 TP1 boot with MTP sharing embeddings; 2026-09-23 H200 validation |
 | `gemma-full-boot-v0271.log` | captured | v0.27.1 | none — healthy boot under the reworded gemma4.py external-draft logging |
 | `qwen-full.log` | captured | v0.26.0 | none — healthy hybrid-model boot selecting `FLASH_ATTN` |
 | `boot-crash.log` | captured | v0.25.1 | a real engine boot crash, replayed as the dry run's crash fallback |
@@ -26,23 +26,21 @@ Two rules keep these tests from going tautological:
 | `tp2-allreduce-boot.log` | captured | v0.25.1 | none — TP2 with both all-reduce workarounds in effect |
 | `tp2-noflags-boot.log` | captured | v0.25.0 | N3: neither workaround applied, so `CUSTOM` stays in the dispatch list and FlashInfer auto-selects `mnnvl` |
 
-Captures are real engine stdout, with model ids and the served name normalised to
-the public ones this repo already names and wall-clock dates shifted to a single
-day. Nothing else is altered.
+Historical captures are real engine stdout, with model ids and the served
+name normalised to the public ones this repo already names and wall-clock
+dates shifted to a single day. Their line numbers are the capturing engine's;
+no test may assert on them.
 
-`gemma-full-boot.log` is the one fixture with no capture behind it: every
-archived boot carrying the "Sharing" line is from the crash investigation, so
-all of them also carry "Keeping separate". Its lines are individually verbatim
-real ones, reassembled into the boot a patched image produces. Replace it after
-the first session.
-
-Line numbers here are the ones the capturing engine emitted (`v0.25.x`), not
-`v0.26.0`'s. That is exactly why no test may assert on them.
+`gemma-full-boot.log` now contains ten unchanged lines selected from the real
+v0.30.0 `gemma-full` boot in the [H200 validation](../configs/v0.30.0/results/20260923-gate.md).
+It replaces the old reconstruction. The excerpt retains the configuration,
+backend, draft loading/sharing/layer decisions, and successful startup, while
+omitting irrelevant telemetry and network identifiers.
 
 The SM90 sliding-window guard was removed in v0.30.0 by upstream #50439.
 Its historical fixture remains a crash-extraction regression check; it no
 longer asserts that the current release emits that guard. The V2 profile
-remains a non-gating diagnostic until hardware testing establishes its behavior.
+remains a non-gating diagnostic; the H200 record documents its current failure.
 
 ## Where each message comes from
 

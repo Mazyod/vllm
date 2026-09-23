@@ -133,9 +133,11 @@ The [release gate record](fork/bench/configs/v0.29.0/results/20260909-gate.md)
 records all required checks passing, including structured streams and the
 corrected PCIe collective environment.
 
-The `v0.30.0` candidate also carries no source patches. Its engine arguments
-and fleet environment are carried from `v0.29.0`; hardware validation and
-promotion are pending. See the [preparation record](fork/bench/configs/v0.30.0/results/20260923-preparation.md).
+The `v0.30.0` candidate carries no source patches and passed all 38 required
+checks on H200/NVLink. **PCIe validation remains outstanding**; the user
+authorized versioned publication with that limitation. Keep the tested V1
+runner and TP2 collective environment from the fleet. See the
+[validation record](fork/bench/configs/v0.30.0/results/20260923-gate.md).
 
 ## Lockstep with upstream releases
 
@@ -201,8 +203,9 @@ patch -p1 --dry-run --force < /path/to/fork/patches/<patch-file>
 ## The image
 
 - **Registry / name:** `docker.io/openimage/vllm-openai-audio`
-- **Validated version:** `v0.29.0`; promotion uses the digest in the gate record.
-  `latest` remains on `v0.28.0` pending deployment environment confirmation.
+- **Validated version:** `v0.30.0` on H200/NVLink, with PCIe validation
+  outstanding; promotion uses the digest in the validation record. `latest`
+  remains on `v0.28.0` pending deployment environment confirmation.
 - **Drop-in:** entrypoint is inherited from `vllm/vllm-openai`, so it replaces
   the stock image directly.
 - **CI:** [`build-vllm-audio.yml`](.github/workflows/build-vllm-audio.yml) —
