@@ -7,7 +7,7 @@
 # prebuilt upstream release image and applies two things on top:
 #
 #   1. The `audio` extra (av/soundfile/soxr/scipy/...), pinned to the EXACT vLLM
-#      build in the base image so pip never reinstalls or swaps the vendored
+#      build in the base image so uv never reinstalls or swaps the vendored
 #      vLLM. Without it, POST /v1/audio/transcriptions fails at request time
 #      with "Please install vllm[audio] for audio support".
 #
@@ -21,12 +21,12 @@
 # BASE_TAG MUST be a real upstream release tag (e.g. v0.26.0). The patch series
 # is generated against that tag; bumping BASE_TAG without running
 # fork/scripts/new-release.sh will fail the build by design.
-ARG BASE_TAG=v0.29.0
+ARG BASE_TAG=v0.30.0
 FROM vllm/vllm-openai:${BASE_TAG}
 
-# `pip show` reads metadata WITHOUT importing vllm, so this stays fast and needs
-# no GPU/CUDA at build time.
-RUN pip install --no-cache-dir "vllm[audio]==$(pip show vllm | awk '/^Version:/ {print $2}')"
+# `uv pip show` reads metadata without importing vllm or needing a GPU.
+# Use upstream's UV_OVERRIDE so torch cannot downgrade its required NCCL.
+RUN uv pip install --system --no-cache "vllm[audio]==$(uv pip show vllm | awk '/^Version:/ {print $2}')"
 
 # Apply the fork patches LAST so they win even if the step above touched vLLM.
 COPY fork/patches /opt/fork/patches

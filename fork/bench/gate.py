@@ -478,6 +478,7 @@ class ProcessLauncher:
                 process.wait(timeout=_STOP_GRACE_S)
             except subprocess.TimeoutExpired:
                 self._signal_group(process, signal.SIGKILL)
+                process.wait(timeout=_STOP_GRACE_S)
         self._running.clear()
 
     @staticmethod

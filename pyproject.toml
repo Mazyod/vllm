@@ -19,6 +19,8 @@ select = [
     "I",
     # flake8-logging-format
     "G",
+    # flake8-no-pep420
+    "INP",
 ]
 ignore = [
     # star imports

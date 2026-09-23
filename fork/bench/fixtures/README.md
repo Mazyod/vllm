@@ -39,6 +39,11 @@ the first session.
 Line numbers here are the ones the capturing engine emitted (`v0.25.x`), not
 `v0.26.0`'s. That is exactly why no test may assert on them.
 
+The SM90 sliding-window guard was removed in v0.30.0 by upstream #50439.
+Its historical fixture remains a crash-extraction regression check; it no
+longer asserts that the current release emits that guard. The V2 profile
+remains a non-gating diagnostic until hardware testing establishes its behavior.
+
 ## Where each message comes from
 
 | message | source at `v0.26.0` |

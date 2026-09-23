@@ -50,7 +50,7 @@ env:
   IMAGE_NAME: docker.io/openimage/vllm-openai-audio
   # Deterministic upstream release the patch series is generated against.
   # Bump this in lockstep with fork/scripts/new-release.sh on each release.
-  DEFAULT_BASE_TAG: v0.29.0
+  DEFAULT_BASE_TAG: v0.30.0
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -291,14 +291,28 @@ jobs:
           echo "SOURCE_REF=$SOURCE_REF" >> "$GITHUB_ENV"
           docker pull "$SOURCE_REF"
 
-      - name: Assert audio decode deps are present
+      - name: Check audio decoding and default resampling on CPU
         run: |
-          # /v1/audio/transcriptions needs these. vLLM guards `import av` and
-          # `import soundfile`; if either is missing it degrades to a
-          # PlaceholderModule. Importing both is pure CPU work — no GPU.
-          IMAGE="$SOURCE_REF"
-          docker run --rm --entrypoint python3 "$IMAGE" -c \
-            "import av, soundfile; print('audio deps OK: av', av.__version__, '| soundfile', soundfile.__version__)"
+          docker run --rm -i -e VLLM_TARGET_DEVICE=cpu --entrypoint uv \
+            "$SOURCE_REF" run --no-project -- python - <<'PY'
+          from io import BytesIO
+
+          import av
+          import numpy as np
+          import soundfile
+          import torchaudio
+          from vllm.multimodal.audio import AudioResampler
+          from vllm.multimodal.media.audio import load_audio
+
+          wav = BytesIO()
+          soundfile.write(wav, np.zeros(8000, dtype=np.float32), 8000, format="WAV")
+          for backend in ("auto", "soundfile", "pyav"):
+              audio, rate = load_audio(BytesIO(wav.getvalue()), sr=None, backend=backend)
+              assert rate == 8000 and audio.shape == (8000,), backend
+              resampled = AudioResampler(target_sr=16000).resample(audio, orig_sr=rate)
+              assert resampled.shape == (16000,) and np.isfinite(resampled).all(), backend
+          print("audio decode/resample OK:", av.__version__, soundfile.__version__, torchaudio.__version__)
+          PY
 
       - name: Assert the image carries exactly the declared patch series
         run: |
