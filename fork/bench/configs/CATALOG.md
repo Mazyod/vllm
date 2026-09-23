@@ -55,17 +55,17 @@ architecture.
 | v0.29.0 | [`deepseek-v4-tp2-h200-dspark.yaml`](v0.29.0/engine/deepseek-v4-tp2-h200-dspark.yaml) | off-gate, unvalidated | — | [gate](v0.29.0/results/20260909-gate.md) |
 | v0.29.0 | [`deepseek-v4-tp2-h200.yaml`](v0.29.0/engine/deepseek-v4-tp2-h200.yaml) | off-gate control, unvalidated | — | [gate](v0.29.0/results/20260909-gate.md) |
 
-| v0.30.0 | [`gemma-tp2.yaml`](v0.30.0/engine/gemma-tp2.yaml) | unvalidated candidate | — | [preparation](v0.30.0/results/20260923-preparation.md) |
-| v0.30.0 | [`qwen-tp2.yaml`](v0.30.0/engine/qwen-tp2.yaml) | unvalidated candidate | — | [preparation](v0.30.0/results/20260923-preparation.md) |
-| v0.30.0 | [`gemma-tp2-kvauto.yaml`](v0.30.0/engine/gemma-tp2-kvauto.yaml) | unvalidated control | — | [preparation](v0.30.0/results/20260923-preparation.md) |
-| v0.30.0 | [`gemma-tp2-nospec.yaml`](v0.30.0/engine/gemma-tp2-nospec.yaml) | unvalidated control | — | [preparation](v0.30.0/results/20260923-preparation.md) |
-| v0.30.0 | `gemma-full` / [`gemma-tp1.yaml`](v0.30.0/engine/gemma-tp1.yaml) | unvalidated candidate | — | [preparation](v0.30.0/results/20260923-preparation.md) |
-| v0.30.0 | `gemma-v2-kvfp8` / [`gemma-tp1.yaml`](v0.30.0/engine/gemma-tp1.yaml) | unvalidated negative | — | [preparation](v0.30.0/results/20260923-preparation.md) |
-| v0.30.0 | `gemma-perf-tp1x2` / [`gemma-tp1.yaml`](v0.30.0/engine/gemma-tp1.yaml) | unvalidated control | — | [preparation](v0.30.0/results/20260923-preparation.md) |
-| v0.30.0 | `qwen-full` / [`qwen-tp1.yaml`](v0.30.0/engine/qwen-tp1.yaml) | unvalidated candidate | — | [preparation](v0.30.0/results/20260923-preparation.md) |
-| v0.30.0 | [`qwen-tp2-noflags.yaml`](v0.30.0/engine/qwen-tp2-noflags.yaml) | unvalidated negative | — | [preparation](v0.30.0/results/20260923-preparation.md) |
-| v0.30.0 | [`deepseek-v4-tp2-h200-dspark.yaml`](v0.30.0/engine/deepseek-v4-tp2-h200-dspark.yaml) | off-gate, unvalidated | — | [preparation](v0.30.0/results/20260923-preparation.md) |
-| v0.30.0 | [`deepseek-v4-tp2-h200.yaml`](v0.30.0/engine/deepseek-v4-tp2-h200.yaml) | off-gate control, unvalidated | — | [preparation](v0.30.0/results/20260923-preparation.md) |
+| v0.30.0 | [`gemma-tp2.yaml`](v0.30.0/engine/gemma-tp2.yaml) | shipping, H200/NVLink; PCIe outstanding | 263.3 decode tok/s | [H200/NVLink validation](v0.30.0/results/20260923-gate.md) |
+| v0.30.0 | [`qwen-tp2.yaml`](v0.30.0/engine/qwen-tp2.yaml) | shipping, H200/NVLink; PCIe outstanding | 211.9 decode tok/s | [H200/NVLink validation](v0.30.0/results/20260923-gate.md) |
+| v0.30.0 | [`gemma-tp2-kvauto.yaml`](v0.30.0/engine/gemma-tp2-kvauto.yaml) | control, H200/NVLink | 23.7 decode tok/s; cold JIT sample | [H200/NVLink validation](v0.30.0/results/20260923-gate.md) |
+| v0.30.0 | [`gemma-tp2-nospec.yaml`](v0.30.0/engine/gemma-tp2-nospec.yaml) | control, H200/NVLink | 108.8 decode tok/s | [H200/NVLink validation](v0.30.0/results/20260923-gate.md) |
+| v0.30.0 | `gemma-full` / [`gemma-tp1.yaml`](v0.30.0/engine/gemma-tp1.yaml) | gating, H200 | — | [H200/NVLink validation](v0.30.0/results/20260923-gate.md) |
+| v0.30.0 | `gemma-v2-kvfp8` / [`gemma-tp1.yaml`](v0.30.0/engine/gemma-tp1.yaml) | negative: V2 FlashInfer JIT fails on SM90 | — | [H200/NVLink validation](v0.30.0/results/20260923-gate.md) |
+| v0.30.0 | `gemma-perf-tp1x2` / [`gemma-tp1.yaml`](v0.30.0/engine/gemma-tp1.yaml) | control, two H200 replicas | 210.8 decode tok/s | [H200/NVLink validation](v0.30.0/results/20260923-gate.md) |
+| v0.30.0 | `qwen-full` / [`qwen-tp1.yaml`](v0.30.0/engine/qwen-tp1.yaml) | gating, H200 | — | [H200/NVLink validation](v0.30.0/results/20260923-gate.md) |
+| v0.30.0 | [`qwen-tp2-noflags.yaml`](v0.30.0/engine/qwen-tp2-noflags.yaml) | negative: booted on NVLink; PCIe outstanding | — | [H200/NVLink validation](v0.30.0/results/20260923-gate.md) |
+| v0.30.0 | [`deepseek-v4-tp2-h200-dspark.yaml`](v0.30.0/engine/deepseek-v4-tp2-h200-dspark.yaml) | off-gate, unvalidated | — | [H200/NVLink validation](v0.30.0/results/20260923-gate.md) |
+| v0.30.0 | [`deepseek-v4-tp2-h200.yaml`](v0.30.0/engine/deepseek-v4-tp2-h200.yaml) | off-gate control, unvalidated | — | [H200/NVLink validation](v0.30.0/results/20260923-gate.md) |
 
 ## Pending release
 
