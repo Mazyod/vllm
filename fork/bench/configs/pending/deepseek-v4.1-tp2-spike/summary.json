@@ -1,0 +1,648 @@
+{
+  "date": "2026-10-04",
+  "profile": "hopper-pcie-2",
+  "gpu": "2 x NVIDIA H200 NVL, 600 W each, SYS link",
+  "cuda_visible_memory_gib_per_gpu": 139.80267333984375,
+  "host_memory_limit_gib": 967.20703125,
+  "image": "vllm/vllm-openai@sha256:8a69ffad015f138d7170c4ddc429e230a3bc1c1719f67e14324749df200a4b90",
+  "model_revision": "dba1be0a40aa45a94ad051997016db3960a90277",
+  "runtime_environment": {
+    "CUDA_VISIBLE_DEVICES": "0,1",
+    "VLLM_ENGINE_READY_TIMEOUT_S": "3600",
+    "TORCHINDUCTOR_CACHE_DIR": "/root/.cache/vllm/deepseek/inductor",
+    "VLLM_USE_RUST_FRONTEND": "0",
+    "TRITON_CACHE_DIR": "/root/.cache/vllm/deepseek/triton",
+    "VLLM_DEEP_GEMM_WARMUP": "skip",
+    "HF_HUB_OFFLINE": "1",
+    "VLLM_ALLREDUCE_USE_FLASHINFER": "0",
+    "VLLM_USE_NCCL_SYMM_MEM": "0",
+    "VLLM_USE_V2_MODEL_RUNNER": "1",
+    "VLLM_ALLREDUCE_USE_SYMM_MEM": "0",
+    "VLLM_CACHE_ROOT": "/root/.cache/vllm/deepseek",
+    "HF_HOME": "/workspace/hf"
+  },
+  "metadata": {
+    "cpu": {
+      "Architecture": "x86_64",
+      "CPU(s)": "64",
+      "Model name": "Intel(R) Xeon(R) 6515P",
+      "Thread(s) per core": "2",
+      "Core(s) per socket": "16",
+      "Socket(s)": "2",
+      "NUMA node(s)": "2"
+    },
+    "cpu_quota": "6143999 100000",
+    "software": {
+      "vllm": "0.30.0",
+      "torch": "2.13.0+cu130",
+      "transformers": "5.17.0",
+      "triton": "3.7.1",
+      "flashinfer-python": "0.6.18.post1",
+      "safetensors": "0.8.0",
+      "huggingface-hub": "1.32.0",
+      "nvidia-nccl-cu13": "2.30.7"
+    },
+    "gpu_links": [
+      "0, 5, 16, 600.00 W",
+      "1, 5, 16, 600.00 W"
+    ]
+  },
+  "configurations": [
+    {
+      "name": "pp2-off40",
+      "config_sha256": "035892bd0074d35a48df46589d68e94ad87919aa77bed262cc8b421e21b2adb6",
+      "declared_environment_sha256": "14501b1e378aacb2deb4b18bc07736215c66082a889a33e74b28c768f36a0f18",
+      "settings": {
+        "tensor-parallel-size": 1,
+        "pipeline-parallel-size": 2,
+        "enable-expert-parallel": false,
+        "cpu-offload-gb": 40,
+        "kv-cache-memory-bytes": 8589934592,
+        "max-num-seqs": 64,
+        "max-model-len": 1048576,
+        "speculative-config": null,
+        "async-scheduling": null
+      },
+      "boot_status": "boot_failed",
+      "boot_seconds": 408.22285556793213,
+      "peak_gpu_gib": 110.5947265625,
+      "peak_host_gib_including_file_cache": 909.9666442871094,
+      "natural_decode_tps_median": null,
+      "long_context": {},
+      "throughput": [],
+      "failed_benchmarks": []
+    },
+    {
+      "name": "tp2-off30",
+      "config_sha256": "a687a9eb921eb4c163ad1b561deeb3fba421684107b8778c2a37e3437a87cd0f",
+      "declared_environment_sha256": "14501b1e378aacb2deb4b18bc07736215c66082a889a33e74b28c768f36a0f18",
+      "settings": {
+        "tensor-parallel-size": 2,
+        "pipeline-parallel-size": 1,
+        "enable-expert-parallel": true,
+        "cpu-offload-gb": 30,
+        "kv-cache-memory-bytes": 8589934592,
+        "max-num-seqs": 64,
+        "max-model-len": 1048576,
+        "speculative-config": null,
+        "async-scheduling": null
+      },
+      "boot_status": "ready",
+      "boot_seconds": 315.1901216506958,
+      "peak_gpu_gib": 137.7548828125,
+      "peak_host_gib_including_file_cache": 863.9196586608887,
+      "natural_decode_tps_median": 43.04492569458857,
+      "long_context": {
+        "1m": {
+          "passed": true,
+          "usage": {
+            "prompt_tokens": 1047987,
+            "total_tokens": 1048499,
+            "completion_tokens": 512,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "ttft_s": 428.43927496206015,
+          "decode_tok_s": 42.97497192397484,
+          "elapsed_s": 440.3302223631181,
+          "error": null,
+          "cached_input_tokens": 0.0
+        },
+        "1m-warm": {
+          "passed": true,
+          "usage": {
+            "prompt_tokens": 1047987,
+            "total_tokens": 1048499,
+            "completion_tokens": 512,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "ttft_s": 4.103106513153762,
+          "decode_tok_s": 42.22316146911081,
+          "elapsed_s": 16.205794976092875,
+          "error": null,
+          "cached_input_tokens": 1047936.0
+        }
+      },
+      "throughput": [
+        {
+          "input_tokens": 1024,
+          "output_tokens": 256,
+          "concurrency": 1,
+          "sample": "cold",
+          "cached_input_tokens": 0.0,
+          "server_prompt_tokens": 4096.0,
+          "server_output_tokens": 1024.0,
+          "preemptions": 0.0,
+          "completed": 4,
+          "duration": 27.092530600726604,
+          "output_throughput": 37.796395437956505,
+          "median_ttft_ms": 865.0713900569826,
+          "p99_ttft_ms": 868.6625755950809,
+          "median_tpot_ms": 23.252297301466267,
+          "p99_tpot_ms": 23.972865806910775,
+          "spec_decode_acceptance_rate": null,
+          "spec_decode_acceptance_length": null
+        },
+        {
+          "input_tokens": 1024,
+          "output_tokens": 256,
+          "concurrency": 32,
+          "sample": "cold",
+          "cached_input_tokens": 0.0,
+          "server_prompt_tokens": 65536.0,
+          "server_output_tokens": 16384.0,
+          "preemptions": 0.0,
+          "completed": 64,
+          "duration": 118.43971686018631,
+          "output_throughput": 138.33197540771482,
+          "median_ttft_ms": 4932.671121088788,
+          "p99_ttft_ms": 13692.571840845048,
+          "median_tpot_ms": 212.80842154542455,
+          "p99_tpot_ms": 224.373467879589,
+          "spec_decode_acceptance_rate": null,
+          "spec_decode_acceptance_length": null
+        },
+        {
+          "input_tokens": 1024,
+          "output_tokens": 256,
+          "concurrency": 64,
+          "sample": "cold",
+          "cached_input_tokens": 0.0,
+          "server_prompt_tokens": 131072.0,
+          "server_output_tokens": 32768.0,
+          "preemptions": 0.0,
+          "completed": 128,
+          "duration": 190.68336727377027,
+          "output_throughput": 171.8450878463559,
+          "median_ttft_ms": 6446.729144547135,
+          "p99_ttft_ms": 26887.60512900073,
+          "median_tpot_ms": 355.6694740055165,
+          "p99_tpot_ms": 364.5722175747083,
+          "spec_decode_acceptance_rate": null,
+          "spec_decode_acceptance_length": null
+        },
+        {
+          "input_tokens": 1024,
+          "output_tokens": 256,
+          "concurrency": 8,
+          "sample": "cold",
+          "cached_input_tokens": 0.0,
+          "server_prompt_tokens": 16384.0,
+          "server_output_tokens": 4096.0,
+          "preemptions": 0.0,
+          "completed": 16,
+          "duration": 47.91512469900772,
+          "output_throughput": 85.48449003796132,
+          "median_ttft_ms": 2783.5435485467315,
+          "p99_ttft_ms": 3866.9584904098883,
+          "median_tpot_ms": 84.58026131140251,
+          "p99_tpot_ms": 91.48495190740361,
+          "spec_decode_acceptance_rate": null,
+          "spec_decode_acceptance_length": null
+        }
+      ],
+      "failed_benchmarks": [],
+      "natural_checks_passed": true
+    },
+    {
+      "name": "tp2-off30-kv6-c128",
+      "config_sha256": "32c845eec623ede9b1d0652e2fb3499cdb4855ae4994725d53f27f184dab9391",
+      "declared_environment_sha256": "14501b1e378aacb2deb4b18bc07736215c66082a889a33e74b28c768f36a0f18",
+      "settings": {
+        "tensor-parallel-size": 2,
+        "pipeline-parallel-size": 1,
+        "enable-expert-parallel": true,
+        "cpu-offload-gb": 30,
+        "kv-cache-memory-bytes": 6442450944,
+        "max-num-seqs": 128,
+        "max-model-len": 1048576,
+        "speculative-config": null,
+        "async-scheduling": null
+      },
+      "boot_status": "ready",
+      "boot_seconds": 303.2496931552887,
+      "peak_gpu_gib": 135.7236328125,
+      "peak_host_gib_including_file_cache": 869.7236824035645,
+      "natural_decode_tps_median": 43.091617293811375,
+      "long_context": {
+        "1m": {
+          "passed": true,
+          "usage": {
+            "prompt_tokens": 1047987,
+            "total_tokens": 1048499,
+            "completion_tokens": 512,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "ttft_s": 429.9240279989317,
+          "decode_tok_s": 42.65435246952753,
+          "elapsed_s": 441.8808705639094,
+          "error": null,
+          "cached_input_tokens": 0.0
+        }
+      },
+      "throughput": [
+        {
+          "input_tokens": 1024,
+          "output_tokens": 256,
+          "concurrency": 128,
+          "sample": "cold",
+          "cached_input_tokens": 0.0,
+          "server_prompt_tokens": 262144.0,
+          "server_output_tokens": 65536.0,
+          "preemptions": 0.0,
+          "completed": 256,
+          "duration": 307.84697678498924,
+          "output_throughput": 212.88498813412926,
+          "median_ttft_ms": 6662.7948365639895,
+          "p99_ttft_ms": 53766.41614974942,
+          "median_tpot_ms": 564.1979002439434,
+          "p99_tpot_ms": 579.6066291801011,
+          "spec_decode_acceptance_rate": null,
+          "spec_decode_acceptance_length": null
+        },
+        {
+          "input_tokens": 1024,
+          "output_tokens": 256,
+          "concurrency": 128,
+          "sample": "repeat-seed43",
+          "cached_input_tokens": 0.0,
+          "server_prompt_tokens": 262144.0,
+          "server_output_tokens": 65536.0,
+          "preemptions": 0.0,
+          "completed": 256,
+          "duration": 307.6922560296953,
+          "output_throughput": 212.9920357621062,
+          "median_ttft_ms": 6691.312808543444,
+          "p99_ttft_ms": 53724.14231279399,
+          "median_tpot_ms": 561.4758710650837,
+          "p99_tpot_ms": 581.5792812388755,
+          "spec_decode_acceptance_rate": null,
+          "spec_decode_acceptance_length": null
+        },
+        {
+          "input_tokens": 1024,
+          "output_tokens": 256,
+          "concurrency": 64,
+          "sample": "cold",
+          "cached_input_tokens": 0.0,
+          "server_prompt_tokens": 131072.0,
+          "server_output_tokens": 32768.0,
+          "preemptions": 0.0,
+          "completed": 128,
+          "duration": 187.59890778083354,
+          "output_throughput": 174.67052653782994,
+          "median_ttft_ms": 6468.014403944835,
+          "p99_ttft_ms": 26930.73569850996,
+          "median_tpot_ms": 349.64610709735723,
+          "p99_tpot_ms": 358.92118223668894,
+          "spec_decode_acceptance_rate": null,
+          "spec_decode_acceptance_length": null
+        }
+      ],
+      "failed_benchmarks": [],
+      "two_full_contexts": {
+        "status": "passed",
+        "elapsed_s": 24.771425161976367,
+        "output_tps": 41.337952633093515,
+        "generation_overlap_s": 13.87589406967163,
+        "cached_input_tokens": 2095872.0,
+        "preemptions": 0.0,
+        "requests": [
+          {
+            "prompt_tokens": 1047987,
+            "output_tokens": 512,
+            "ttft_s": 4.988081770017743,
+            "decode_tps": 30.054379600631105,
+            "retrieval_passed": true
+          },
+          {
+            "prompt_tokens": 1047988,
+            "output_tokens": 512,
+            "ttft_s": 8.076833412982523,
+            "decode_tps": 30.737538034660602,
+            "retrieval_passed": true
+          }
+        ]
+      },
+      "natural_checks_passed": true
+    },
+    {
+      "name": "tp2-off40",
+      "config_sha256": "e1ce41221655051e8c9f0f6254663f5769a07e866eb602e8a070964e24d293e6",
+      "declared_environment_sha256": "14501b1e378aacb2deb4b18bc07736215c66082a889a33e74b28c768f36a0f18",
+      "settings": {
+        "tensor-parallel-size": 2,
+        "pipeline-parallel-size": 1,
+        "enable-expert-parallel": true,
+        "cpu-offload-gb": 40,
+        "kv-cache-memory-bytes": 8589934592,
+        "max-num-seqs": 64,
+        "max-model-len": 1048576,
+        "speculative-config": null,
+        "async-scheduling": null
+      },
+      "boot_status": "ready",
+      "boot_seconds": 708.4245254993439,
+      "peak_gpu_gib": 128.4228515625,
+      "peak_host_gib_including_file_cache": 838.7445602416992,
+      "natural_decode_tps_median": 36.46302872635529,
+      "long_context": {
+        "1m": {
+          "passed": true,
+          "usage": {
+            "prompt_tokens": 1047987,
+            "total_tokens": 1048499,
+            "completion_tokens": 512,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "ttft_s": 506.4728842279874,
+          "decode_tok_s": 36.06823674322349,
+          "elapsed_s": 520.6407698327675,
+          "error": null,
+          "cached_input_tokens": 0.0
+        }
+      },
+      "throughput": [
+        {
+          "input_tokens": 1024,
+          "output_tokens": 256,
+          "concurrency": 1,
+          "sample": "cold",
+          "cached_input_tokens": 0.0,
+          "server_prompt_tokens": 4096.0,
+          "server_output_tokens": 1024.0,
+          "preemptions": 0.0,
+          "completed": 4,
+          "duration": 32.55498265475035,
+          "output_throughput": 31.454478439127055,
+          "median_ttft_ms": 1104.0647439658642,
+          "p99_ttft_ms": 1124.982765209861,
+          "median_tpot_ms": 27.515330754549186,
+          "p99_tpot_ms": 28.330496813408008,
+          "spec_decode_acceptance_rate": null,
+          "spec_decode_acceptance_length": null
+        },
+        {
+          "input_tokens": 1024,
+          "output_tokens": 256,
+          "concurrency": 32,
+          "sample": "cold",
+          "cached_input_tokens": 0.0,
+          "server_prompt_tokens": 65536.0,
+          "server_output_tokens": 16384.0,
+          "preemptions": 0.0,
+          "completed": 64,
+          "duration": 144.82213590480387,
+          "output_throughput": 113.13187654385733,
+          "median_ttft_ms": 6145.512584596872,
+          "p99_ttft_ms": 17099.07784202136,
+          "median_tpot_ms": 254.82676632738875,
+          "p99_tpot_ms": 274.4998783189986,
+          "spec_decode_acceptance_rate": null,
+          "spec_decode_acceptance_length": null
+        },
+        {
+          "input_tokens": 1024,
+          "output_tokens": 256,
+          "concurrency": 64,
+          "sample": "cold",
+          "cached_input_tokens": 0.0,
+          "server_prompt_tokens": 131072.0,
+          "server_output_tokens": 32768.0,
+          "preemptions": 0.0,
+          "completed": 128,
+          "duration": 237.27627573674545,
+          "output_throughput": 138.100616668291,
+          "median_ttft_ms": 8021.358250873163,
+          "p99_ttft_ms": 33573.16349579953,
+          "median_tpot_ms": 426.48541820052935,
+          "p99_tpot_ms": 452.1665381162117,
+          "spec_decode_acceptance_rate": null,
+          "spec_decode_acceptance_length": null
+        },
+        {
+          "input_tokens": 1024,
+          "output_tokens": 256,
+          "concurrency": 8,
+          "sample": "cold",
+          "cached_input_tokens": 0.0,
+          "server_prompt_tokens": 16384.0,
+          "server_output_tokens": 4096.0,
+          "preemptions": 0.0,
+          "completed": 16,
+          "duration": 57.68202526215464,
+          "output_throughput": 71.00998935776616,
+          "median_ttft_ms": 3474.7866408433765,
+          "p99_ttft_ms": 4832.380272354931,
+          "median_tpot_ms": 97.85064571792734,
+          "p99_tpot_ms": 108.68604379304338,
+          "spec_decode_acceptance_rate": null,
+          "spec_decode_acceptance_length": null
+        }
+      ],
+      "failed_benchmarks": [],
+      "natural_checks_passed": true
+    },
+    {
+      "name": "tp2-off40-dspark",
+      "config_sha256": "5e72c75203b9de572fa5ea5d19b381ea779f968ae901a954002c07bc851967f1",
+      "declared_environment_sha256": "14501b1e378aacb2deb4b18bc07736215c66082a889a33e74b28c768f36a0f18",
+      "settings": {
+        "tensor-parallel-size": 2,
+        "pipeline-parallel-size": 1,
+        "enable-expert-parallel": true,
+        "cpu-offload-gb": 40,
+        "kv-cache-memory-bytes": 8589934592,
+        "max-num-seqs": 64,
+        "max-model-len": 1048576,
+        "speculative-config": {
+          "method": "dspark",
+          "num_speculative_tokens": 5,
+          "draft_sample_method": "probabilistic",
+          "rejection_sample_method": "block",
+          "enable_adaptive_verification": true
+        },
+        "async-scheduling": null
+      },
+      "boot_status": "ready",
+      "boot_seconds": 720.4393692016602,
+      "peak_gpu_gib": 136.0185546875,
+      "peak_host_gib_including_file_cache": 896.1684646606445,
+      "natural_decode_tps_median": 45.4975160158043,
+      "long_context": {
+        "1m": {
+          "passed": true,
+          "usage": {
+            "prompt_tokens": 1047987,
+            "total_tokens": 1048499,
+            "completion_tokens": 512,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "ttft_s": 499.5124164586887,
+          "decode_tok_s": 44.530759308267875,
+          "elapsed_s": 510.987984102685,
+          "error": null,
+          "cached_input_tokens": 0.0
+        }
+      },
+      "throughput": [
+        {
+          "input_tokens": 1024,
+          "output_tokens": 256,
+          "concurrency": 1,
+          "sample": "cold",
+          "cached_input_tokens": 0.0,
+          "server_prompt_tokens": 4096.0,
+          "server_output_tokens": 1024.0,
+          "preemptions": 0.0,
+          "completed": 4,
+          "duration": 18.304565360303968,
+          "output_throughput": 55.94232803913981,
+          "median_ttft_ms": 1079.896543174982,
+          "p99_ttft_ms": 1116.3222402473912,
+          "median_tpot_ms": 10.947523918002844,
+          "p99_tpot_ms": 24.7318482426196,
+          "spec_decode_acceptance_rate": 43.51851851851852,
+          "spec_decode_acceptance_length": 3.175925925925926
+        },
+        {
+          "input_tokens": 1024,
+          "output_tokens": 256,
+          "concurrency": 8,
+          "sample": "cold",
+          "cached_input_tokens": 0.0,
+          "server_prompt_tokens": 16384.0,
+          "server_output_tokens": 4096.0,
+          "preemptions": 0.0,
+          "completed": 16,
+          "duration": 46.17126993602142,
+          "output_throughput": 88.71317608711529,
+          "median_ttft_ms": 2777.288868324831,
+          "p99_ttft_ms": 4799.481340637431,
+          "median_tpot_ms": 54.941307200009334,
+          "p99_tpot_ms": 121.06498956579861,
+          "spec_decode_acceptance_rate": 44.33489827856025,
+          "spec_decode_acceptance_length": 3.2167449139280127
+        }
+      ],
+      "failed_benchmarks": [
+        {
+          "concurrency": 32,
+          "phase": "measured",
+          "expected_requests": 64,
+          "reported_completed": 56,
+          "expected_output_tokens": 16384,
+          "actual_output_tokens": 10657,
+          "reason": "Incomplete workload; throughput excluded"
+        }
+      ],
+      "natural_checks_passed": true
+    },
+    {
+      "name": "tp2-off40-dspark-sync",
+      "config_sha256": "8cb68f9eb61682c525dc0e3eaa092231defce64622d56ebcff8ae68b7061e53c",
+      "declared_environment_sha256": "14501b1e378aacb2deb4b18bc07736215c66082a889a33e74b28c768f36a0f18",
+      "settings": {
+        "tensor-parallel-size": 2,
+        "pipeline-parallel-size": 1,
+        "enable-expert-parallel": true,
+        "cpu-offload-gb": 40,
+        "kv-cache-memory-bytes": 8589934592,
+        "max-num-seqs": 64,
+        "max-model-len": 1048576,
+        "speculative-config": {
+          "method": "dspark",
+          "num_speculative_tokens": 5,
+          "draft_sample_method": "probabilistic",
+          "rejection_sample_method": "block",
+          "enable_adaptive_verification": true
+        },
+        "async-scheduling": false
+      },
+      "boot_status": "ready",
+      "boot_seconds": 558.3464622497559,
+      "peak_gpu_gib": 134.6396484375,
+      "peak_host_gib_including_file_cache": 900.2998046875,
+      "natural_decode_tps_median": 49.267096197863026,
+      "long_context": {
+        "1m": {
+          "passed": true,
+          "usage": {
+            "prompt_tokens": 1047987,
+            "total_tokens": 1048499,
+            "completion_tokens": 512,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "ttft_s": 500.1040378017351,
+          "decode_tok_s": 71.4740632504243,
+          "elapsed_s": 507.25375883700326,
+          "error": null,
+          "cached_input_tokens": 0.0
+        }
+      },
+      "throughput": [
+        {
+          "input_tokens": 1024,
+          "output_tokens": 256,
+          "concurrency": 1,
+          "sample": "cold",
+          "cached_input_tokens": 0.0,
+          "server_prompt_tokens": 4096.0,
+          "server_output_tokens": 1024.0,
+          "preemptions": 0.0,
+          "completed": 4,
+          "duration": 15.733534534927458,
+          "output_throughput": 65.08391345420728,
+          "median_ttft_ms": 1097.210144624114,
+          "p99_ttft_ms": 1121.3281542155892,
+          "median_tpot_ms": 10.431770398738045,
+          "p99_tpot_ms": 15.660711707748181,
+          "spec_decode_acceptance_rate": 64.40816326530611,
+          "spec_decode_acceptance_length": 4.220408163265306
+        },
+        {
+          "input_tokens": 1024,
+          "output_tokens": 256,
+          "concurrency": 8,
+          "sample": "cold",
+          "cached_input_tokens": 0.0,
+          "server_prompt_tokens": 16384.0,
+          "server_output_tokens": 4096.0,
+          "preemptions": 0.0,
+          "completed": 16,
+          "duration": 46.15454970905557,
+          "output_throughput": 88.74531386006265,
+          "median_ttft_ms": 2791.52244143188,
+          "p99_ttft_ms": 4805.454320437275,
+          "median_tpot_ms": 51.65020466471712,
+          "p99_tpot_ms": 136.9291124156877,
+          "spec_decode_acceptance_rate": 42.730739893211286,
+          "spec_decode_acceptance_length": 3.1365369946605646
+        }
+      ],
+      "failed_benchmarks": [
+        {
+          "concurrency": 32,
+          "phase": "warmup",
+          "expected_requests": 32,
+          "reported_completed": 32,
+          "expected_output_tokens": 4096,
+          "actual_output_tokens": 742,
+          "reason": "Incomplete workload; throughput excluded"
+        }
+      ],
+      "natural_checks_passed": true
+    }
+  ]
+}
