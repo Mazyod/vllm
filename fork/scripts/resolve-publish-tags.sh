@@ -21,6 +21,8 @@ if [ -z "$PROMOTE_FROM" ]; then
 fi
 
 normalized="${PUBLISH_TAGS_INPUT//,/ }"
+tags=""
 for tag in $normalized; do
-  echo "$tag"
+  tags+="${tags:+ }$tag"
 done
+[ -z "$tags" ] || printf '%s\n' "$tags"

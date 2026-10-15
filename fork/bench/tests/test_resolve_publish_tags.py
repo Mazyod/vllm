@@ -24,13 +24,14 @@ def test_a_build_publishes_only_its_candidate_tag(tmp_path, event):
     assert result.stdout == "v0.28.0-cand-abc1234\n"
 
 
-def test_a_promotion_with_empty_input_publishes_no_release_refs(tmp_path):
+@pytest.mark.parametrize("publish_tags", ["", " \t\n"])
+def test_a_promotion_with_empty_input_publishes_no_release_refs(tmp_path, publish_tags):
     result = run_script(
         RESOLVE,
         "workflow_dispatch",
         "v0.28.0",
         "abc1234",
-        "",
+        publish_tags,
         "v0.28.0-cand-abc1234",
         cwd=tmp_path,
     )
@@ -38,15 +39,24 @@ def test_a_promotion_with_empty_input_publishes_no_release_refs(tmp_path):
     assert result.stdout == ""
 
 
-def test_a_promotion_honors_explicit_publish_tags(tmp_path):
+@pytest.mark.parametrize(
+    ("publish_tags", "expected"),
+    [
+        ("v0.28.0", "v0.28.0\n"),
+        ("v0.28.0 0.28.0", "v0.28.0 0.28.0\n"),
+        ("v0.28.0,0.28.0", "v0.28.0 0.28.0\n"),
+        (" v0.28.0,\n\t0.28.0 ", "v0.28.0 0.28.0\n"),
+    ],
+)
+def test_a_promotion_honors_explicit_publish_tags(tmp_path, publish_tags, expected):
     result = run_script(
         RESOLVE,
         "workflow_dispatch",
         "v0.28.0",
         "abc1234",
-        "v0.28.0",
+        publish_tags,
         "v0.28.0-cand-abc1234",
         cwd=tmp_path,
     )
     assert result.returncode == 0
-    assert result.stdout == "v0.28.0\n"
+    assert result.stdout == expected
