@@ -1,0 +1,29 @@
+# The checkpoint whose automatic-KV control is measured.
+model: RedHatAI/gemma-4-31B-it-FP8-block
+# Keep the API identity identical to the FP8-KV arm.
+served-model-name: gemma-4-31b
+# Match the shipping arm's two-GPU PCIe topology.
+tensor-parallel-size: 2
+# Preserve Gemma-4 reasoning content in OpenAI responses.
+reasoning-parser: gemma4
+# Parse Gemma-4 native tool calls.
+tool-call-parser: gemma4
+# Let the model select tools without a forced tool choice.
+enable-auto-tool-choice: true
+# Change only KV dtype from the shipping FP8-KV configuration.
+kv-cache-dtype: auto
+# Gemma ships with prefix caching on; hold that value against the FP8 arm.
+enable-prefix-caching: true
+# Hold the measured context cap constant against the FP8-KV arm.
+max-model-len: 8192
+# MTP measured 169.6 vs 70.6 tok/s (~2.4x), at 0.53-0.55 acceptance.
+speculative-config:
+  method: mtp
+  model: google/gemma-4-31B-it-assistant
+  num_speculative_tokens: 4
+# The PCIe pair must avoid the custom all-reduce path.
+disable-custom-all-reduce: true
+# The second PCIe workaround prevents fused all-reduce plus RMSNorm.
+compilation-config:
+  pass_config:
+    fuse_allreduce_rms: false

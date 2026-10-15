@@ -21,7 +21,7 @@
 # BASE_TAG MUST be a real upstream release tag (e.g. v0.26.0). The patch series
 # is generated against that tag; bumping BASE_TAG without running
 # fork/scripts/new-release.sh will fail the build by design.
-ARG BASE_TAG=v0.30.0
+ARG BASE_TAG=v0.31.0
 FROM vllm/vllm-openai:${BASE_TAG}
 
 # `uv pip show` reads metadata without importing vllm or needing a GPU.
