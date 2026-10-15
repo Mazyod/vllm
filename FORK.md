@@ -139,8 +139,12 @@ authorized versioned publication with that limitation. Keep the tested V1
 runner and TP2 collective environment from the fleet. See the
 [validation record](fork/bench/configs/v0.30.0/results/20260923-gate.md).
 
-The `v0.31.0` candidate carries no source patches. Hardware validation and
-promotion are pending; see the [preparation record](fork/bench/configs/v0.31.0/results/20261015-preparation.md).
+The `v0.31.0` release carries no source patches and passed all 38 required
+checks, all 50 declared results, and 12 supplemental structured streams on
+H100 PCIe. Gemma follows upstream's `TRITON_FLASH_ATTN` default; keep the
+validated V1 runner and TP2 collective environment. The
+[gate record](fork/bench/configs/v0.31.0/results/20261015-gate.md) documents
+cold JIT latency, warm decode repeats, and verified rental teardown.
 
 ## Lockstep with upstream releases
 
@@ -206,9 +210,9 @@ patch -p1 --dry-run --force < /path/to/fork/patches/<patch-file>
 ## The image
 
 - **Registry / name:** `docker.io/openimage/vllm-openai-audio`
-- **Validated version:** `v0.30.0` on H200/NVLink, with PCIe validation
-  outstanding; promotion uses the digest in the validation record. `latest`
-  remains on `v0.28.0` pending deployment environment confirmation.
+- **Validated version:** `v0.31.0` on H100 PCIe; promotion uses the exact
+  digest in the [gate record](fork/bench/configs/v0.31.0/results/20261015-gate.md).
+  `latest` remains on `v0.28.0`, as requested.
 - **Drop-in:** entrypoint is inherited from `vllm/vllm-openai`, so it replaces
   the stock image directly.
 - **CI:** [`build-vllm-audio.yml`](.github/workflows/build-vllm-audio.yml) —

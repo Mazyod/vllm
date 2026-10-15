@@ -1,0 +1,117 @@
+{
+  "config": {
+    "fleet": {
+      "path": "fork/bench/configs/v0.31.0/fleet.yaml",
+      "sha256": "831a20100c6e3758a54af6b4d6c23f2c71ac8cc120216fa1ad4ce7f11021f0c0"
+    },
+    "profiles": {
+      "gemma-full": {
+        "path": "fork/bench/configs/v0.31.0/engine/gemma-tp1.yaml",
+        "sha256": "f33a4b7cfc56b9ce624bc52de37271e1c92333004c2f1af2689f12e144a97920"
+      },
+      "gemma-perf": {
+        "path": "fork/bench/configs/v0.31.0/engine/gemma-tp2.yaml",
+        "sha256": "5824e286bc1f7761cad6afe8bd7ff82140c989e392020797f2109eea83b7b139"
+      },
+      "gemma-perf-kvauto": {
+        "path": "fork/bench/configs/v0.31.0/engine/gemma-tp2-kvauto.yaml",
+        "sha256": "55222ba73cae7c30811f8ced31ae96fdb0ec9df62e41e5a0ec817b007617e1c9"
+      },
+      "gemma-perf-nospec": {
+        "path": "fork/bench/configs/v0.31.0/engine/gemma-tp2-nospec.yaml",
+        "sha256": "0bce38d1b750ea181f71d5fb18d9766c419de76ca5b789ce789e5a229c955248"
+      },
+      "gemma-perf-tp1x2": {
+        "path": "fork/bench/configs/v0.31.0/engine/gemma-tp1.yaml",
+        "sha256": "f33a4b7cfc56b9ce624bc52de37271e1c92333004c2f1af2689f12e144a97920"
+      },
+      "gemma-tp2": {
+        "path": "fork/bench/configs/v0.31.0/engine/gemma-tp2.yaml",
+        "sha256": "5824e286bc1f7761cad6afe8bd7ff82140c989e392020797f2109eea83b7b139"
+      },
+      "gemma-v2-kvfp8": {
+        "path": "fork/bench/configs/v0.31.0/engine/gemma-tp1.yaml",
+        "sha256": "f33a4b7cfc56b9ce624bc52de37271e1c92333004c2f1af2689f12e144a97920"
+      },
+      "qwen-full": {
+        "path": "fork/bench/configs/v0.31.0/engine/qwen-tp1.yaml",
+        "sha256": "86dc81355d08701fca0af0efd8346b4f8154f8a6f290fe20ae93a1085cd1d235"
+      },
+      "qwen-perf": {
+        "path": "fork/bench/configs/v0.31.0/engine/qwen-tp2.yaml",
+        "sha256": "2283ab5399575cd6872978df9ffe2df59b7dcb5a5360a7118e238a8033db5d8f"
+      },
+      "qwen-tp2": {
+        "path": "fork/bench/configs/v0.31.0/engine/qwen-tp2.yaml",
+        "sha256": "2283ab5399575cd6872978df9ffe2df59b7dcb5a5360a7118e238a8033db5d8f"
+      },
+      "qwen-tp2-noflags": {
+        "path": "fork/bench/configs/v0.31.0/engine/qwen-tp2-noflags.yaml",
+        "sha256": "d5288f5ad5e47b02bb665160133d579c10db45e1900ea4cab10bb6e20dcb2408"
+      }
+    }
+  },
+  "machine": {
+    "all_reduce_path": "native",
+    "driver": "590.48.01",
+    "gpu": "NVIDIA H100 PCIe",
+    "gpu_count": "2",
+    "interconnect": "PXB"
+  },
+  "perf": {
+    "gemma-perf": {
+      "acceptance_rate": 0.5287031938325991,
+      "decode_tok_s": 59.764624998519764,
+      "elapsed_s": 4.283470364054665,
+      "n": 4,
+      "throughput_conc1": 147.35012470164122,
+      "throughput_conc32": 1677.4860132458905,
+      "throughput_conc8": 507.70162746216766,
+      "ttft_p50": 0.22652460099197924,
+      "ttft_p99": 6.849150971043855
+    },
+    "gemma-perf-kvauto": {
+      "acceptance_rate": 0.5496575342465754,
+      "decode_tok_s": 35.26055878610795,
+      "elapsed_s": 7.260236616013572,
+      "n": 4,
+      "throughput_conc1": 135.09619015190103,
+      "throughput_conc32": 1877.2206419986217,
+      "throughput_conc8": 541.5682671025418,
+      "ttft_p50": 0.2247412579599768,
+      "ttft_p99": 13.600109366932884
+    },
+    "gemma-perf-nospec": {
+      "decode_tok_s": 67.58182389439523,
+      "elapsed_s": 3.788000755943358,
+      "n": 4,
+      "throughput_conc1": 60.89452381829346,
+      "throughput_conc32": 1019.4272812100679,
+      "throughput_conc8": 324.30907404869737,
+      "ttft_p50": 0.20497992308810353,
+      "ttft_p99": 2.912324574077502
+    },
+    "gemma-perf-tp1x2": {
+      "decode_tok_s": 54.71409091638842,
+      "elapsed_s": 4.678867832990363,
+      "n": 4,
+      "throughput_conc1": 133.6177015959578,
+      "throughput_conc32": 1239.0767987782071,
+      "throughput_conc8": 453.4505570370878,
+      "ttft_p50": 0.23826060397550464,
+      "ttft_p99": 6.867551555857062
+    },
+    "qwen-perf": {
+      "acceptance_rate": 0.764520202020202,
+      "decode_tok_s": 151.98363684531907,
+      "elapsed_s": 1.6843918550293893,
+      "n": 4,
+      "throughput_conc1": 145.000654691935,
+      "throughput_conc32": 888.1251996035512,
+      "throughput_conc8": 451.0997515942201,
+      "ttft_p50": 0.21116779185831547,
+      "ttft_p99": 0.23026637616567314
+    }
+  },
+  "tag": "v0.31.0"
+}
