@@ -106,8 +106,8 @@ vllm/vllm-openai:<TAG>   (prebuilt upstream release image)
 The pointer from `main` to release source is `fork/patches/RELEASE`:
 
 ```text
-tag: v0.30.0
-release-sha: ced6857afa0ea7b2e3f0846a62e1394e90f15607
+tag: v0.31.0
+release-sha: db9527a46873454610df6dbedf79a36d6bf1a7f6
 ```
 
 `export-patches.sh` writes that pointer with `series`, `upstream.map`, and one
@@ -138,6 +138,9 @@ checks on H200/NVLink. **PCIe validation remains outstanding**; the user
 authorized versioned publication with that limitation. Keep the tested V1
 runner and TP2 collective environment from the fleet. See the
 [validation record](fork/bench/configs/v0.30.0/results/20260923-gate.md).
+
+The `v0.31.0` candidate carries no source patches. Hardware validation and
+promotion are pending; see the [preparation record](fork/bench/configs/v0.31.0/results/20261015-preparation.md).
 
 ## Lockstep with upstream releases
 

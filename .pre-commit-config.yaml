@@ -23,7 +23,7 @@ repos:
     hooks:
       - id: markdownlint-cli2
         language_version: lts
-        args: [--fix]
+        args: [--config, .markdownlint.yaml, --fix]
         exclude: (^|/)CLAUDE\.md$
   - repo: https://github.com/rhysd/actionlint
     rev: v1.7.7

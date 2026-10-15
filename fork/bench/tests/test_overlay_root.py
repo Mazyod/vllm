@@ -103,7 +103,7 @@ def test_overlay_ruff_config_matches_upstream():
     assert "mypy" not in overlay["tool"]
 
 
-def test_overlay_precommit_hooks_match_upstream_except_the_shellcheck_revision():
+def test_overlay_precommit_hooks_match_upstream_with_local_paths_and_shellcheck():
     upstream_config = yaml.safe_load(_upstream_text(".pre-commit-config.yaml"))
     upstream = {}
     for repository in upstream_config["repos"]:
@@ -111,7 +111,7 @@ def test_overlay_precommit_hooks_match_upstream_except_the_shellcheck_revision()
             upstream[hook["id"]] = (
                 repository["repo"],
                 str(repository.get("rev", "")),
-                hook.get("args", []),
+                [arg.removeprefix("tools/pre_commit/") for arg in hook.get("args", [])],
             )
     overlay = _hook_index(OVERLAY / ".pre-commit-config.yaml")
     assert set(overlay) == {
@@ -136,7 +136,9 @@ def test_overlay_precommit_hooks_match_upstream_except_the_shellcheck_revision()
 
 def test_overlay_lint_configs_are_byte_copies():
     for name in (".markdownlint.yaml", ".shellcheckrc"):
-        assert (OVERLAY / name).read_bytes() == _upstream_bytes(name)
+        assert (OVERLAY / name).read_bytes() == _upstream_bytes(
+            f"tools/pre_commit/{name}"
+        )
 
 
 def test_overlay_shellcheck_hook_uses_the_pinned_precommit_package():

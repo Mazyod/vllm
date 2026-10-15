@@ -3,6 +3,8 @@ line-length = 88
 
 [tool.ruff.lint]
 select = [
+    # pydocstyle
+    "D",
     # pycodestyle
     "E",
     # Pyflakes
@@ -23,6 +25,12 @@ select = [
     "INP",
 ]
 ignore = [
+    # don't enforce that everything has a docstring
+    "D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107",
+    # unwanted pydocstyle rules
+    "D205", "D209", "D301", "D400", "D401", "D404", "D415",
+    # incompatible pydocstyle pairs; pin the half `ruff` already picks
+    "D203", "D213",
     # star imports
     "F405", "F403",
     # lambda expression assignment
@@ -34,6 +42,9 @@ ignore = [
     # f-string format
     "UP032",
 ]
+
+[tool.ruff.lint.pydocstyle]
+ignore-var-parameters = true
 
 [tool.ruff.format]
 docstring-code-format = true

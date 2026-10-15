@@ -14,7 +14,7 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BENCH_ROOT = Path(__file__).resolve().parent
 CONFIG_ROOT = BENCH_ROOT / "configs"
-DEFAULT_TAG = "v0.30.0"
+DEFAULT_TAG = "v0.31.0"
 
 # Patches with no leave-one-out arm, and why. test_static holds the series to
 # this: every patch in fork/patches/series is either exercised leave-one-out
@@ -45,6 +45,7 @@ class Profile:
         gating: Whether a probe failure should fail the release gate.
         control_for: Same-box baseline profile for this control.
         venue: Launch venue. Gate profiles are always "gate".
+
     """
 
     id: str
@@ -87,6 +88,7 @@ class ProfileStore:
 
         Raises:
             KeyError: If the id is absent or belongs to the manual section.
+
         """
         for profile in self.profiles:
             if profile.id == profile_id:
@@ -203,6 +205,7 @@ def engine_settings(profile: Profile) -> Mapping[str, Any]:
 
     Returns:
         The committed YAML exactly as `vllm serve --config` reads it.
+
     """
     return _mapping(
         yaml.safe_load(profile.engine_config.read_text(encoding="utf-8")),
@@ -222,6 +225,7 @@ def load(tag: str) -> ProfileStore:
     Raises:
         ValueError: If the tag is not a plain directory name.
         FileNotFoundError: If the tag has no fleet manifest.
+
     """
     if (
         not tag
