@@ -16,6 +16,8 @@ Two rules keep these tests from going tautological:
 
 | fixture | provenance | engine | failure mode |
 | --- | --- | --- | --- |
+| `gemma-full-v0.31.0.log` | captured excerpt | v0.31.0 | healthy Hopper TP1 boot selecting `TRITON_FLASH_ATTN`; 2026-10-15 PCIe development gate |
+| `gemma-tp2-v0.31.0.log` | captured excerpt | v0.31.0 | healthy Hopper TP2 boot with the composite backend and PCIe collective workarounds; 2026-10-15 development gate |
 | `gemma-full-boot.log` | captured excerpt | v0.30.0 | none — healthy V1 TP1 boot with MTP sharing embeddings; 2026-09-23 H200 validation |
 | `gemma-full-boot-v0271.log` | captured | v0.27.1 | none — healthy boot under the reworded gemma4.py external-draft logging |
 | `qwen-full.log` | captured | v0.26.0 | none — healthy hybrid-model boot selecting `FLASH_ATTN` |
@@ -41,6 +43,13 @@ The SM90 sliding-window guard was removed in v0.30.0 by upstream #50439.
 Its historical fixture remains a crash-extraction regression check; it no
 longer asserts that the current release emits that guard. The V2 profile
 remains a non-gating diagnostic; the H200 record documents its current failure.
+
+The dry run first looks for `<profile>-<tag>.log`, then the historical
+profile fixture and fallback. The v0.31.0 Gemma captures preserve upstream's
+new composite backend default ([#53175](https://github.com/vllm-project/vllm/pull/53175))
+without changing the fixtures or backend expectations of older releases.
+They contain unchanged lines from the development session's TP1 correctness
+and TP2 performance launches against the committed engine YAML.
 
 ## Where each message comes from
 

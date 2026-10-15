@@ -95,6 +95,7 @@ def _is_secret_env_name(key: str) -> bool:
 
     Returns:
         True when the name should be redacted from a receipt.
+
     """
     upper = key.upper()
     normalized = "".join(character for character in upper if character.isalnum())
@@ -243,6 +244,7 @@ def _fallback_fixture(profile: Profile) -> str:
 
     Returns:
         Fixture filename.
+
     """
     if profile.expect == "boot_crash":
         return "boot-crash.log"
@@ -268,6 +270,7 @@ class Launcher(Protocol):
         Returns:
             Boot-log lines, a base URL or None if it never served, and the
             launch id.
+
         """
 
 
@@ -276,6 +279,7 @@ class DryRunLauncher:
 
     Attributes:
         fail_profiles: Profile ids that should report a failed boot.
+
     """
 
     def __init__(self, fail_profiles: set[str] | None = None) -> None:
@@ -293,7 +297,10 @@ class DryRunLauncher:
         self._run_context = _RunContext(out_dir, store, engine_version)
 
     def _fixture(self, profile: Profile) -> list[str]:
-        candidate = _FIXTURES / f"{profile.id}.log"
+        tag = profile.engine_config.parent.parent.name
+        candidate = _FIXTURES / f"{profile.id}-{tag}.log"
+        if not candidate.exists():
+            candidate = _FIXTURES / f"{profile.id}.log"
         if not candidate.exists():
             candidate = _FIXTURES / _fallback_fixture(profile)
         return candidate.read_text(encoding="utf-8").splitlines()
@@ -364,6 +371,7 @@ class ProcessLauncher:
 
         Returns:
             Argument vector, and an environment or None to inherit this one.
+
         """
         raise NotImplementedError
 
@@ -381,6 +389,7 @@ class ProcessLauncher:
         Raises:
             NotImplementedError: If the profile needs patches reverted and
                 this launcher has no way to do it.
+
         """
         if profile.revert_patches:
             raise NotImplementedError(
@@ -418,6 +427,7 @@ class ProcessLauncher:
         Returns:
             Boot-log lines, a base URL or None if it never served, and the
             launch id.
+
         """
         if replica == 0:
             self.prepare(profile)
@@ -564,6 +574,7 @@ class LocalLauncher(ProcessLauncher):
 
         Raises:
             RuntimeError: If the state could not be set.
+
         """
         run_argv(
             [
@@ -601,6 +612,7 @@ def run_phase(
 
     Returns:
         Every probe result produced by this phase.
+
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     store = profile_store or profiles.DEFAULT_STORE
@@ -662,6 +674,7 @@ def absorbed_by_patch(tag: str) -> dict[str, bool | None]:
         be answered here — no upstream.map, no git checkout, or unfetched
         revisions. None is deliberately distinct from False: unknown ancestry
         must weaken a retirement verdict, never license one.
+
     """
     mapping_path = Path(__file__).parents[1] / "patches" / "upstream.map"
     answers: dict[str, bool | None] = {}
@@ -708,6 +721,7 @@ def classify_topology(
 
     Returns:
         One of TOPOLOGY_NATIVE, TOPOLOGY_NVLINK or TOPOLOGY_UNKNOWN.
+
     """
     store = profile_store or profiles.DEFAULT_STORE
     tp2_scheduled = any(
@@ -740,6 +754,7 @@ def run_gate(
 
     Returns:
         0 when the gate passed, non-zero otherwise.
+
     """
     store = profiles.load(tag)
     validator = getattr(launcher, "validate_configs", None)
