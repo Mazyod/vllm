@@ -115,7 +115,8 @@ def test_no_test_asserts_on_a_log_line_number():
         assert not found, f"{path.name} refers to log line numbers: {found}"
 
 
-def test_every_profile_replays_a_log_that_can_satisfy_its_expectations():
+@pytest.mark.parametrize("tag", ("v0.30.0", "v0.31.0"))
+def test_every_profile_replays_a_log_that_can_satisfy_its_expectations(tag):
     """Whatever the dry run replays for a profile must be able to pass it.
 
     qwen-tp2 expected FLASH_ATTN while replaying a Gemma log, so the dry run
@@ -127,7 +128,7 @@ def test_every_profile_replays_a_log_that_can_satisfy_its_expectations():
     from fork.bench.receipts import parse_boot_log
 
     launcher = DryRunLauncher()
-    for profile in profiles.PROFILES:
+    for profile in profiles.load(tag).profiles:
         if not profile.expect_attention_backend or profile.expect == "boot_crash":
             continue
         evidence = parse_boot_log(launcher._fixture(profile))

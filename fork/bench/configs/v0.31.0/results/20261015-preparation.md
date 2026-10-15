@@ -46,3 +46,23 @@ gate's validation scope.
 - Overlay Ruff settings follow v0.31.0. Upstream moved Markdown/ShellCheck
   configs under `tools/pre_commit/`; the overlay retains identical bytes at
   its existing root paths and checks the relocated upstream sources.
+
+## Development finding: Gemma backend receipt
+
+The first H100 PCIe launch selected `TRITON_FLASH_ATTN`, so R2 correctly
+reported a mismatch with the inherited `TRITON_ATTN` expectation. Upstream
+[#53175](https://github.com/vllm-project/vllm/pull/53175), commit
+`4fb767ff0a0e0aae9dd2720c47245d0202136dfd`, enables Gemma FP8 KV with
+FlashAttention 4 at head dimension 512. On Hopper, the composite backend
+routes image masks through Triton and causal queries through FlashAttention.
+The TP1 behavioral checks passed, including zero corrupt openers in 100
+constrained outputs.
+
+Update the two Gemma R2 expectations to this intentional upstream default.
+Keep engine bytes and the V1/collective environment unchanged, retain real
+TP1/TP2 boot excerpts for the dry run, then run the complete gate against the
+final committed fleet. The initial development run is not a release pass.
+
+Receipt-update validation: `PREFLIGHT GREEN`, 585 passed and 8 skipped, plus
+all declared mock probes. Both the previous and current release replay checks
+pass. The TP2 capture reports `TRITON_FLASH_ATTN` and `PYNCCL` collectives.

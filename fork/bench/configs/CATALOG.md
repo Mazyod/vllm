@@ -54,7 +54,6 @@ architecture.
 | v0.29.0 | [`qwen-tp2-noflags.yaml`](v0.29.0/engine/qwen-tp2-noflags.yaml) | negative | — | [gate](v0.29.0/results/20260909-gate.md) |
 | v0.29.0 | [`deepseek-v4-tp2-h200-dspark.yaml`](v0.29.0/engine/deepseek-v4-tp2-h200-dspark.yaml) | off-gate, unvalidated | — | [gate](v0.29.0/results/20260909-gate.md) |
 | v0.29.0 | [`deepseek-v4-tp2-h200.yaml`](v0.29.0/engine/deepseek-v4-tp2-h200.yaml) | off-gate control, unvalidated | — | [gate](v0.29.0/results/20260909-gate.md) |
-
 | v0.30.0 | [`gemma-tp2.yaml`](v0.30.0/engine/gemma-tp2.yaml) | shipping, H200/NVLink; PCIe outstanding | 263.3 decode tok/s | [H200/NVLink validation](v0.30.0/results/20260923-gate.md) |
 | v0.30.0 | [`qwen-tp2.yaml`](v0.30.0/engine/qwen-tp2.yaml) | shipping, H200/NVLink; PCIe outstanding | 211.9 decode tok/s | [H200/NVLink validation](v0.30.0/results/20260923-gate.md) |
 | v0.30.0 | [`gemma-tp2-kvauto.yaml`](v0.30.0/engine/gemma-tp2-kvauto.yaml) | control, H200/NVLink | 23.7 decode tok/s; cold JIT sample | [H200/NVLink validation](v0.30.0/results/20260923-gate.md) |
@@ -66,6 +65,17 @@ architecture.
 | v0.30.0 | [`qwen-tp2-noflags.yaml`](v0.30.0/engine/qwen-tp2-noflags.yaml) | negative: booted on NVLink; PCIe outstanding | — | [H200/NVLink validation](v0.30.0/results/20260923-gate.md) |
 | v0.30.0 | [`deepseek-v4-tp2-h200-dspark.yaml`](v0.30.0/engine/deepseek-v4-tp2-h200-dspark.yaml) | off-gate, unvalidated | — | [H200/NVLink validation](v0.30.0/results/20260923-gate.md) |
 | v0.30.0 | [`deepseek-v4-tp2-h200.yaml`](v0.30.0/engine/deepseek-v4-tp2-h200.yaml) | off-gate control, unvalidated | — | [H200/NVLink validation](v0.30.0/results/20260923-gate.md) |
+| v0.31.0 | [`gemma-tp2.yaml`](v0.31.0/engine/gemma-tp2.yaml) | shipping | 59.8 gate decode tok/s; warm repeats 149.1 / 165.6 | [gate](v0.31.0/results/20261015-gate.md) |
+| v0.31.0 | [`qwen-tp2.yaml`](v0.31.0/engine/qwen-tp2.yaml) | shipping | 152.0 decode tok/s | [gate](v0.31.0/results/20261015-gate.md) |
+| v0.31.0 | [`gemma-tp2-kvauto.yaml`](v0.31.0/engine/gemma-tp2-kvauto.yaml) | control | 35.3 decode tok/s; cold JIT sample | [gate](v0.31.0/results/20261015-gate.md) |
+| v0.31.0 | [`gemma-tp2-nospec.yaml`](v0.31.0/engine/gemma-tp2-nospec.yaml) | control | 67.6 decode tok/s | [gate](v0.31.0/results/20261015-gate.md) |
+| v0.31.0 | [`gemma-tp1.yaml`](v0.31.0/engine/gemma-tp1.yaml) | gating | 100 constrained outputs, zero corruption | [gate](v0.31.0/results/20261015-gate.md) |
+| v0.31.0 | [`gemma-tp1.yaml`](v0.31.0/engine/gemma-tp1.yaml) | control, two replicas | 54.7 gate decode tok/s | [gate](v0.31.0/results/20261015-gate.md) |
+| v0.31.0 | [`gemma-tp1.yaml`](v0.31.0/engine/gemma-tp1.yaml) | negative / V2 diagnostic | booted; full V2 behavior unvalidated | [gate](v0.31.0/results/20261015-gate.md) |
+| v0.31.0 | [`qwen-tp1.yaml`](v0.31.0/engine/qwen-tp1.yaml) | gating | zero FSM HTTP failures across 60 requests | [gate](v0.31.0/results/20261015-gate.md) |
+| v0.31.0 | [`qwen-tp2-noflags.yaml`](v0.31.0/engine/qwen-tp2-noflags.yaml) | negative | booted; collective workarounds retained | [gate](v0.31.0/results/20261015-gate.md) |
+| v0.31.0 | [`deepseek-v4-tp2-h200-dspark.yaml`](v0.31.0/engine/deepseek-v4-tp2-h200-dspark.yaml) | off-gate, unvalidated | — | [gate](v0.31.0/results/20261015-gate.md) |
+| v0.31.0 | [`deepseek-v4-tp2-h200.yaml`](v0.31.0/engine/deepseek-v4-tp2-h200.yaml) | off-gate control, unvalidated | — | [gate](v0.31.0/results/20261015-gate.md) |
 
 ## Pending release
 

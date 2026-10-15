@@ -9,7 +9,7 @@ profiles:
     probes: [R1, R2, R4, R5, B1, B3, B4, B5]
     expect: serves
     expect_boot_evidence: {}
-    expect_attention_backend: TRITON_ATTN
+    expect_attention_backend: TRITON_FLASH_ATTN
     gating: true
     control_for: null
     venue: gate
@@ -121,7 +121,7 @@ profiles:
     probes: [R1, R2, R3, R4, R5, B1, B3, B4, B5]
     expect: serves
     expect_boot_evidence: {}
-    expect_attention_backend: TRITON_ATTN
+    expect_attention_backend: TRITON_FLASH_ATTN
     gating: true
     control_for: null
     venue: gate

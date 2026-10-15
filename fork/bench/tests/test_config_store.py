@@ -275,6 +275,9 @@ def test_fleet_preserves_every_profile_and_its_non_engine_metadata():
         "qwen-tp2",
     ):
         witness[name]["env"]["VLLM_ALLREDUCE_USE_FLASHINFER"] = "0"
+    # Upstream #53175 enables Gemma's Hopper composite backend in v0.31.0.
+    for name in ("gemma-full", "gemma-tp2"):
+        witness[name]["expect_attention_backend"] = "TRITON_FLASH_ATTN"
     expected_ids = set(witness)
     assert set(fleet) == expected_ids
     assert set(ENGINE_BY_PROFILE) == expected_ids
