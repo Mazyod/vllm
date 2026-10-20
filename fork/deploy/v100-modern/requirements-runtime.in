@@ -1,0 +1,5 @@
+-r requirements-platform.txt
+/workspace/build-artifacts/vllm-0.32.0+cu126-cp312-cp312-linux_x86_64.whl[audio]
+jina-v4-vllm-plugin==0.1.1
+setuptools==83.0.0
+nvidia-cuda-nvcc-cu12==12.6.85
