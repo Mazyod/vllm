@@ -85,6 +85,14 @@ venue that can reproduce the property under test. Configuration development
 reuses one watched rental and its model cache; a one-shot rent/collect/destroy
 campaign is reserved for certification after the configuration is known.
 
+**Auxiliary inference must be evaluated on Volta too.** The
+[V100 offload requirements](fork/deploy/V100_OFFLOAD.md) cover embedding,
+reranking, ASR, and custom Jina workloads on the anonymous `volta-2` profile.
+This is a separate compatibility target: the current Hopper release image is
+not V100-compatible, and no V100 payload has been hardware-certified here.
+Image selection must prove SM70 binaries, model correctness, and simultaneous
+service capacity before a deployment is promoted.
+
 ## The model: pristine tag + documented patch commits
 
 vLLM is a monster to build from source, so we do **not** compile it. Instead:

@@ -10,6 +10,8 @@ one is deployed, or that the profile mirrors a private topology.
 | --- | --- | --- |
 | `cpu-mock` | no accelerator | schemas, token construction, controller state, collection, reports |
 | `cuda-budget-1` | cheapest available CUDA GPU | process lifecycle, HTTP routing, two-service orchestration with small fixtures |
+| `volta-1` | one Tesla V100, SM70; record 16/32 GB memory variant | legacy image/kernel compatibility and isolated embedding, reranking, or ASR correctness |
+| `volta-2` | two Tesla V100s, SM70; record each memory size and measured interconnect | auxiliary-service co-residency, capacity, and concurrent throughput |
 | `hopper-budget` | cheapest Hopper venue that fits the reduced workload | Hopper-only kernels, speculative-decoding control flow, backend selection |
 | `hopper-pcie-2` | two Hopper GPUs without an NVLink-class GPU fabric | isolated TP2 behavior and PCIe collective workarounds |
 | `hopper-pcie-4-large` | four high-memory Hopper GPUs without an NVLink-class GPU fabric | primary four-GPU multi-model packing and PCIe behavior |
@@ -29,6 +31,8 @@ the first row below that preserves it:
 | --- | --- |
 | configuration syntax, prompt sizing, token counts, retries, evidence format | `cpu-mock` |
 | rental/SSH/collection lifecycle | `cuda-budget-1` with a tiny public model |
+| V100 binary/kernel compatibility | `volta-1`; a T4 or newer GPU cannot prove SM70 compatibility |
+| final auxiliary-service offload proof | `volta-2`; validate the intended memory variant and placement |
 | speculative API and metrics, architecture independent | cheapest GPU supporting the model or a small fixture |
 | SM90/Hopper backend selection or crash | `hopper-budget`; prefer H100-class when memory permits |
 | exact long-context memory fit | the smallest count/memory profile that can carry the real checkpoints |
@@ -38,6 +42,12 @@ the first row below that preserves it:
 Using a stronger GPU “to be safe” is not neutral: it costs more and can hide the
 memory pressure or interconnect behavior being tested. Escalate only after the
 cheaper venue is ruled out for a written reason.
+
+The V100 offload requirement and image-selection gates live in
+[`V100_OFFLOAD.md`](V100_OFFLOAD.md). These profiles are validation targets,
+not claims that the current release image supports Volta. Two cards do not
+provide a single shared memory pool; start with independent TP1 services and
+prove co-residency before adding tensor parallelism.
 
 ## Placement policy
 
