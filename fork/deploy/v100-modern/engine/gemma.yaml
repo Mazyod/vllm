@@ -1,0 +1,14 @@
+model: /models/gemma
+served-model-name: gemma
+dtype: float
+tensor-parallel-size: 1
+max-model-len: 2048
+enforce-eager: true
+max-num-seqs: 4
+max-num-batched-tokens: 8192
+gpu-memory-utilization: 0.2
+host: 127.0.0.1
+runner: pooling
+convert: embed
+attention-config:
+  backend: FLEX_ATTENTION

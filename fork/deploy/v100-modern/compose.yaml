@@ -1,0 +1,83 @@
+x-common: &common
+  image: ${V100_IMAGE:?Set V100_IMAGE to the tested image digest}
+  restart: on-failure:3
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  shm_size: 2g
+  tmpfs:
+    - /tmp:size=2g,mode=1777
+  stop_grace_period: 60s
+  command: [--config, /app/engine/snowflake.yaml, --host, 0.0.0.0, --port, '8000']
+  volumes:
+    - ${MODEL_DIR:?Set MODEL_DIR to the staged checkpoint directory}:/models:ro
+    - compiler-cache:/data/cache
+
+x-gpu0: &gpu0
+  reservations:
+    devices:
+      - driver: nvidia
+        device_ids: ['0']
+        capabilities: [gpu]
+
+services:
+  snowflake:
+    <<: *common
+    environment:
+      VLLM_API_KEY: ${VLLM_API_KEY:?Set an API key}
+      MODEL_CONFIG: /app/engine/snowflake.yaml
+    ports: ['${BIND_ADDRESS:-127.0.0.1}:8001:8000']
+    deploy:
+      resources: *gpu0
+  bge:
+    <<: *common
+    command: [--config, /app/engine/bge.yaml, --host, 0.0.0.0, --port, '8000']
+    environment:
+      VLLM_API_KEY: ${VLLM_API_KEY:?Set an API key}
+      MODEL_CONFIG: /app/engine/bge.yaml
+    ports: ['${BIND_ADDRESS:-127.0.0.1}:8002:8000']
+    depends_on:
+      snowflake: {condition: service_healthy}
+    deploy:
+      resources: *gpu0
+  gemma:
+    <<: *common
+    command: [--config, /app/engine/gemma.yaml, --host, 0.0.0.0, --port, '8000']
+    environment:
+      VLLM_API_KEY: ${VLLM_API_KEY:?Set an API key}
+      MODEL_CONFIG: /app/engine/gemma.yaml
+    ports: ['${BIND_ADDRESS:-127.0.0.1}:8004:8000']
+    depends_on:
+      bge: {condition: service_healthy}
+    deploy:
+      resources: *gpu0
+  whisper:
+    <<: *common
+    command: [--config, /app/engine/whisper.yaml, --host, 0.0.0.0, --port, '8000']
+    environment:
+      VLLM_API_KEY: ${VLLM_API_KEY:?Set an API key}
+      MODEL_CONFIG: /app/engine/whisper.yaml
+    ports: ['${BIND_ADDRESS:-127.0.0.1}:8003:8000']
+    depends_on:
+      gemma: {condition: service_healthy}
+    deploy:
+      resources: *gpu0
+  jina:
+    <<: *common
+    command: [--config, /app/engine/jina.yaml, --host, 0.0.0.0, --port, '8000']
+    environment:
+      VLLM_API_KEY: ${VLLM_API_KEY:?Set an API key}
+      MODEL_CONFIG: /app/engine/jina.yaml
+    ports: ['${BIND_ADDRESS:-127.0.0.1}:8005:8000']
+    depends_on:
+      whisper: {condition: service_healthy}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['1']
+              capabilities: [gpu]
+
+volumes:
+  compiler-cache:

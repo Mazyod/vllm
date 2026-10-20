@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools==83.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vllm-volta-runtime"
+version = "0.1.0"
+description = "Scoped SM70 pooling attention"
+requires-python = ">=3.12,<3.13"
+dependencies = ["vllm==0.32.0"]
+
+[project.entry-points."vllm.general_plugins"]
+volta = "vllm_volta:register"
+
+[tool.setuptools]
+py-modules = ["vllm_volta"]

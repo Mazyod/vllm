@@ -10,7 +10,7 @@ one is deployed, or that the profile mirrors a private topology.
 | --- | --- | --- |
 | `cpu-mock` | no accelerator | schemas, token construction, controller state, collection, reports |
 | `cuda-budget-1` | cheapest available CUDA GPU | process lifecycle, HTTP routing, two-service orchestration with small fixtures |
-| `volta-1` | one 16 GB Tesla V100, SM70 | legacy image/kernel compatibility and isolated embedding, reranking, or ASR correctness |
+| `volta-1` | one 16 GB Tesla V100, SM70 | image/kernel compatibility and isolated embedding, reranking, or ASR correctness |
 | `volta-2` | two 16 GB Tesla V100s, SM70; record measured interconnect | auxiliary-service co-residency, capacity, and concurrent throughput |
 | `hopper-budget` | cheapest Hopper venue that fits the reduced workload | Hopper-only kernels, speculative-decoding control flow, backend selection |
 | `hopper-pcie-2` | two Hopper GPUs without an NVLink-class GPU fabric | isolated TP2 behavior and PCIe collective workarounds |

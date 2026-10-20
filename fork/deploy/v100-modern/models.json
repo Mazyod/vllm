@@ -1,0 +1,35 @@
+{
+  "snowflake": {
+    "repo": "Snowflake/snowflake-arctic-embed-l-v2.0",
+    "revision": "ac6544c8a46e00af67e330e85a9028c66b8cfd9a",
+    "context": 8192,
+    "dimensions": 1024
+  },
+  "bge": {
+    "repo": "BAAI/bge-reranker-v2-m3",
+    "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+    "context": 8192
+  },
+  "gemma": {
+    "repo": "google/embeddinggemma-300m",
+    "revision": "57c266a740f537b4dc058e1b0cda161fd15afa75",
+    "context": 2048,
+    "dimensions": 768
+  },
+  "whisper": {
+    "repo": "openai/whisper-large-v3",
+    "revision": "06f233fe06e710322aca913c1bc4249a0d71fce1",
+    "context": 448
+  },
+  "jina": {
+    "repo": "Mazyod/jina-embeddings-v4-vllm-mv",
+    "revision": "b262b5467551544a4db5efbbd0684a2dcd7c2167",
+    "context": 32768,
+    "dimensions": 128,
+    "max_pixels": 3211264,
+    "reference_repo": "jinaai/jina-embeddings-v4",
+    "reference_revision": "853c867b65b749f3c3c72a06868140d842e04f06",
+    "reference_template_repo": "Qwen/Qwen2.5-VL-3B-Instruct",
+    "reference_template_revision": "66285546d2b821cf421d4f5eb2576359d3770cd3"
+  }
+}

@@ -1,0 +1,27 @@
+model: /models/jina
+served-model-name: jina
+dtype: half
+tensor-parallel-size: 1
+max-model-len: 32768
+enforce-eager: true
+max-num-seqs: 2
+max-num-batched-tokens: 32768
+gpu-memory-utilization: 0.9
+host: 127.0.0.1
+runner: pooling
+attention-config:
+  backend: CUSTOM
+enable-prefix-caching: false
+pooler-config:
+  task: token_embed
+hf-overrides:
+  architectures: [JinaV4MultiVector]
+limit-mm-per-prompt:
+  image: 8
+  video: 0
+mm-encoder-attn-backend: TORCH_SDPA
+mm-device-do-normalize: false
+mm-processor-cache-gb: 0
+mm-processor-kwargs:
+  use_fast: true
+chat-template: /opt/vllm/lib/python3.12/site-packages/jina_v4_vllm_plugin/jina_image_chat_template.jinja

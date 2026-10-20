@@ -1,0 +1,7 @@
+# Consumed by asr_server.py; the other engine YAMLs are vLLM serve configurations.
+model: /models/whisper-ct2
+served-model-name: whisper
+dtype: float16
+beam-size: 5
+cpu-threads: 4
+host: 127.0.0.1

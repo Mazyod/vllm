@@ -27,11 +27,16 @@ if [ ! -d /workspace/vllm-source/.git ]; then
 fi
 cd /workspace/vllm-source
 test "$(git rev-parse HEAD)" = 5df63a7203cdb9328d824a27b682e77c7b9928be
+git diff --exit-code -- . ':(exclude)requirements/common.txt' ':(exclude)requirements/cuda.txt'
 uv pip install --python /opt/vllm/bin/python -r requirements/build/cuda.txt \
   --constraint "$SCRIPT_DIR/requirements-build.txt"
 # Keep the build toolchain upstream-compatible, but require patched setuptools
 # in the serving wheel. Retire when upstream removes its <81 runtime constraint.
 sed -i 's/^setuptools>=78\.1\.1,<81\.0\.0;/setuptools>=83.0.0;/' requirements/common.txt
+# These services use no video-I/O backend. The pinned PyNvVideoCodec and
+# OpenCV wheels bundle obsolete FFmpeg; retire when upstream makes them optional.
+sed -i '/^PyNvVideoCodec==2\.0\.4$/d' requirements/cuda.txt
+sed -i '/^opencv-python-headless /d' requirements/common.txt
 export SETUPTOOLS_SCM_PRETEND_VERSION=0.32.0
 export CUDA_HOME=/usr/local/cuda
 export VLLM_TARGET_DEVICE=cuda
@@ -45,4 +50,4 @@ export TRITON_PTXAS_PATH=/usr/local/cuda/bin/ptxas
 uv build --wheel --no-build-isolation --python /opt/vllm/bin/python \
   --out-dir /workspace/build-artifacts .
 sha256sum /workspace/build-artifacts/*.whl > /workspace/build-artifacts/SHA256SUMS
-git diff -- requirements/common.txt > /workspace/build-artifacts/runtime-dependency.patch
+git diff -- requirements/common.txt requirements/cuda.txt > /workspace/build-artifacts/runtime-dependency.patch

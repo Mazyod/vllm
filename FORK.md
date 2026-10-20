@@ -88,15 +88,22 @@ campaign is reserved for certification after the configuration is known.
 **Auxiliary inference must be evaluated on Volta too.** The
 [V100 offload requirements](fork/deploy/V100_OFFLOAD.md) cover embedding,
 reranking, ASR, and custom Jina workloads on the anonymous `volta-2` profile.
-This is a separate compatibility target: the current Hopper release image is
-not V100-compatible. A [legacy v0.10.2 image and configurations](fork/deploy/v100-16gb/README.md)
-passed real two-V100 smoke checks for Snowflake, BGE, Whisper, and
-**EmbeddingGemma capped at 256 tokens**. Jina remains incompatible with that
-image. This bounded proof does not replace production-capacity certification.
+This is a separate compatibility target: the Hopper release image is not
+V100-compatible. The [v0.32.0 SM70 build lane](fork/deploy/v100-modern/README.md)
+uses published CUDA 12.6 PyTorch binaries, a source-built vLLM native wheel,
+and the Jina multivector plugin. Whisper uses the current CTranslate2/faster-whisper
+packages in that same image after the native vLLM decoder failed long-audio
+quality checks. It preserves full model contexts and
+EmbeddingGemma's sliding attention. Its build and runtime dependencies are
+separately pinned and validated. The [legacy experiment](fork/deploy/v100-16gb/RECORD.md)
+is historical evidence only; its 256-token Gemma workaround and incompatible
+Jina APIs do not satisfy the production requirements.
 
 ## The model: pristine tag + documented patch commits
 
-vLLM is a monster to build from source, so we do **not** compile it. Instead:
+The main Hopper release lane uses upstream binaries. The separately documented
+SM70 lane is the exception because modern published wheels omit Volta kernels;
+only that lane compiles vLLM's native extensions. The main release remains:
 
 ```text
 vllm/vllm-openai:<TAG>   (prebuilt upstream release image)

@@ -1,0 +1,3 @@
+# Published CUDA 12/cuDNN 9 native backend; no older codecs or Transformers.
+faster-whisper==1.2.1
+ctranslate2==4.8.3

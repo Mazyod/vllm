@@ -1,5 +1,7 @@
 # Legacy image for two 16 GB V100s
 
+> Historical experiment only. Use the [modern V100 deployment](../v100-modern/README.md) for the full-context and Jina multivector requirements.
+
 This is a separate deployment image based on **vLLM 0.10.2**, not a downgrade of
 this fork's Hopper release. It adds only the exact audio dependencies tested on
 that base. No upstream source patch, CUDA rebuild, or Jina plugin is included.
