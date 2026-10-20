@@ -1,0 +1,225 @@
+{
+  "status": "development-smoke-passed",
+  "profile": "volta-2",
+  "memory_mib_per_gpu": 16384,
+  "base_image": "vllm/vllm-openai@sha256:df2607b26bdda2875de4832f4d08da0055b4b6e3570347f3a849bcc652771dd6",
+  "local_image_inspect_id": "sha256:60c5da8579b61e770c60ca147c5dcb103343b3a49824e7f2359ee6a88bd26646",
+  "built_image_matches_runtime_packages": true,
+  "package_count": 189,
+  "kernels": {
+    "packages": {
+      "torch": "2.8.0+cu128",
+      "vllm": "0.10.2",
+      "xformers": "0.0.32.post1",
+      "transformers": "4.56.1"
+    },
+    "cuda_runtime": "12.8",
+    "torch_architectures": [
+      "sm_70",
+      "sm_75",
+      "sm_80",
+      "sm_86",
+      "sm_90",
+      "sm_100",
+      "sm_120"
+    ],
+    "devices": [
+      {
+        "index": 0,
+        "name": "Tesla V100-PCIE-16GB",
+        "memory_bytes": 16928342016,
+        "capability": [
+          7,
+          0
+        ],
+        "checks": {
+          "torch.float16": {
+            "passed": true
+          },
+          "torch.float32": {
+            "passed": true
+          }
+        }
+      },
+      {
+        "index": 1,
+        "name": "Tesla V100-PCIE-16GB",
+        "memory_bytes": 16928342016,
+        "capability": [
+          7,
+          0
+        ],
+        "checks": {
+          "torch.float16": {
+            "passed": true
+          },
+          "torch.float32": {
+            "passed": true
+          }
+        }
+      }
+    ],
+    "passed": true
+  },
+  "api": {
+    "passed": true,
+    "repeats": 10,
+    "wall_s": 11.835337329655886
+  },
+  "services": {
+    "snowflake": {
+      "latencies_s": [
+        4.992066254839301,
+        0.22838531993329525,
+        0.22440936602652073,
+        0.26452588103711605,
+        0.31526749953627586,
+        0.27857568860054016,
+        0.2122641745954752,
+        0.21853285655379295,
+        0.21049143373966217,
+        0.2691217679530382
+      ],
+      "warm_p50_s": 0.22838531993329525,
+      "warm_p95_s": 0.30059077516198157
+    },
+    "bge": {
+      "latencies_s": [
+        3.1664903573691845,
+        0.2232794240117073,
+        0.22849344462156296,
+        0.23912247270345688,
+        0.2311673928052187,
+        0.2053335327655077,
+        0.21463851630687714,
+        0.25003703124821186,
+        0.23998527228832245,
+        0.23580891825258732
+      ],
+      "warm_p50_s": 0.2311673928052187,
+      "warm_p95_s": 0.2460163276642561
+    },
+    "gemma": {
+      "latencies_s": [
+        4.97021540813148,
+        0.23545550554990768,
+        0.3048222716897726,
+        0.2880880907177925,
+        0.27992664836347103,
+        0.23416183702647686,
+        0.22761650383472443,
+        0.23011857829988003,
+        0.25905090011656284,
+        0.22673887200653553
+      ],
+      "warm_p50_s": 0.23545550554990768,
+      "warm_p95_s": 0.29812859930098057
+    },
+    "whisper": {
+      "latencies_s": [
+        4.8914053831249475,
+        0.7399368584156036,
+        0.7355502005666494,
+        0.7767215259373188,
+        0.7847598027437925,
+        0.7695545610040426,
+        0.7574790697544813,
+        0.7446500658988953,
+        0.7563744634389877,
+        0.7663521002978086
+      ],
+      "warm_p50_s": 0.7574790697544813,
+      "warm_p95_s": 0.781544492021203
+    }
+  },
+  "peak_gpu_memory_mib": {
+    "0": 4688,
+    "1": 9346
+  },
+  "reference": {
+    "snowflake": {
+      "service": "snowflake",
+      "reference_dtype": "float32",
+      "reference_device": "cpu",
+      "reference_transformers": "4.57.6",
+      "input_token_counts": [
+        14,
+        16,
+        13,
+        12
+      ],
+      "boundary_257_rejected": null,
+      "max_abs_difference": 0.00019760429859161377,
+      "cosine_per_vector": [
+        0.9999984306505589,
+        0.9999986122784543,
+        0.9999986191065053,
+        0.9999987388360037
+      ],
+      "passed": true
+    },
+    "bge": {
+      "service": "bge",
+      "reference_dtype": "float32",
+      "reference_device": "cpu",
+      "reference_transformers": "4.57.6",
+      "input_token_counts": [
+        27,
+        24,
+        23
+      ],
+      "boundary_257_rejected": null,
+      "max_abs_difference": 2.384185791015625e-07,
+      "reference_scores": [
+        0.9988648891448975,
+        1.6062622307799757e-05,
+        7.454286242136732e-05
+      ],
+      "passed": true
+    },
+    "gemma": {
+      "service": "gemma",
+      "reference_dtype": "float32",
+      "reference_device": "cpu",
+      "reference_transformers": "4.57.6",
+      "input_token_counts": [
+        18,
+        21,
+        17,
+        18
+      ],
+      "boundary_257_rejected": null,
+      "max_abs_difference": 1.043081283569336e-07,
+      "cosine_per_vector": [
+        0.9999999802979711,
+        1.000000032995473,
+        1.0000000522811079,
+        1.0000000041735904
+      ],
+      "passed": true
+    }
+  },
+  "gemma_boundary": {
+    "service": "gemma",
+    "reference_dtype": "float32",
+    "reference_device": "cpu",
+    "reference_transformers": "4.57.6",
+    "input_token_counts": [
+      256
+    ],
+    "boundary_257_rejected": true,
+    "max_abs_difference": 1.4348188415169716e-07,
+    "cosine_per_vector": [
+      1.0000000403617897
+    ],
+    "passed": true
+  },
+  "jina": {
+    "plugin": "jina-v4-vllm-plugin",
+    "plugin_version": "0.1.1",
+    "vllm": "0.10.2",
+    "import_compatible": false,
+    "error_type": "ModuleNotFoundError",
+    "error": "No module named 'vllm.model_executor.layers.pooler.tokwise'; 'vllm.model_executor.layers.pooler' is not a package"
+  }
+}

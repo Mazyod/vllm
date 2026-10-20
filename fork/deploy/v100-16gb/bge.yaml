@@ -1,0 +1,12 @@
+model: BAAI/bge-reranker-v2-m3
+revision: 953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e
+tokenizer-revision: 953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e
+served-model-name: bge
+task: score
+dtype: half
+tensor-parallel-size: 1
+enforce-eager: true
+max-model-len: 2048
+max-num-seqs: 4
+gpu-memory-utilization: 0.3
+host: 127.0.0.1

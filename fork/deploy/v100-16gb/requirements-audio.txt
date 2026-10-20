@@ -1,0 +1,11 @@
+# Exact additions resolved from vllm[audio]==0.10.2 on the pinned base image.
+# Install with --no-deps: every other dependency already belongs to that digest.
+decorator==5.3.1
+joblib==1.6.0
+lazy-loader==0.6
+librosa==1.0.0
+narwhals==2.27.1
+platformdirs==4.13.5
+pooch==1.9.0
+scikit-learn==1.9.1
+threadpoolctl==3.7.0

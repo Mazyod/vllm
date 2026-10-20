@@ -1,0 +1,12 @@
+model: Snowflake/snowflake-arctic-embed-l-v2.0
+revision: ac6544c8a46e00af67e330e85a9028c66b8cfd9a
+tokenizer-revision: ac6544c8a46e00af67e330e85a9028c66b8cfd9a
+served-model-name: snowflake
+task: embed
+dtype: half
+tensor-parallel-size: 1
+enforce-eager: true
+max-model-len: 2048
+max-num-seqs: 4
+gpu-memory-utilization: 0.25
+host: 127.0.0.1
