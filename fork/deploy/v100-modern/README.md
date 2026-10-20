@@ -3,7 +3,8 @@
 This is the separate SM70 build lane. It does not change the Hopper image or
 release pointer. The earlier v0.10.2 experiment is historical evidence, **not a
 production recommendation**: its shortened Gemma context and incompatible Jina
-APIs do not meet these requirements.
+APIs do not meet these requirements. See the [validation record](RECORD.md)
+and [security review](SECURITY.md) before promotion.
 
 ## Stack and maintenance boundary
 

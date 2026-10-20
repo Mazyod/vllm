@@ -1,0 +1,80 @@
+[
+  {
+    "run": "load-01",
+    "purpose": "Warm pre-hardening baseline",
+    "passed": true,
+    "requests": 346,
+    "request_failures": 0,
+    "capacity_passed": true,
+    "achieved_rpm": 29.75,
+    "service_rpm": {
+      "snowflake": 6.0,
+      "bge": 6.0,
+      "whisper": 6.0,
+      "gemma": 6.0,
+      "jina": 5.75
+    }
+  },
+  {
+    "run": "bursts-02",
+    "purpose": "Corrected full-context BGE burst coverage",
+    "passed": true,
+    "requests": 50,
+    "request_failures": 0,
+    "capacity_passed": null,
+    "achieved_rpm": null,
+    "service_rpm": null
+  },
+  {
+    "run": "bursts-security",
+    "purpose": "Cold restart exposed Jina allocator fragmentation",
+    "passed": false,
+    "requests": 50,
+    "request_failures": 11,
+    "capacity_passed": null,
+    "achieved_rpm": null,
+    "service_rpm": null
+  },
+  {
+    "run": "cold-bursts-allocator",
+    "purpose": "Expandable allocator cold-start replay",
+    "passed": true,
+    "requests": 50,
+    "request_failures": 0,
+    "capacity_passed": null,
+    "achieved_rpm": null,
+    "service_rpm": null
+  },
+  {
+    "run": "load-final",
+    "purpose": "Ten-minute per-service throughput gate missed by one Jina completion",
+    "passed": false,
+    "requests": 350,
+    "request_failures": 0,
+    "capacity_passed": false,
+    "achieved_rpm": 29.625,
+    "service_rpm": {
+      "snowflake": 6.0,
+      "bge": 6.0,
+      "whisper": 6.0,
+      "gemma": 6.0,
+      "jina": 5.625
+    }
+  },
+  {
+    "run": "load-final-20",
+    "purpose": "Final allocator and media-dependency configuration; same 30-RPM mix and thresholds over twenty minutes",
+    "passed": true,
+    "requests": 650,
+    "request_failures": 0,
+    "capacity_passed": true,
+    "achieved_rpm": 30.055555555555557,
+    "service_rpm": {
+      "snowflake": 6.0,
+      "bge": 6.0,
+      "whisper": 6.0,
+      "gemma": 6.0,
+      "jina": 6.055555555555555
+    }
+  }
+]

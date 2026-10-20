@@ -1,0 +1,39 @@
+{
+  "sessions": [
+    {
+      "profile": "volta-2",
+      "elapsed_seconds": 5894.574063062668,
+      "hourly_rate_usd": 0.43333333333333335,
+      "estimated_compute_storage_usd": 0.7095320631464322,
+      "teardown_confirmed": true,
+      "initial_model_cache_reused": false,
+      "cache_reused_across_configuration_changes": false,
+      "end_reason": "erroneous idle cutoff; removed afterward"
+    },
+    {
+      "profile": "volta-2",
+      "elapsed_seconds": 18625.519858121872,
+      "hourly_rate_usd": 0.43333333333333335,
+      "estimated_compute_storage_usd": 2.2419607236628183,
+      "teardown_confirmed": true,
+      "initial_model_cache_reused": false,
+      "cache_reused_across_configuration_changes": true,
+      "end_reason": "all hardware validation completed"
+    }
+  ],
+  "current_container_transfer": {
+    "ingress_bytes": 29913436889,
+    "egress_bytes": 804881717,
+    "ingress_usd_per_gb": 0.00390625,
+    "egress_usd_per_gb": 0.00390625,
+    "estimated_transfer_usd": 0.1199934320546875,
+    "scope": "Container eth0 counters, excluding provider-host image pull and final artifact collection after the counter snapshot. Decimal GB used for estimate; not a provider invoice.",
+    "snapshot_interval_seconds": 18301.374346733093,
+    "average_ingress_bytes_per_second": 1634491.2858601643,
+    "average_egress_bytes_per_second": 43979.304600349664,
+    "rate_note": "Session-average interface traffic including idle time, not peak download bandwidth."
+  },
+  "first_session_actual_transfer_bytes": null,
+  "first_session_transfer_note": "Final interface counters were not collected before the erroneous teardown; no estimate is presented as measured traffic.",
+  "combined_estimated_compute_storage_usd": 2.9514927868092506
+}

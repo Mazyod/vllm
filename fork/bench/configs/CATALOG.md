@@ -92,3 +92,12 @@ repo-wide symlink lint traverses it.
 | Nightly-specific Gemma behavior; outside the v0.29.0 gate | [Gemma 4 nightly configurations](pending/gemma-4-nightly/) | development measurements | FP8 KV + MTP passes on H100 at TP1 and TP2 with explicit `TRITON_ATTN`; 32K TP2 recipe uses 23.4 GiB/GPU after workload, or 22.1 GiB/GPU in text-only mode with MTP | [HTML experiment slides](pending/gemma-4-nightly/report.html) |
 | `Glm5NextForConditionalGeneration` absent from v0.29.0; tracked by [vllm#53906](https://github.com/vllm-project/vllm/pull/53906) | [`glm53-flash-tp4-h200.yaml`](pending/glm-5.3-flash/glm53-flash-tp4-h200.yaml) | pending-release (YAML-equivalent copy launched) | 275 tok/s @conc1 / 953 @conc8 (MTP k=3, NVLink venue, conc 1–8 only; >8 unmeasured); 6 GiB KV/GPU boots to `443,628 tokens ... 3.38x` at 131,072, with admission measured on three 118,281-token requests; 48 GiB free/GPU | [GLM-5.3-Flash TP4](pending/glm-5.3-flash/RECORD.md#measured-configurations) |
 | V4.1 support is in a dedicated development image; tracked by [vllm#56214](https://github.com/vllm-project/vllm/pull/56214) | [DeepSeek V4.1 configurations](pending/deepseek-v4.1-flash/) | pending-release, development measurements | TP4+EP with Engram CPU offload: 313.8 GiB GPU usage on four H100s at 31,000 input tokens; full offload/parallelism/DSpark matrix in record | [DeepSeek V4.1 measurements](pending/deepseek-v4.1-flash/RECORD.md) |
+
+## Separate Volta compatibility lane
+
+The [two-V100 deployment](../../deploy/v100-modern/README.md) is an off-gate
+vLLM 0.32/CUDA 12.6 compatibility image. Its committed engine files and runtime
+settings live under `fork/deploy/v100-modern/`; Whisper uses the accompanying
+CTranslate2 transcription server. The [validation record](../../deploy/v100-modern/RECORD.md)
+covers full contexts, Jina multivectors, real media, co-residency and load. This
+lane does not change the Hopper release pointer or certify arbitrary models.

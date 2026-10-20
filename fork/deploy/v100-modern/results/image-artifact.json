@@ -1,0 +1,11 @@
+{
+  "valid": true,
+  "archive": "vllm-v100-0.32.0-c0ad1612cf.tar.gz",
+  "size_bytes": 4571061624,
+  "config_sha256": [
+    "f7aba89d3dc7f7fc3950be1ae6b70bc8822b51b3485230bfb95b688b25461728"
+  ],
+  "source_revision": "c0ad1612cf697c678afd25a141dcf21b7f1770c5",
+  "sha256": "c7e762d99e30066d966435ccc700b89215382f785af8a73f727513321749fbf0",
+  "image_manifest_digest": "sha256:0151cd685a671f16083a29c894dfa6a9f0b6eddeef4c9772d3ede172dd22cd44"
+}
