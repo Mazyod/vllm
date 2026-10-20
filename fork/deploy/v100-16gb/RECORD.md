@@ -1,28 +1,33 @@
 # V100 offload hardware record — 2026-10-20
 
-**Development smoke passed** on `volta-2`: two Tesla V100-PCIE-16GB GPUs,
+**Committed-byte smoke passed** on `volta-2`: two Tesla V100-PCIE-16GB GPUs,
 SM70, driver 580.126.09, PCIe `NODE` connectivity (no NVLink). This is a
 capability record and contains no private host or account identifiers.
 [Machine-readable evidence](evidence.json) includes the actual kernel checks,
 latency samples, reference comparisons, and the Jina import failure.
+The final replay used commit `645f2e6c6040e93b7ee82b1e6f45a7a899caa535`;
+every recorded script, engine YAML, Dockerfile, and requirements-file hash
+matched that commit. It printed `V100 SMOKE GREEN`.
 
 ## Result
 
 | payload | result | warm p50 / p95 |
 | --- | --- | --- |
-| `Snowflake/snowflake-arctic-embed-l-v2.0` | pass, FP16, V1/FlexAttention; normalized 1,024-dimensional vectors | 228 / 301 ms |
-| `BAAI/bge-reranker-v2-m3` | pass, FP16, V1/FlexAttention; correct ranking and score parity | 231 / 246 ms |
-| `google/embeddinggemma-300m` | pass **only up to 256 tokens**, FP32, V1/FlexAttention; normalized 768-dimensional vectors | 235 / 298 ms |
-| `openai/whisper-large-v3` | pass, FP16, V0/XFormers; exact normalized JFK transcript | 757 / 782 ms |
+| `Snowflake/snowflake-arctic-embed-l-v2.0` | pass, FP16, V1/FlexAttention; normalized 1,024-dimensional vectors | 246 / 275 ms |
+| `BAAI/bge-reranker-v2-m3` | pass, FP16, V1/FlexAttention; correct ranking and score parity | 255 / 311 ms |
+| `google/embeddinggemma-300m` | pass **only up to 256 tokens**, FP32, V1/FlexAttention; normalized 768-dimensional vectors | 273 / 307 ms |
+| `openai/whisper-large-v3` | pass, FP16, V0/XFormers; exact normalized JFK transcript | 784 / 800 ms |
 | Jina plugin 0.1.1 | incompatible with vLLM 0.10.2; missing `pooler.tokwise` API | not measured |
 
 All four passing services stayed loaded together: three text services on GPU 0,
 Whisper on GPU 1. Ten rounds submitted one HTTP request to each service
 concurrently; each embedding request contained four texts and each rerank
-request three documents. Peak sampled memory was **4,688 MiB / 9,346 MiB**.
+request three documents. Peak sampled memory was **4,690 MiB / 9,346 MiB**.
 The latency percentiles exclude each service's first request and describe only
 nine warm samples, not production SLAs. Initial JIT/request warmup took several
 seconds; the final run reused compiler and checkpoint caches.
+The audio fixture lasts 11 seconds; Whisper's median warm real-time factor
+was approximately 0.071.
 
 The independent reference uses Transformers 4.57.6, FP32 CPU inference, the
 original checkpoints, their actual pooling/projection, and identical inputs.
@@ -67,6 +72,18 @@ One watched Vast development rental was used. The watchdog was armed before
 create; the envelope was $0.50/hour maximum, a two-hour hard cap, and 30 GB
 expected transfer. The selected rate was $0.262222/hour including 80 GB disk;
 ingress was $0.002604167/GB and egress $0.00390625/GB. Checkpoints were staged
-once and reused through all configuration failures. Final committed-byte replay,
-elapsed time, transfer accounting, and verified teardown will be appended when
-the development session closes.
+once and reused through all configuration failures.
+
+The rental lasted **2,734 seconds (45 minutes 34 seconds)**. Compute plus disk
+at the quoted rate is approximately **$0.199**, before transfer. Container
+non-loopback counters measured **13,488,617,760 incoming bytes** and
+**242,754,559 outgoing bytes** after startup; these exclude the initial image
+pull and are not a provider invoice. The offer advertised 921.3 Mbps download;
+per-model staging durations, logical snapshot sizes, and effective rates are
+in `evidence.json`. The large Gemma weight transfer took 18.15 seconds for
+1,211,486,072 bytes using a file-scoped URL.
+
+Artifacts were collected before destruction. **Both the provider and the
+external watchdog confirmed teardown.** No instance or persistent volume was
+left by this campaign. Local checks also passed: `PREFLIGHT GREEN` (589 passed,
+8 skipped), alignment, Ruff, Markdown lint, and shellcheck.

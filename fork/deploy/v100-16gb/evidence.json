@@ -1,5 +1,5 @@
 {
-  "status": "development-smoke-passed",
+  "status": "committed-smoke-passed",
   "profile": "volta-2",
   "memory_mib_per_gpu": 16384,
   "base_image": "vllm/vllm-openai@sha256:df2607b26bdda2875de4832f4d08da0055b4b6e3570347f3a849bcc652771dd6",
@@ -64,76 +64,76 @@
   "api": {
     "passed": true,
     "repeats": 10,
-    "wall_s": 11.835337329655886
+    "wall_s": 12.615005852654576
   },
   "services": {
     "snowflake": {
       "latencies_s": [
-        4.992066254839301,
-        0.22838531993329525,
-        0.22440936602652073,
-        0.26452588103711605,
-        0.31526749953627586,
-        0.27857568860054016,
-        0.2122641745954752,
-        0.21853285655379295,
-        0.21049143373966217,
-        0.2691217679530382
+        5.139311542734504,
+        0.27877707220613956,
+        0.2697707824409008,
+        0.21226030960679054,
+        0.26422402262687683,
+        0.25673921406269073,
+        0.24606719613075256,
+        0.23955009505152702,
+        0.23410259932279587,
+        0.2301954235881567
       ],
-      "warm_p50_s": 0.22838531993329525,
-      "warm_p95_s": 0.30059077516198157
+      "warm_p50_s": 0.24606719613075256,
+      "warm_p95_s": 0.27517455630004406
     },
     "bge": {
       "latencies_s": [
-        3.1664903573691845,
-        0.2232794240117073,
-        0.22849344462156296,
-        0.23912247270345688,
-        0.2311673928052187,
-        0.2053335327655077,
-        0.21463851630687714,
-        0.25003703124821186,
-        0.23998527228832245,
-        0.23580891825258732
+        5.514006720855832,
+        0.2413767371326685,
+        0.33141331002116203,
+        0.23883547820150852,
+        0.27986690029501915,
+        0.27432491444051266,
+        0.21839694678783417,
+        0.25529137067496777,
+        0.23586038686335087,
+        0.2558108828961849
       ],
-      "warm_p50_s": 0.2311673928052187,
-      "warm_p95_s": 0.2460163276642561
+      "warm_p50_s": 0.25529137067496777,
+      "warm_p95_s": 0.31079474613070485
     },
     "gemma": {
       "latencies_s": [
-        4.97021540813148,
-        0.23545550554990768,
-        0.3048222716897726,
-        0.2880880907177925,
-        0.27992664836347103,
-        0.23416183702647686,
-        0.22761650383472443,
-        0.23011857829988003,
-        0.25905090011656284,
-        0.22673887200653553
+        2.7100620325654745,
+        0.22316418401896954,
+        0.2889330293983221,
+        0.2802701164036989,
+        0.26948947086930275,
+        0.31957503221929073,
+        0.25402291119098663,
+        0.27518740110099316,
+        0.266019307076931,
+        0.2732294946908951
       ],
-      "warm_p50_s": 0.23545550554990768,
-      "warm_p95_s": 0.29812859930098057
+      "warm_p50_s": 0.2732294946908951,
+      "warm_p95_s": 0.3073182310909033
     },
     "whisper": {
       "latencies_s": [
-        4.8914053831249475,
-        0.7399368584156036,
-        0.7355502005666494,
-        0.7767215259373188,
-        0.7847598027437925,
-        0.7695545610040426,
-        0.7574790697544813,
-        0.7446500658988953,
-        0.7563744634389877,
-        0.7663521002978086
+        5.043415542691946,
+        0.7836187724024057,
+        0.7914810068905354,
+        0.7813135217875242,
+        0.7789305206388235,
+        0.802034642547369,
+        0.7835548557341099,
+        0.7928699124604464,
+        0.7976939007639885,
+        0.7760545983910561
       ],
-      "warm_p50_s": 0.7574790697544813,
-      "warm_p95_s": 0.781544492021203
+      "warm_p50_s": 0.7836187724024057,
+      "warm_p95_s": 0.8002983458340168
     }
   },
   "peak_gpu_memory_mib": {
-    "0": 4688,
+    "0": 4690,
     "1": 9346
   },
   "reference": {
@@ -149,12 +149,12 @@
         12
       ],
       "boundary_257_rejected": null,
-      "max_abs_difference": 0.00019760429859161377,
+      "max_abs_difference": 0.00023343786597251892,
       "cosine_per_vector": [
-        0.9999984306505589,
-        0.9999986122784543,
-        0.9999986191065053,
-        0.9999987388360037
+        0.9999984359292371,
+        0.9999987082559105,
+        0.999998519541171,
+        0.9999989745410581
       ],
       "passed": true
     },
@@ -169,7 +169,7 @@
         23
       ],
       "boundary_257_rejected": null,
-      "max_abs_difference": 2.384185791015625e-07,
+      "max_abs_difference": 1.6689300537109375e-06,
       "reference_scores": [
         0.9988648891448975,
         1.6062622307799757e-05,
@@ -221,5 +221,75 @@
     "import_compatible": false,
     "error_type": "ModuleNotFoundError",
     "error": "No module named 'vllm.model_executor.layers.pooler.tokwise'; 'vllm.model_executor.layers.pooler' is not a package"
+  },
+  "validation_commit": "645f2e6c6040e93b7ee82b1e6f45a7a899caa535",
+  "audio_duration_seconds": 11.0,
+  "configuration_sha256": {
+    "bge.yaml": "98c0ff4e2b0a626350315b5d5878ce1e6f8627673863752cebfb5bc659726535",
+    "gemma-short.yaml": "b67d5b26f80c6f100f60ba9e8b1fc25f7c0bce325cd591da0bbfd0adc7e9a0c5",
+    "snowflake.yaml": "a73a7bf9c06d89c5e717f57972fdccce734ca5fe4abaeffe24dcc015e68afce1",
+    "whisper.yaml": "ce845a5dbae7f2957255629d8959008964b8bd47f74eb81d64bba9b7258e7b89",
+    "__init__.py": "203d07256112acbc45c70c5e137fa00c434aad4b3989ef5a7c97c86779fee570",
+    "kernel_check.py": "e029ea943da07f1a6c37bf65b3f9b1ece639944fff130b1ab143d46b5b818871",
+    "probe.py": "5252d8073ec1622731c78ee7abbe54fb5407e6120685a29e1b95499ef232340a",
+    "reference.py": "f4e4434c47288ed13d351adc95570d88f528bd345658fe10be939e38f98d8a74",
+    "run.sh": "d4cfa1fb7fcf6ecc94c675826f5f7f54ca0dc38fe575d028280835cd116f216d",
+    "Dockerfile": "1b087a064503ec6bfe198a5e838518c092ca7ffbf7cccb50f5e0a63c47249d7c",
+    "requirements-audio.txt": "1b3f25ea50dacf2e1576e3ae16be1570114b60c9fda80b8e8346f1ffdb62188a",
+    "requirements-reference.txt": "842f1c7011bd296bd15eb4c9b6c8eb44d655712d3810149b5341a871bd9ea995"
+  },
+  "campaign": {
+    "type": "development",
+    "rental_count": 1,
+    "elapsed_seconds": 2734.250275850296,
+    "hourly_rate_usd": 0.26222222222222225,
+    "compute_storage_estimate_usd": 0.19916143984588577,
+    "hard_cap_seconds": 7200,
+    "hourly_ceiling_usd": 0.5,
+    "expected_transfer_bytes": 30000000000,
+    "advertised_download_mbps": 921.3,
+    "ingress_usd_per_gb": 0.0026041666666666665,
+    "egress_usd_per_gb": 0.00390625,
+    "measured_runtime_ingress_bytes": 13488617760,
+    "measured_runtime_egress_bytes": 242754559,
+    "traffic_scope": "container non-loopback counters after startup; excludes initial image pull",
+    "initial_model_cache_reused": false,
+    "model_and_compiler_cache_reused_for_iterations": true,
+    "provider_teardown_confirmed": true,
+    "external_watchdog_teardown_confirmed": true
+  },
+  "model_staging": {
+    "snowflake": {
+      "repo": "Snowflake/snowflake-arctic-embed-l-v2.0",
+      "revision": "ac6544c8a46e00af67e330e85a9028c66b8cfd9a",
+      "elapsed_s": 22.104113379493356,
+      "snapshot_bytes": 2293220551,
+      "effective_bytes_per_s": 103746325.92716834,
+      "cache_reused": false
+    },
+    "bge": {
+      "repo": "BAAI/bge-reranker-v2-m3",
+      "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+      "elapsed_s": 15.223737282678485,
+      "snapshot_bytes": 2293242108,
+      "effective_bytes_per_s": 150635948.67794013,
+      "cache_reused": false
+    },
+    "whisper": {
+      "repo": "openai/whisper-large-v3",
+      "revision": "06f233fe06e710322aca913c1bc4249a0d71fce1",
+      "elapsed_s": 67.16107301041484,
+      "snapshot_bytes": 9265867686,
+      "effective_bytes_per_s": 137964854.79859915,
+      "cache_reused": false
+    },
+    "gemma": {
+      "bytes": 1211486072,
+      "elapsed_s": 18.14680629223585,
+      "sha256": "cbf5a78393b6a033e0b8a63a57549964f7ed5c6fbeb4ba0694214f36123f2fd2",
+      "cache_reused": false,
+      "repo": "google/embeddinggemma-300m",
+      "revision": "57c266a740f537b4dc058e1b0cda161fd15afa75"
+    }
   }
 }

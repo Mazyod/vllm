@@ -4,6 +4,8 @@ This is a separate deployment image based on **vLLM 0.10.2**, not a downgrade of
 this fork's Hopper release. It adds only the exact audio dependencies tested on
 that base. No upstream source patch, CUDA rebuild, or Jina plugin is included.
 The [hardware record](RECORD.md) defines the tested scope and limitations.
+Retire this legacy lane when the V100 profile is retired or a replacement
+serving stack passes the same hardware and payload checks.
 
 ```bash
 docker build -t local/vllm-v100-audio:0.10.2 fork/deploy/v100-16gb

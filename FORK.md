@@ -89,9 +89,10 @@ campaign is reserved for certification after the configuration is known.
 [V100 offload requirements](fork/deploy/V100_OFFLOAD.md) cover embedding,
 reranking, ASR, and custom Jina workloads on the anonymous `volta-2` profile.
 This is a separate compatibility target: the current Hopper release image is
-not V100-compatible, and no V100 payload has been hardware-certified here.
-Image selection must prove SM70 binaries, model correctness, and simultaneous
-service capacity before a deployment is promoted.
+not V100-compatible. A [legacy v0.10.2 image and configurations](fork/deploy/v100-16gb/README.md)
+passed real two-V100 smoke checks for Snowflake, BGE, Whisper, and
+**EmbeddingGemma capped at 256 tokens**. Jina remains incompatible with that
+image. This bounded proof does not replace production-capacity certification.
 
 ## The model: pristine tag + documented patch commits
 

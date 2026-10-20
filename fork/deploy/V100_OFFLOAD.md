@@ -1,16 +1,20 @@
 # V100 auxiliary inference requirements
 
-Status: **source-assessed, hardware validation pending** (2026-10-20).
-No V100 image or model configuration is certified by this document.
+Status: **bounded hardware smoke passed** (2026-10-20). The
+[tested legacy image, configurations, and evidence](v100-16gb/README.md)
+cover Snowflake, BGE, Whisper, and EmbeddingGemma **up to 256 tokens** together.
+Jina is incompatible with this image. Production-capacity certification remains
+outside that small smoke workload.
 
 ## Scope
 
 Keep primary inference on Hopper and evaluate embedding, reranking, ASR, and
 Jina multimodal embedding services on `volta-2`. Use anonymous profiles under
 [HARDWARE_PROFILES.md](HARDWARE_PROFILES.md); record no private host details.
-Confirm per-card VRAM (16 or 32 GB), CPU architecture, driver, interconnect,
-exact model revisions, plugin version, request sizes, and concurrency before
-choosing final placement. Two V100s are two independent memory budgets.
+The target is two **16 GB** V100s. Confirm CPU architecture, driver, interconnect,
+exact production model revisions, plugin version, request sizes, and concurrency
+before choosing final deployment placement. Two V100s are two independent
+memory budgets.
 
 Start each model alone with TP1 on `volta-1`, then prove the selected services
 remain loaded and serve concurrently on `volta-2`. A possible first placement
@@ -34,7 +38,7 @@ Sources: [NVIDIA legacy GPUs](https://developer.nvidia.com/cuda/gpus/legacy),
 
 | candidate | assessment | next gate |
 | --- | --- | --- |
-| Official `vllm/vllm-openai:v0.10.2`, with matching audio extras for ASR | First legacy experiment for conventional text models and Whisper. Source includes SM70, CUDA 12.8.1, PyTorch 2.8.0, V0, and XFormers. This is not a claim that every dependency or payload works. | Actual V100 kernel execution, model launch, and API correctness. |
+| Official `vllm/vllm-openai:v0.10.2`, with matching audio extras for ASR | Hardware-smoke-tested with PyTorch 2.8.0+cu128. Pooling uses V1/FlexAttention; Whisper uses V0/XFormers. See the separate [Dockerfile](v100-16gb/Dockerfile). | Production context/concurrency and service-quality targets; Gemma is capped at 256 tokens and Jina is excluded. |
 | A newer vLLM source build with CUDA 12.6 and matching SM70 PyTorch binaries | Research option if newer model/plugin APIs are necessary. The v0.31.0 CMake branch for CUDA below 12.8 still lists SM70; that alone proves neither a successful build nor working runtime backends. | Reproducible build, dependency ABI checks, and complete SM70 kernel/model proof. |
 | Existing Jina plugin image | Its documented parity is on A10G with vLLM 0.22.0, not V100. | Confirm exact deployed plugin/checkpoint, then audit its complete stack before hardware testing. |
 
@@ -45,11 +49,13 @@ Registry inspection on 2026-10-20 resolved its Linux/amd64 manifest to
 Manifest availability is not execution evidence. Confirm host architecture
 before using this platform-specific digest.
 
-For the legacy experiment, explicitly select `VLLM_USE_V1=0` and
-`VLLM_ATTENTION_BACKEND=XFORMERS`, TP1, eager execution, conservative sequence
-limits, and an explicit dtype. These settings are candidates to test, not
-universal V100 flags. In particular, V1-only plugin APIs do not become V0
-compatible through an environment variable.
+The tested legacy stack uses `VLLM_USE_V1=1` and
+`VLLM_ATTENTION_BACKEND=FLEX_ATTENTION` for pooling. Whisper uses
+`VLLM_USE_V1=0` and `VLLM_ATTENTION_BACKEND=XFORMERS`. All services use TP1,
+eager execution, conservative sequence limits, and an explicit dtype.
+The initial V0 pooling experiment failed: its runner expects `compute_logits`.
+These are model-specific settings, not universal V100 flags. In particular,
+V1-only plugin APIs do not become V0 compatible through an environment variable.
 See the [v0.10.2 backend selector](https://github.com/vllm-project/vllm/blob/v0.10.2/vllm/platforms/cuda.py)
 and [model registry](https://github.com/vllm-project/vllm/blob/v0.10.2/vllm/model_executor/models/registry.py).
 
@@ -76,7 +82,7 @@ architectures and memory requirements.
 | workload / illustrative ID | initial precision and compatibility constraint | required correctness evidence |
 | --- | --- | --- |
 | Snowflake, e.g. `Snowflake/snowflake-arctic-embed-l-v2.0` | FP16 candidate; this example is XLM-RoBERTa. Do not substitute another Arctic variant silently. | Exact prompts, pooling, dimensions, normalization, and retrieval ranking against the existing service/reference. |
-| `google/embeddinggemma-300m` | **FP32 on V100.** Google explicitly excludes FP16 activations; V100 lacks native BF16 support. Verify FP32 backend execution and final projection/pooling. | Finite embeddings, correct query/document prefixes, requested dimensions, and retrieval parity. |
+| `google/embeddinggemma-300m` | **FP32 on V100; 256-token cap in the tested image.** Full context needs unsupported sliding-window attention. Google excludes FP16 activations; V100 lacks native BF16 support. | Finite embeddings, correct query/document prefixes, requested dimensions, and retrieval parity; 256-token parity and 257-token rejection passed. |
 | BGE, e.g. `BAAI/bge-reranker-v2-m3` | FP16 candidate, XLM-RoBERTa sequence classification. Gemma-based BGE variants require a separate assessment. | Finite scores, correct document/index mapping, relevant-vs-irrelevant ordering, reference score/rank comparison. |
 | `openai/whisper-large-v3` | FP16 candidate with audio extras; test the exact model, not `large-v3-turbo` or a small-model substitute. | `/v1/audio/transcriptions`, known transcripts, intended languages, short and production-length audio, and real-time factor. |
 | Jina v4 with custom plugin | Pin plugin, checkpoint, projector, and processor settings. FP16 backbone is only a numerical experiment; preserve FP32 projection when required. | Real text **and image** requests, finite normalized per-token vectors, projector parity, late-interaction ranking, and production image resolution. |
@@ -136,8 +142,15 @@ certify V100 execution.
 
 ## Assessment boundary
 
-Completed: pinned-release source inspection, legacy manifest lookup, model
-metadata/precision review, and public Jina plugin API comparison.
-Outstanding: actual V100 execution, exact payload identities, memory variant,
-quality/performance targets, image build, and simultaneous-service evidence.
-No GPU rental, checkpoint download, or image publication was performed.
+Completed: real SM70 kernel execution on two 16 GB V100s, concurrent real API
+requests for four services, independent FP32 references, Gemma's 256-token
+boundary and 257-token rejection, and the Jina plugin's runtime import failure.
+A separate legacy audio image was built locally and its package versions
+matched the tested runtime. One watched Vast development rental reused its
+checkpoints through all configuration attempts.
+
+Outstanding: exact production payload identities and service targets, broader
+quality/context/concurrency tests, full-context Gemma, and a Jina-compatible
+SM70 stack. The locally built derivative was not published or rebooted as a
+separate rental; execution used the same base and package additions in place.
+See the [hardware record](v100-16gb/RECORD.md) for evidence, cost, and teardown.
