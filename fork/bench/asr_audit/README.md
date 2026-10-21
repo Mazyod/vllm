@@ -15,9 +15,10 @@ baseline must not be labeled as verification of a 0.32.0 deployment.
 `prepare.py` consumes the English and Arabic validation parquet files from
 `google/fleurs`, revision `70bb2e84b976b7e960aa89f1c648e09c59f894dd`
 (CC-BY-4.0). Their exact hashes are recorded in the generated manifest.
-There are 128 individual utterances per language, four disjoint composites
+There are 128 individual utterances from 70 sentence IDs per language, four disjoint composites
 longer than three minutes per language, shifted copies of those composites,
-and one silence probe per language. Long inputs concatenate subsequent
+and one silence probe per language. Long inputs use sentence IDs absent from
+the short set and from the other long inputs. They concatenate
 utterances with 250 ms gaps; shifted copies prepend one second of silence.
 No speech or transcript is truncated. Shifted copies are not independent data.
 
@@ -39,7 +40,8 @@ serving-quality comparison, not a claim of identical decoding algorithms.
 
 `report.py` verifies model/input fingerprints before comparing transcripts
 against human text. It records substitutions, deletions, insertions, WER, CER,
-per-case transcripts, and paired utterance-bootstrap confidence intervals.
+per-case transcripts, and paired sentence-cluster bootstrap confidence intervals.
+Multiple recordings of the same sentence are resampled as one cluster.
 Normalization preserves Arabic letter distinctions, removes diacritics and
 punctuation, and does not expand English numbers. Retained text permits other
 normalization policies without repeating inference. Silence is inspected

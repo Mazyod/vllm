@@ -1,6 +1,6 @@
 """Score retained transcripts against human text and paired FP32 references.
 
-Short-clip confidence intervals resample whole utterances, not words. Derived
+Short-clip confidence intervals resample source sentence clusters, not words. Derived
 long/shifted inputs are reported separately and never inflate sample counts.
 """
 
@@ -41,9 +41,13 @@ def score(truth, text):
 
 def paired_interval(rows):
     rng = random.Random(20261021)
+    clusters = {}
+    for row in rows:
+        clusters.setdefault(row["prompt_group"], []).append(row)
+    groups = list(clusters.values())
     deltas = []
     for _ in range(2000):
-        sample = rng.choices(rows, k=len(rows))
+        sample = [r for group in rng.choices(groups, k=len(groups)) for r in group]
         deltas.append(
             sum(r["actual"]["errors"] - r["reference"]["errors"] for r in sample)
             / sum(r["actual"]["words"] for r in sample)
@@ -98,6 +102,9 @@ def main():
         text, reference_text = served["response"]["text"], ref["response"]["text"]
         row = dict(
             id=case["id"],
+            prompt_group=case["dataset_row_ids"][0]
+            if case["dataset_row_ids"]
+            else case["id"],
             kind=case["kind"],
             language=case["language"],
             variant=served["variant"],
@@ -133,6 +140,7 @@ def main():
                 language=language,
                 variant=variant,
                 clips=len(selected),
+                distinct_prompts=len({r["prompt_group"] for r in selected}),
                 words=count,
                 actual_wer=sum(r["actual"]["errors"] for r in selected) / count,
                 reference_wer=sum(r["reference"]["errors"] for r in selected) / count,
