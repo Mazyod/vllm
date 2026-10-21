@@ -5,6 +5,7 @@ long/shifted inputs are reported separately and never inflate sample counts.
 """
 
 import argparse
+import hashlib
 import json
 import random
 import unicodedata
@@ -74,6 +75,10 @@ def main():
     assert (
         server_provenance["manifest_sha256"] == reference_provenance["manifest_sha256"]
     )
+    assert (
+        hashlib.sha256((args.fixtures / "manifest.json").read_bytes()).hexdigest()
+        == server_provenance["manifest_sha256"]
+    )
     references = {
         (r["id"], r["variant"]): r
         for r in map(
@@ -82,9 +87,11 @@ def main():
     }
     rows = []
     failures = []
+    observed = []
     for served in map(
         json.loads, (args.server / "responses.jsonl").read_text().splitlines()
     ):
+        observed.append((served["id"], served["variant"]))
         case = cases[served["id"]]
         ref = references.get((case["id"], served["variant"]))
         if "error" in served or not ref or "error" in ref:
@@ -144,10 +151,69 @@ def main():
                 words=count,
                 actual_wer=sum(r["actual"]["errors"] for r in selected) / count,
                 reference_wer=sum(r["reference"]["errors"] for r in selected) / count,
+                actual_cer=jiwer.cer(
+                    [normalize(r["ground_truth"]) for r in selected],
+                    [normalize(r["text"]) for r in selected],
+                ),
+                reference_cer=jiwer.cer(
+                    [normalize(r["ground_truth"]) for r in selected],
+                    [normalize(r["reference_text"]) for r in selected],
+                ),
+                actual_word_errors={
+                    k: sum(r["actual"][k] for r in selected)
+                    for k in ("substitutions", "deletions", "insertions")
+                },
                 paired_delta_95ci=paired_interval(selected),
             )
+            if language == "ar":
+                # Sensitivity analysis only: these folds can erase real distinctions.
+                fold = str.maketrans(
+                    {
+                        "أ": "ا",
+                        "إ": "ا",
+                        "آ": "ا",
+                        "ٱ": "ا",
+                        "ى": "ي",
+                        "ة": "ه",
+                        "ـ": None,
+                    }
+                )
+                truth = [normalize(r["ground_truth"]).translate(fold) for r in selected]
+                summary["secondary_lossy_orthographic_fold_wer"] = {
+                    "actual": jiwer.wer(
+                        truth, [normalize(r["text"]).translate(fold) for r in selected]
+                    ),
+                    "reference": jiwer.wer(
+                        truth,
+                        [
+                            normalize(r["reference_text"]).translate(fold)
+                            for r in selected
+                        ],
+                    ),
+                }
             corpus.append(summary)
+    formats = ["json"] if server_provenance["stream"] else ["json", "verbose_json"]
+    expected = {
+        (identifier, fmt)
+        for identifier in server_provenance["case_ids"]
+        for fmt in formats
+    }
+    expected_reference = expected | {
+        (identifier, "native_long")
+        for identifier in server_provenance["case_ids"]
+        if cases[identifier]["duration_s"] > 30
+    }
     report = dict(
+        execution_complete=set(observed) == expected and len(observed) == len(expected),
+        reference_execution_complete=expected_reference.issubset(references),
+        expected_responses=len(expected),
+        recorded_responses=len(observed),
+        missing_responses=sorted(expected - set(observed)),
+        reference_runtime_errors=[
+            {"id": r["id"], "variant": r["variant"], "error": r["error"]}
+            for r in references.values()
+            if "error" in r
+        ],
         corpus=corpus,
         errors=failures,
         cases=rows,

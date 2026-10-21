@@ -1,5 +1,7 @@
 # Whisper quality audit
 
+The completed L4 measurements and failure analysis are in [RECORD.md](RECORD.md).
+
 This audit measures `mlmlaziz/bbyn-v2` at revision
 `e910dbbc381deab0561e944c7149c3ace41b6bff`. Every request explicitly supplies
 `language=en` or `language=ar`. It does not test automatic language detection.
@@ -46,6 +48,16 @@ Normalization preserves Arabic letter distinctions, removes diacritics and
 punctuation, and does not expand English numbers. Retained text permits other
 normalization policies without repeating inference. Silence is inspected
 separately, not included in a corpus WER denominator.
+
+The report also provides a separately labeled, lossy Arabic orthographic
+sensitivity analysis: fold alef variants to alef, alef maqsura to ya, and ta
+marbuta to ha, and remove tatweel. It never replaces the primary score.
+
+`decoder_probe.py` preserves raw tokens and calls the installed segment parser
+to investigate empty timestamped responses. `generation_probe.py` compares
+initial EOS suppression on the observed quiet English clip and silence
+controls. These diagnostics run after the main reference has released the GPU;
+they do not change the baseline image, checkpoint, or inputs.
 
 ## Reproduce
 
