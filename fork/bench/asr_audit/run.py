@@ -219,6 +219,8 @@ def run_server(args, cases, results_path):
                 row["status"] = response.status_code
                 response.raise_for_status()
                 if args.stream:
+                    if "data: [DONE]" not in response.text:
+                        raise ValueError("SSE stream did not terminate with [DONE]")
                     events = [
                         json.loads(line[6:])
                         for line in response.text.splitlines()
