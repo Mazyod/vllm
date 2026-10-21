@@ -10,6 +10,11 @@ import numpy as np
 import pyarrow.parquet as pq
 import soundfile as sf
 
+PARQUET_SHA256 = {
+    "en_us": "7c3eeb11a9597bd52cdc1b0d637e85389fe094cfd8763913e7bf4fdf7a853959",
+    "ar_eg": "8b792937003d26852c567d1b413de5174ad677146f4b93dc480c17f8c398ecd3",
+}
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -42,32 +47,45 @@ def main():
             args.source / "parquet-data" / config / "validation-00000-of-00001.parquet"
         )
         sources[config] = hashlib.sha256(path.read_bytes()).hexdigest()
+        assert sources[config] == PARQUET_SHA256[config], "Dataset revision mismatch"
         rows = pq.read_table(path).to_pylist()
         decoded = []
         for row in rows:
             audio, sr = sf.read(io.BytesIO(row["audio"]["bytes"]), dtype="float32")
             assert sr == 16000 and audio.ndim == 1
             decoded.append(audio)
-        for index in range(128):
+        short_ids = set(list(dict.fromkeys(row["id"] for row in rows))[:70])
+        short_indices = [i for i, row in enumerate(rows) if row["id"] in short_ids][
+            :128
+        ]
+        assert len(short_indices) == 128
+        for index, row_index in enumerate(short_indices):
             identifier = f"{language}-short-{index:03d}"
             save(
                 identifier,
                 language,
-                decoded[index],
-                rows[index]["transcription"],
-                [rows[index]["id"]],
+                decoded[row_index],
+                rows[row_index]["transcription"],
+                [rows[row_index]["id"]],
                 identifier,
                 "short",
             )
-        cursor = 128
+        heldout_indices = []
+        seen = set(short_ids)
+        for i, row in enumerate(rows):
+            if row["id"] not in seen:
+                heldout_indices.append(i)
+                seen.add(row["id"])
+        cursor = 0
         for index in range(4):
             segments, texts, ids = [], [], []
             count = 0
             while count < 180 * 16000:
-                segments.extend([decoded[cursor], np.zeros(4000, dtype=np.float32)])
-                texts.append(rows[cursor]["transcription"])
-                ids.append(rows[cursor]["id"])
-                count += len(decoded[cursor]) + 4000
+                row_index = heldout_indices[cursor]
+                segments.extend([decoded[row_index], np.zeros(4000, dtype=np.float32)])
+                texts.append(rows[row_index]["transcription"])
+                ids.append(rows[row_index]["id"])
+                count += len(decoded[row_index]) + 4000
                 cursor += 1
             audio = np.concatenate(segments)
             identifier = f"{language}-long-{index}"
