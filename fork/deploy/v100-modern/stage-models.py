@@ -10,11 +10,14 @@ from huggingface_hub import hf_hub_download, snapshot_download
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--root", type=Path, default=Path("/models"))
 parser.add_argument(
+    "--manifest", type=Path, default=Path(__file__).with_name("models.json")
+)
+parser.add_argument(
     "--names", nargs="+", default=["snowflake", "bge", "whisper", "jina"]
 )
 parser.add_argument("--include-jina-reference", action="store_true")
 args = parser.parse_args()
-models = json.loads(Path(__file__).with_name("models.json").read_text())
+models = json.loads(args.manifest.read_text())
 receipts = {}
 for name in args.names + (["jina-reference"] if args.include_jina_reference else []):
     spec = models["jina"] if name == "jina-reference" else models[name]

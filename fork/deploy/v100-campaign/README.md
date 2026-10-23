@@ -72,8 +72,9 @@ clocks. Host samples retain serving-process PSS/RSS and CPU use. These are sampl
 footprints, not guaranteed maxima. Each benchmark records the active launch
 receipt and verifies the configuration digest before issuing requests.
 
-Start with the full residency/quality gate, then measure isolated services,
-repeat under mixed contention, and test Jina client concurrency separately from
+Start with the full residency/quality gate, then measure the GPU 0 services
+one at a time while Jina runs its sweep on GPU 1. Host CPU and memory samples
+cover both GPUs' services. Repeat with all five models under mixed contention, and test Jina client concurrency separately from
 the engine's active-sequence limit. Any sequence-limit tuning keeps the same
 32,768-token batch budget and full input contracts. Failures retain their logs;
 only model processes stop during tuning. The final fixed configurations must
@@ -98,14 +99,23 @@ Use the candidate image with the existing five-service Compose layout and the
 Jina cache override. Compose resolves paths relative to the first file:
 
 ```bash
+cd fork/deploy/v100-campaign
 export V100_IMAGE=local/vllm-v100:campaign-20261023
 export MODEL_DIR=/absolute/path/to/pinned/models
 export VLLM_API_KEY='replace-with-your-secret'
 docker compose -f ../v100-modern/compose.yaml -f compose.override.yaml config --quiet
 ```
 
-The checkpoint directories must match `models.json`, particularly the native
-`mlmlaziz/bbyn-v2` Whisper checkpoint. Send `language=en` or `language=ar` and
+Stage the exact manifest on a trusted machine with Hugging Face access to the
+gated checkpoints, then mount that directory read-only:
+
+```bash
+uv run --no-project --with huggingface-hub python ../v100-modern/stage-models.py \
+  --root "$MODEL_DIR" --manifest models.json \
+  --names snowflake bge gemma whisper jina
+```
+
+The manifest selects native `mlmlaziz/bbyn-v2` for Whisper. Send `language=en` or `language=ar` and
 `response_format=json` explicitly for ASR. The override caps Jina's cache at
 1.5 GiB while retaining its full context and image limits. Deployment acceptance
 requires the campaign results and the final digest's Prisma policy review;
