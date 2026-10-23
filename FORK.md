@@ -91,11 +91,13 @@ reranking, ASR, and custom Jina workloads on the anonymous `volta-2` profile.
 This is a separate compatibility target: the Hopper release image is not
 V100-compatible. The [v0.32.0 SM70 build lane](fork/deploy/v100-modern/README.md)
 uses published CUDA 12.6 PyTorch binaries, a source-built vLLM native wheel,
-and the Jina multivector plugin. Whisper uses the current CTranslate2/faster-whisper
-packages in that same image after the native vLLM decoder failed long-audio
-quality checks. It preserves full model contexts and
-EmbeddingGemma's sliding attention. Its build and runtime dependencies are
-separately pinned and validated. The [legacy experiment](fork/deploy/v100-16gb/RECORD.md)
+and the Jina multivector plugin. The current
+[native fine-tune campaign](fork/deploy/v100-campaign/README.md) serves the pinned
+`mlmlaziz/bbyn-v2` Whisper checkpoint through vLLM, with explicit language and
+ordinary JSON. The earlier stock-Whisper CTranslate2 result remains historical
+evidence for that different decoder/checkpoint. Both lanes preserve full model
+contexts and EmbeddingGemma's sliding attention. Build and runtime dependencies
+are separately pinned and validated. The [legacy experiment](fork/deploy/v100-16gb/RECORD.md)
 is historical evidence only; its 256-token Gemma workaround and incompatible
 Jina APIs do not satisfy the production requirements.
 

@@ -6,6 +6,11 @@ production recommendation**: its shortened Gemma context and incompatible Jina
 APIs do not meet these requirements. See the [validation record](RECORD.md)
 and [security review](SECURITY.md) before promotion.
 
+For the current `mlmlaziz/bbyn-v2` fine-tune, use the
+[native-vLLM campaign deployment](../v100-campaign/README.md). The stock-Whisper
+CTranslate2 configuration documented below is the earlier baseline; the new
+deployment reuses this runtime build and replaces its ASR entrypoint/configuration.
+
 ## Stack and maintenance boundary
 
 Build only the vLLM native wheel from upstream v0.32.0 commit

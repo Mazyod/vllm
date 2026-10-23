@@ -21,7 +21,9 @@ image and model processes, but not Docker Compose isolation inside the rental.
 
 `prepare_cases.py` binds 295 requests to existing independent FP32 oracles:
 12 text embedding/reranking cases, nine Jina cases and 274 English/Arabic ASR
-cases. It fingerprints requests, reference arrays, audio and the reference
+cases. Supplemental WAV/MP3/AAC probes cover short and three-minute audio in
+both languages, using independent FP32 references for each decoded waveform.
+The campaign fingerprints requests, reference arrays, audio and the reference
 environment. Only reference calculations are reused: every serving response
 is generated again. Image requests receive fresh UUIDs to force vision work.
 

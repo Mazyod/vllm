@@ -2,9 +2,11 @@
 
 The deployment target is **two 16 GB Tesla V100s**, anonymous profile `volta-2`.
 Primary inference remains on Hopper. Offload Snowflake embeddings,
-EmbeddingGemma, BGE reranking, Whisper large v3, and **Jina v4 multivector**.
-The implementation and reproducible build are in
-[`v100-modern/README.md`](v100-modern/README.md).
+EmbeddingGemma, BGE reranking, the **`mlmlaziz/bbyn-v2` Whisper large-v3
+fine-tune**, and **Jina v4 multivector**. The reproducible SM70 build is in
+[`v100-modern/README.md`](v100-modern/README.md); the current native-vLLM
+deployment and full-topology campaign are in
+[`v100-campaign/README.md`](v100-campaign/README.md).
 
 The earlier [v0.10.2 experiment](v100-16gb/RECORD.md) is historical only. Its
 256-token Gemma workaround and incompatible Jina APIs are not acceptable
@@ -23,10 +25,11 @@ The selected lane builds vLLM **v0.32.0** with CUDA **12.6**, using published
 SM70-capable PyTorch binaries. It does not compile the driver or PyTorch.
 Preserve the CUDA 12.6 `ptxas` selection for Triton runtime compilation. This
 exception is isolated from the Hopper release pointer and image workflow.
-Whisper uses CTranslate2/faster-whisper in that same image: its long-form
-algorithm passed recordings that native vLLM transcribed incompletely. The
-OpenAI transcription route, original large-v3 checkpoint and full recordings
-are preserved.
+The current fine-tune must run through native vLLM, with language supplied
+explicitly and ordinary JSON responses. Its accuracy must be compared against
+the same pinned checkpoint in independent FP32 inference. The historical
+stock-Whisper CTranslate2 result belongs to a different checkpoint and decoder;
+it does not establish compatibility or accuracy for this fine-tune.
 
 Sources: [NVIDIA legacy GPU capabilities](https://developer.nvidia.com/cuda/gpus/legacy),
 [CUDA 13 release notes](https://docs.nvidia.com/cuda/archive/13.0.0/cuda-toolkit-release-notes/index.html),
@@ -36,7 +39,7 @@ Sources: [NVIDIA legacy GPU capabilities](https://developer.nvidia.com/cuda/gpus
 ## Payload and acceptance contracts
 
 Pinned checkpoints and revisions are in
-[`models.json`](v100-modern/models.json). “Snowflake Embedding Gemma” is treated
+[`models.json`](v100-campaign/models.json). “Snowflake Embedding Gemma” is treated
 as two distinct models, Snowflake Arctic Embed L v2.0 and Google EmbeddingGemma
 300M. Different production IDs require separate validation.
 
@@ -45,7 +48,7 @@ as two distinct models, Snowflake Arctic Embed L v2.0 and Google EmbeddingGemma
 | Snowflake Arctic Embed L v2.0 | 8192 tokens, mixed-length batches | FP32 reference cosine, dimension, normalization, token count and input/output mapping |
 | EmbeddingGemma 300M | 2048 tokens, native sliding attention, FP32 on V100 | FP32 reference parity, prefixes, mixed batches, finite normalized 768-dimensional output |
 | BGE reranker v2 m3 | 8192 combined query/document tokens, 32 candidates | Reference scores and ordering, document/index mapping, finite output |
-| Whisper large v3 | English/Arabic, short and >3-minute audio, FLAC/MP3/AAC, automatic language | Ground-truth and independent FP32 WER, timestamps covering the complete recording, real-time factor |
+| bbyn-v2 Whisper large-v3 fine-tune | English/Arabic, short and >3-minute audio, FLAC/WAV/MP3/AAC, explicit language, `response_format=json` | Ground-truth and independent FP32 WER/CER, complete-recording coverage, real-time factor; timestamps require a separate format gate |
 | Jina v4 retrieval multivector | 32768 text tokens, full-resolution images and multiple images | `[tokens,128]`, normalization, FP32 projector/reference parity, batching and MaxSim retrieval ranking |
 
 Jina's contract is **`/pooling` with `task=token_embed`**, not ordinary pooled
@@ -58,7 +61,7 @@ and validate one, two and eight images within the total context budget.
 Model sources: [Snowflake](https://huggingface.co/Snowflake/snowflake-arctic-embed-l-v2.0),
 [EmbeddingGemma](https://huggingface.co/google/embeddinggemma-300m),
 [BGE](https://huggingface.co/BAAI/bge-reranker-v2-m3),
-[Whisper](https://huggingface.co/openai/whisper-large-v3),
+[Whisper fine-tune](https://huggingface.co/mlmlaziz/bbyn-v2),
 [Jina canonical model](https://huggingface.co/jinaai/jina-embeddings-v4),
 [Jina multivector checkpoint](https://huggingface.co/Mazyod/jina-embeddings-v4-vllm-mv),
 [Jina plugin](https://github.com/Mazyod/jina-embeddings-v4-vllm-plugin).
@@ -71,7 +74,10 @@ two V100s do not provide a single 32 GB memory pool. Final placement follows
 measured full-payload memory usage, not model-weight size alone.
 
 Interpret the supplied “tens per minute” as **30 total requests/minute**,
-evenly divided across five services, plus simultaneous 5/10/20-request bursts.
+evenly divided across five services. Also measure 10 and 60 total requests/minute,
+plus simultaneous 5/10/20-request bursts. Sweep Jina client concurrency through
+1/2/4/8/16 for each full text/image shape and for mixed shapes; distinguish HTTP
+concurrency from the engine's active-sequence limit.
 The quality suites' real full-context/media payloads must appear in this load.
 Report per-service p50/p95/max latency, errors, achieved throughput, queueing,
 ASR WER/real-time factor, and sampled peak VRAM/utilization. Numerical checks
