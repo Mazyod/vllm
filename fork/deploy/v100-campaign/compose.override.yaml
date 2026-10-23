@@ -1,0 +1,5 @@
+# Use after ../v100-modern/compose.yaml; paths resolve against that first file.
+services:
+  jina:
+    volumes:
+      - ../v100-campaign/jina-cache1536.yaml:/app/engine/jina.yaml:ro

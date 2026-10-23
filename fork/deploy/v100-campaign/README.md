@@ -89,3 +89,30 @@ Benchmark-only dependencies live outside `/opt/vllm`; the launcher removes
 their `PYTHONPATH` before spawning any model. Keep one watched rental/cache
 through configuration failures. An external label watchdog must be armed before
 create, and provider-confirmed teardown is mandatory at the end.
+
+## Deployment candidate
+
+Use the candidate image with the existing five-service Compose layout and the
+Jina cache override. Compose resolves paths relative to the first file:
+
+```bash
+export V100_IMAGE=local/vllm-v100:campaign-20261023
+export MODEL_DIR=/absolute/path/to/pinned/models
+export VLLM_API_KEY='replace-with-your-secret'
+docker compose -f ../v100-modern/compose.yaml -f compose.override.yaml config --quiet
+```
+
+The checkpoint directories must match `models.json`, particularly the native
+`mlmlaziz/bbyn-v2` Whisper checkpoint. Send `language=en` or `language=ar` and
+`response_format=json` explicitly for ASR. The override caps Jina's cache at
+1.5 GiB while retaining its full context and image limits. Deployment acceptance
+requires the campaign results and the final digest's Prisma policy review;
+Compose container isolation is not exercised inside the Vast rental.
+
+Before any development rental, require the offer's absolute `end_date` to be
+later than the watchdog deadline plus an hour. Provider expiry can stop a
+non-interruptible offer too. Keep receipts under ignored `runs/`, collect
+incrementally, and check actual transferred files rather than trusting a copy
+command's exit status. Provider copies into an image's lower-layer directories
+can leave the running container with a stale overlay view; use a newly created
+workspace destination for migrations.
