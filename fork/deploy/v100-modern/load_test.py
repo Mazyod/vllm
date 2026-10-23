@@ -25,6 +25,44 @@ def reference(path):
         return f["reference"].copy()
 
 
+def check_vectors(case, body):
+    """Validate pooling/rerank output against an independent saved reference."""
+    metrics = {}
+    expected = reference(str(Path(case["root"]) / case["reference"]))
+    if case["service"] == "bge":
+        rows = sorted(body["results"], key=lambda x: x["index"])
+        assert [r["index"] for r in rows] == list(range(len(rows)))
+        actual = np.asarray([r["relevance_score"] for r in rows])
+        assert actual.shape == expected.shape and np.isfinite(actual).all()
+        assert np.allclose(actual, expected, atol=0.01, rtol=0)
+        assert actual.argmax() == expected.argmax()
+        metrics["max_abs_difference"] = float(np.abs(actual - expected).max())
+        metrics["top1_agrees"] = True
+    else:
+        if case["service"] == "jina":
+            assert len(body["data"]) == 1 and body["data"][0]["index"] == 0
+            actual = np.asarray(body["data"][0]["data"], dtype=np.float32)
+        else:
+            assert sorted(r["index"] for r in body["data"]) == list(
+                range(len(body["data"]))
+            )
+            actual = np.asarray(
+                [r["embedding"] for r in sorted(body["data"], key=lambda x: x["index"])]
+            )
+        assert actual.shape == expected.shape and np.isfinite(actual).all()
+        assert np.allclose(np.linalg.norm(actual, axis=-1), 1, atol=0.005)
+        cosine = (actual * expected).sum(-1) / (
+            np.linalg.norm(actual, axis=-1) * np.linalg.norm(expected, axis=-1)
+        )
+        floor = case.get("cosine_floor", 0.999)
+        assert (cosine.mean() if case["service"] == "jina" else cosine.min()) >= floor
+        metrics["cosine_mean"] = float(cosine.mean())
+        metrics["cosine_min"] = float(cosine.min())
+        metrics["cosine_p01"] = float(np.quantile(cosine, 0.01))
+        metrics["max_abs_difference"] = float(np.abs(actual - expected).max())
+    return metrics
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--reports", type=Path, nargs="+", required=True)
@@ -128,35 +166,7 @@ def main():
                 elif not case["id"].split("-")[-1].isdigit():
                     assert item["actual_errors"] <= item["reference_errors"] + 1
             else:
-                expected = reference(str(Path(case["root"]) / case["reference"]))
-                if case["service"] == "bge":
-                    rows = sorted(body["results"], key=lambda x: x["index"])
-                    assert [r["index"] for r in rows] == list(range(len(rows)))
-                    actual = np.asarray([r["relevance_score"] for r in rows])
-                    assert actual.shape == expected.shape and np.isfinite(actual).all()
-                    assert np.allclose(actual, expected, atol=0.01, rtol=0)
-                    assert actual.argmax() == expected.argmax()
-                else:
-                    if case["service"] == "jina":
-                        actual = np.asarray(body["data"][0]["data"], dtype=np.float32)
-                    else:
-                        actual = np.asarray(
-                            [
-                                r["embedding"]
-                                for r in sorted(body["data"], key=lambda x: x["index"])
-                            ]
-                        )
-                    assert actual.shape == expected.shape and np.isfinite(actual).all()
-                    assert np.allclose(np.linalg.norm(actual, axis=-1), 1, atol=0.005)
-                    cosine = (actual * expected).sum(-1) / (
-                        np.linalg.norm(actual, axis=-1)
-                        * np.linalg.norm(expected, axis=-1)
-                    )
-                    floor = case.get("cosine_floor", 0.999)
-                    assert (
-                        cosine.mean() if case["service"] == "jina" else cosine.min()
-                    ) >= floor
-                    item["cosine_mean"] = float(cosine.mean())
+                item.update(check_vectors(case, body))
             item["passed"] = True
         except Exception as exc:
             item["error"] = f"{type(exc).__name__}: {exc}"
