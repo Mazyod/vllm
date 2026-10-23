@@ -33,7 +33,13 @@ def main():
         run = path.parent.name
         protocol = json.loads(protocol_path.read_text())
         requests = read_rows(path.parent / "requests.jsonl")
+        assert all(
+            r["reported_prompt_tokens"] == r["tokens"]
+            for r in requests
+            if r["service"] != "whisper" and r.get("http_success")
+        ), f"Server token accounting differs from the full input: {run}"
         provenance[run] = {
+            "full_input_token_counts_verified": True,
             "mode": protocol["mode"],
             "has_summary": path.exists(),
             "harness_sha256": protocol["harness_sha256"],
