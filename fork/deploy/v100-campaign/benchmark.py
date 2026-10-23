@@ -362,7 +362,7 @@ def main():
                 rows = []
                 spans = []
                 for repeat in range(
-                    math.ceil(max(args.min_requests, 2 * concurrency) / concurrency)
+                    1 + math.ceil(max(args.min_requests, 2 * concurrency) / concurrency)
                 ):
                     barrier = threading.Barrier(concurrency)
                     with ThreadPoolExecutor(max_workers=concurrency) as pool:
@@ -370,13 +370,29 @@ def main():
                             pool.submit(
                                 request,
                                 group[(repeat * concurrency + i) % len(group)],
-                                f"{name}-c{concurrency}",
+                                f"{name}-c{concurrency}"
+                                + ("-warmup" if repeat == 0 else ""),
                                 None,
                                 barrier,
                             )
                             for i in range(concurrency)
                         ]
                         results = [f.result() for f in futures]
+                    if repeat == 0:
+                        warmup = [validate(result) for result in results]
+                        print(
+                            json.dumps(
+                                dict(
+                                    case=name,
+                                    concurrency=concurrency,
+                                    warmup_passed=all(r["passed"] for r in warmup),
+                                )
+                            ),
+                            flush=True,
+                        )
+                        if not all(r["passed"] for r in warmup):
+                            return 1
+                        continue
                     spans.append(
                         max(r[1]["ended_mono_s"] for r in results)
                         - min(r[1]["started_mono_s"] for r in results)

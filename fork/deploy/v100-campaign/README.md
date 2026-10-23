@@ -54,7 +54,9 @@ audio is shortened to pass a gate.
   completed rate, client launch delay and drain time. Planned rates are 10, 30
   and 60 total requests/minute; the 30-RPM acceptance window is 20 minutes.
 
-Every response is validated. Cohort throughput excludes the validation gaps;
+Every response is validated. Each sweep cell first runs one excluded, validated
+warmup cohort to keep shape-specific JIT outside steady measurements. Cohort
+throughput excludes the validation gaps;
 HTTP latency includes body reception but excludes JSON/vector validation.
 Validation time is recorded separately. Interval measurements use monotonic
 time; wall-clock timestamps align them with resource samples. p95 is emitted
