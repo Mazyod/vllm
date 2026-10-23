@@ -1,0 +1,50 @@
+{
+  "passed": true,
+  "services": [
+    {
+      "service": "bge",
+      "uid": 10001,
+      "unauthorized_status": 401,
+      "wrong_key_status": 401,
+      "authorized_status": 200,
+      "health_status": 200,
+      "passed": true
+    },
+    {
+      "service": "gemma",
+      "uid": 10001,
+      "unauthorized_status": 401,
+      "wrong_key_status": 401,
+      "authorized_status": 200,
+      "health_status": 200,
+      "passed": true
+    },
+    {
+      "service": "jina",
+      "uid": 10001,
+      "unauthorized_status": 401,
+      "wrong_key_status": 401,
+      "authorized_status": 200,
+      "health_status": 200,
+      "passed": true
+    },
+    {
+      "service": "snowflake",
+      "uid": 10001,
+      "unauthorized_status": 401,
+      "wrong_key_status": 401,
+      "authorized_status": 200,
+      "health_status": 200,
+      "passed": true
+    },
+    {
+      "service": "whisper",
+      "uid": 10001,
+      "unauthorized_status": 401,
+      "wrong_key_status": 401,
+      "authorized_status": 200,
+      "health_status": 200,
+      "passed": true
+    }
+  ]
+}

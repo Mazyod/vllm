@@ -17,6 +17,9 @@ and account credentials are not included in that image. Model workers run as
 UID 10001. The provider's SSH bootstrap runs as root. This tests the actual
 image and model processes, but not Docker Compose isolation inside the rental.
 
+The completed [campaign record](RECORD.md) contains the placement recommendation,
+capacity measurements, quality limits, and verified teardown.
+
 ## Evidence and quality gates
 
 `prepare_cases.py` binds 295 requests to existing independent FP32 oracles:
@@ -148,6 +151,11 @@ uv run --no-project --with matplotlib==3.11.2 python \
   fork/deploy/v100-campaign/plot.py \
   --benchmarks fork/deploy/v100-campaign/results/benchmarks.csv \
   --out fork/deploy/v100-campaign/results/jina-concurrency.png
+OPENBLAS_NUM_THREADS=1 uv run --no-project --with numpy==2.5.4 python \
+  fork/deploy/v100-campaign/jina_fidelity.py \
+  --cases "$CAMPAIGN_RUN/oracles/cases.json" \
+  --quality "$CAMPAIGN_RUN/dev3/collected/quality-final" \
+  --out fork/deploy/v100-campaign/results/jina-fidelity.json
 ```
 
 The exporter binds corpus statistics to the fixture fingerprint in each run,

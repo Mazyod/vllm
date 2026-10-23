@@ -1,0 +1,50 @@
+[
+  {
+    "path": "snowflake/model.safetensors",
+    "bytes": 2271064456,
+    "sha256": "21bf1a120b1c6562aeec379dfa9039b0d360591c784cb1c6786e87256b738ee1",
+    "passed": true
+  },
+  {
+    "path": "bge/model.safetensors",
+    "bytes": 2271071852,
+    "sha256": "d9e3e081faff1eefb84019509b2f5558fd74c1a05a2c7db22f74174fcedb5286",
+    "passed": true
+  },
+  {
+    "path": "gemma/2_Dense/model.safetensors",
+    "bytes": 9437272,
+    "sha256": "c327f2acb00149676ade24a75e11eb6ebbd367f9ee050267ba56829d2979f702",
+    "passed": true
+  },
+  {
+    "path": "gemma/3_Dense/model.safetensors",
+    "bytes": 9437272,
+    "sha256": "ffb6cc5162e11e2ce6bc2367e121ee3bbbc4e82e1ee26826bd7573d4948d81b8",
+    "passed": true
+  },
+  {
+    "path": "gemma/model.safetensors",
+    "bytes": 1211486072,
+    "sha256": "cbf5a78393b6a033e0b8a63a57549964f7ed5c6fbeb4ba0694214f36123f2fd2",
+    "passed": true
+  },
+  {
+    "path": "whisper/model.safetensors",
+    "bytes": 3087130976,
+    "sha256": "79d6f3b3717e35761254622c0d9f8347f5385cbaef5d0f1c34d0fa220d6ac330",
+    "passed": true
+  },
+  {
+    "path": "jina/model-projector.safetensors",
+    "bytes": 1049280,
+    "sha256": "2a08b7b316edfe0fd51617b9b19346ced3bd7117d2f3644cc94cee655d2abef7",
+    "passed": true
+  },
+  {
+    "path": "jina/model.safetensors",
+    "bytes": 7509338080,
+    "sha256": "a64b99a5f842f8deea157401638d822e47b62ba6efcb604913ad27334a0e8c47",
+    "passed": true
+  }
+]

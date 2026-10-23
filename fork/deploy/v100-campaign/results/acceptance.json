@@ -1,0 +1,21 @@
+{
+  "phases": {
+    "quality-cohost-01": 295,
+    "isolated-whisper": 594,
+    "isolated-snowflake": 396,
+    "isolated-bge": 396,
+    "isolated-gemma": 396,
+    "jina-full-sweep": 882,
+    "audio-format-quality": 6,
+    "audio-format-full-quality": 12,
+    "quality-final": 295,
+    "jina-mixed-cohorts": 147,
+    "mixed-10": 50,
+    "mixed-30": 600,
+    "mixed-60": 300,
+    "full-payload-bursts": 105
+  },
+  "total": 4474,
+  "all_passed": true,
+  "checked_unix": 1792755748.556143
+}

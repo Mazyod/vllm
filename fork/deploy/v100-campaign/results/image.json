@@ -1,0 +1,11 @@
+{
+  "image": "local/vllm-v100:campaign-20261023",
+  "image_digest": "sha256:5a1adb39d075eff377372c877a36bef30ecc3f82896633a15036405673d7e77b",
+  "archive": "vllm-v100-campaign-20261023.tar.zst",
+  "archive_sha256": "e467aa4b44e0fe82f6fb213eca91100a036da6df6dd9da0963eee43f20c53e4d",
+  "bytes": 4575692152,
+  "elapsed_s": 118.03864908218384,
+  "archive_integrity_verified": true,
+  "original_image_index_present": true,
+  "docker_load_verified": true
+}
