@@ -17,6 +17,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--collected", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--cases", type=Path, nargs="+", default=[])
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     gpu = []
@@ -27,7 +28,13 @@ def main():
             when = datetime.strptime(row[0].strip(), "%Y/%m/%d %H:%M:%S.%f")
             gpu.append([when.replace(tzinfo=UTC).timestamp(), *map(float, row[1:])])
     host = read_rows(args.collected / "host.jsonl")
-    cells, quality, provenance = [], [], {}
+    case_sets = {
+        hashlib.sha256(p.read_bytes()).hexdigest(): {
+            c["id"]: c for c in json.loads(p.read_text())
+        }
+        for p in args.cases
+    }
+    cells, quality, provenance, asr_corpus = [], [], {}, []
     for protocol_path in sorted(args.collected.glob("*/protocol.json")):
         path = protocol_path.parent / "summary.json"
         run = path.parent.name
@@ -41,6 +48,20 @@ def main():
         provenance[run] = {
             "full_input_token_counts_verified": True,
             "mode": protocol["mode"],
+            "parameters": {
+                k: protocol[k]
+                for k in (
+                    "services",
+                    "ids",
+                    "concurrency",
+                    "min_requests",
+                    "mixed_cohort",
+                    "minutes",
+                    "rpm",
+                )
+            },
+            "validated_requests": len(requests),
+            "warmup_requests": sum(r["cell"].endswith("-warmup") for r in requests),
             "has_summary": path.exists(),
             "harness_sha256": protocol["harness_sha256"],
             "cases_sha256": protocol["cases_sha256"],
@@ -97,6 +118,50 @@ def main():
                 )
                 entry["host_peak_cpu_pct"] = max(r["cpu_percent"] for r in samples)
             cells.append(entry)
+        if protocol["mode"] == "quality" and case_sets:
+            import jiwer
+
+            from fork.bench.asr_audit.report import normalize
+
+            cases = case_sets[protocol["cases_sha256"]]
+            for language in ("en", "ar"):
+                expected = [
+                    c
+                    for c in cases.values()
+                    if c.get("kind") == "short" and c.get("language") == language
+                ]
+                rows = [
+                    r
+                    for r in requests
+                    if "actual" in r
+                    and r.get("language") == language
+                    and cases[r["case"]].get("kind") == "short"
+                ]
+                if not rows:
+                    continue
+                truth = [normalize(cases[r["case"]]["ground_truth"]) for r in rows]
+                actual = [normalize(r["text"]) for r in rows]
+                reference = [
+                    normalize(cases[r["case"]]["reference_text"]) for r in rows
+                ]
+                words = sum(r["actual"]["words"] for r in rows)
+                asr_corpus.append(
+                    dict(
+                        run=run,
+                        language=language,
+                        clips=len(rows),
+                        complete_cases=len(rows) == len(expected),
+                        words=words,
+                        actual_wer=sum(r["actual"]["errors"] for r in rows) / words,
+                        reference_wer=sum(r["reference"]["errors"] for r in rows)
+                        / words,
+                        actual_cer=jiwer.cer(truth, actual),
+                        reference_cer=jiwer.cer(truth, reference),
+                        normalized_transcripts_equal=sum(
+                            a == b for a, b in zip(actual, reference)
+                        ),
+                    )
+                )
         if protocol["mode"] == "quality":
             for row in requests:
                 entry = {
@@ -140,6 +205,10 @@ def main():
             writer.writeheader()
             writer.writerows(rows)
     (args.out / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
+    if case_sets:
+        (args.out / "asr-corpus.json").write_text(
+            json.dumps(asr_corpus, indent=2) + "\n"
+        )
     print(json.dumps(dict(cells=len(cells), quality_cases=len(quality))))
 
 

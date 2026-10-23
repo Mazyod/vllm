@@ -130,3 +130,37 @@ incrementally, and check actual transferred files rather than trusting a copy
 command's exit status. Provider copies into an image's lower-layer directories
 can leave the running container with a stale overlay view; use a newly created
 workspace destination for migrations.
+
+## Reproduce the reports
+
+From the repository root, with the retained fixtures and collected responses:
+
+```bash
+CAMPAIGN_RUN=runs/v100-full
+PYTHONPATH=. uv run --no-project --with jiwer==4.0.0 python \
+  fork/deploy/v100-campaign/summarize.py \
+  --collected "$CAMPAIGN_RUN/dev3/collected" \
+  --out fork/deploy/v100-campaign/results \
+  --cases "$CAMPAIGN_RUN/oracles/cases.json" \
+  "$CAMPAIGN_RUN/dev3/formats-short/cases.json" \
+  "$CAMPAIGN_RUN/dev3/formats-full/cases.json"
+uv run --no-project --with matplotlib==3.11.2 python \
+  fork/deploy/v100-campaign/plot.py \
+  --benchmarks fork/deploy/v100-campaign/results/benchmarks.csv \
+  --out fork/deploy/v100-campaign/results/jina-concurrency.png
+```
+
+The exporter binds corpus statistics to the fixture fingerprint in each run,
+keeps repeated quality runs separate, and excludes composite recordings from
+the short-clip corpus. The plot is byte-reproducible with the pinned renderer.
+
+The exact tested image is also exported locally under
+`runs/v100-full/image/vllm-v100-campaign-20261023.tar.zst`, with its adjacent
+SHA-256 checksum and receipt. Load that archive on the target host with
+`docker image load -i vllm-v100-campaign-20261023.tar.zst`. The loaded image ID
+must match the digest above. After staging the pinned models and setting the
+Compose variables, launch from this directory:
+
+```bash
+docker compose -f ../v100-modern/compose.yaml -f compose.override.yaml up -d
+```
