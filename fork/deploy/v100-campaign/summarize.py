@@ -126,6 +126,10 @@ def main():
                         words=row["actual"]["words"],
                         actual_errors=row["actual"]["errors"],
                         reference_errors=row["reference"]["errors"],
+                        actual_wer=row["actual"]["wer"],
+                        reference_wer=row["reference"]["wer"],
+                        actual_cer=row["actual"]["cer"],
+                        reference_cer=row["reference"]["cer"],
                     )
                 quality.append(entry)
     for name, rows in (("benchmarks", cells), ("quality", quality)):

@@ -32,6 +32,7 @@ def main():
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--ids", nargs="*")
     parser.add_argument("--stream", action="store_true")
+    parser.add_argument("--reference-json-only", action="store_true")
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     manifest = json.loads((args.fixtures / "manifest.json").read_text())
@@ -147,6 +148,8 @@ def run_reference(args, cases, results_path):
                 if len(audio) <= 480000
                 else ["native_long", "json", "verbose_json"]
             )
+            if args.reference_json_only:
+                variants = ["json"]
             for variant in variants:
                 started = time.monotonic()
                 try:
