@@ -2,7 +2,7 @@
 #
 # Apply the fork patch series to the vLLM package installed in the image.
 #
-# The image is built FROM the prebuilt `vllm/vllm-openai:<tag>` release, so the
+# The image is built FROM the prebuilt `vllm/vllm:<tag>` release, so the
 # vLLM sources live in site-packages rather than a git checkout. Every patch in
 # fork/patches/ is generated against that exact release tag (see FORK.md), which
 # is why a plain `patch -p1` applies without fuzz.

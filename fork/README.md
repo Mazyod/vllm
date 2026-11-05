@@ -73,8 +73,8 @@ configuration without results, and bumps the four pins.
 
 ```bash
 docker build -f fork/docker/Dockerfile.audio \
-  --build-arg BASE_TAG=v0.28.0 \
-  -t openimage/vllm-openai-audio:v0.28.0 .
+  --build-arg BASE_TAG=v0.33.0 \
+  -t openimage/vllm-audio:v0.33.0 .
 ```
 
 The build fails if any declared patch does not apply to the installed vLLM

@@ -115,7 +115,7 @@ def test_no_test_asserts_on_a_log_line_number():
         assert not found, f"{path.name} refers to log line numbers: {found}"
 
 
-@pytest.mark.parametrize("tag", ("v0.30.0", "v0.31.0"))
+@pytest.mark.parametrize("tag", ("v0.30.0", "v0.31.0", "v0.33.0"))
 def test_every_profile_replays_a_log_that_can_satisfy_its_expectations(tag):
     """Whatever the dry run replays for a profile must be able to pass it.
 

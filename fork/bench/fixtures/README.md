@@ -51,6 +51,10 @@ without changing the fixtures or backend expectations of older releases.
 They contain unchanged lines from the development session's TP1 correctness
 and TP2 performance launches against the committed engine YAML.
 
+The v0.33.0 dry run reuses these v0.31.0 Gemma captures until its GPU gate
+supplies tag-specific logs. These remain historical captures, not evidence
+that v0.33.0 has booted or passed the release gate.
+
 ## Where each message comes from
 
 | message | source at `v0.26.0` |

@@ -41,6 +41,8 @@ ignore = [
     "B007",
     # f-string format
     "UP032",
+    # str enum inheritance
+    "UP042",
 ]
 
 [tool.ruff.lint.pydocstyle]
