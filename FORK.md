@@ -146,6 +146,12 @@ validated V1 runner and TP2 collective environment. The
 [gate record](fork/bench/configs/v0.31.0/results/20261015-gate.md) documents
 cold JIT latency, warm decode repeats, and verified rental teardown.
 
+The `v0.33.0` release carries no source patches and passed all 38 required
+checks, all 50 declared results, and 12 supplemental structured streams on
+PCIe-connected H200 NVL GPUs. The base is now `vllm/vllm` and the fork image
+is `openimage/vllm-audio`. Keep the validated V1 runner and TP2 collective
+environment. See the [release gate](fork/bench/configs/v0.33.0/results/20261105-gate.md).
+
 ## Lockstep with upstream releases
 
 When vLLM cuts a new release:
@@ -210,11 +216,11 @@ patch -p1 --dry-run --force < /path/to/fork/patches/<patch-file>
 ## The image
 
 - **Registry / name:** `docker.io/openimage/vllm-audio`
-- **Build target:** `v0.33.0`, with no source patches. GPU release validation
-  and publication under the new image name are pending.
-- **Last validated release:** `openimage/vllm-openai-audio:v0.31.0` on H100 PCIe;
-  see the [gate record](fork/bench/configs/v0.31.0/results/20261015-gate.md).
-  The legacy repository's `latest` remains on `v0.28.0`.
+- **Validated version:** `v0.33.0` on `hopper-pcie-2` (two H200 NVL GPUs);
+  versioned publication uses the exact digest in the
+  [gate record](fork/bench/configs/v0.33.0/results/20261105-gate.md).
+  The legacy repository's `latest` remains on `v0.28.0`; the new repository
+  publishes `v0.33.0` and `0.33.0` without promoting `latest`.
 - **Drop-in:** entrypoint is inherited from `vllm/vllm`, so it replaces
   the stock image directly.
 - **CI:** [`build-vllm-audio.yml`](.github/workflows/build-vllm-audio.yml) —

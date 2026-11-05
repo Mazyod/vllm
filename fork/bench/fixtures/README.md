@@ -16,6 +16,8 @@ Two rules keep these tests from going tautological:
 
 | fixture | provenance | engine | failure mode |
 | --- | --- | --- | --- |
+| `gemma-full-v0.33.0.log` | captured excerpt | v0.33.0 | healthy Hopper TP1 boot selecting `TRITON_FLASH_ATTN`; 2026-11-05 PCIe development gate |
+| `gemma-tp2-v0.33.0.log` | captured excerpt | v0.33.0 | healthy Hopper TP2 boot with `PYNCCL` collectives; 2026-11-05 PCIe performance launch |
 | `gemma-full-v0.31.0.log` | captured excerpt | v0.31.0 | healthy Hopper TP1 boot selecting `TRITON_FLASH_ATTN`; 2026-10-15 PCIe development gate |
 | `gemma-tp2-v0.31.0.log` | captured excerpt | v0.31.0 | healthy Hopper TP2 boot with the composite backend and PCIe collective workarounds; 2026-10-15 development gate |
 | `gemma-full-boot.log` | captured excerpt | v0.30.0 | none — healthy V1 TP1 boot with MTP sharing embeddings; 2026-09-23 H200 validation |
@@ -51,9 +53,10 @@ without changing the fixtures or backend expectations of older releases.
 They contain unchanged lines from the development session's TP1 correctness
 and TP2 performance launches against the committed engine YAML.
 
-The v0.33.0 dry run reuses these v0.31.0 Gemma captures until its GPU gate
-supplies tag-specific logs. These remain historical captures, not evidence
-that v0.33.0 has booted or passed the release gate.
+The v0.33.0 excerpts contain unchanged lines from the PCIe development
+session's TP1 correctness and TP2 performance launches. Both used the
+committed engine YAML and selected `TRITON_FLASH_ATTN`; TP2 reported
+`PYNCCL` collectives. They replace the temporary replay of v0.31.0 captures.
 
 ## Where each message comes from
 

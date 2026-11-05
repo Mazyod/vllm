@@ -1,7 +1,7 @@
 # v0.33.0 — release preparation
 
-Candidate preparation; image build, real-parser validation, GPU validation,
-and promotion are pending.
+This records the initial CPU-only preparation. The completed image and GPU
+validation are documented in the [release gate](20261105-gate.md).
 
 ## Source and image identity
 
