@@ -18,11 +18,6 @@ pre-release image on rented hardware. Promote the file into
 `<TAG>/engine/` and run the on-box parser validation the day a tag supports the
 architecture.
 
-The [v0.33.0 candidate fleet](v0.33.0/fleet.yaml) carries forward the nine
-v0.31.0 engine configurations under the new `openimage/vllm-audio` image name.
-Parser and GPU validation are pending; no prior measurements certify this
-release. See the [preparation record](v0.33.0/results/20261105-preparation.md).
-
 | release | profile / engine configuration | status | headline number | record |
 | --- | --- | --- | --- | --- |
 | v0.27.1 | [`gemma-tp2.yaml`](v0.27.1/engine/gemma-tp2.yaml) | shipping | 169.6 decode tok/s | [attempt 4](v0.27.1/results/20260811-attempt4.md#measured-configurations) |
@@ -81,6 +76,17 @@ release. See the [preparation record](v0.33.0/results/20261105-preparation.md).
 | v0.31.0 | [`qwen-tp2-noflags.yaml`](v0.31.0/engine/qwen-tp2-noflags.yaml) | negative | booted; collective workarounds retained | [gate](v0.31.0/results/20261015-gate.md) |
 | v0.31.0 | [`deepseek-v4-tp2-h200-dspark.yaml`](v0.31.0/engine/deepseek-v4-tp2-h200-dspark.yaml) | off-gate, unvalidated | — | [gate](v0.31.0/results/20261015-gate.md) |
 | v0.31.0 | [`deepseek-v4-tp2-h200.yaml`](v0.31.0/engine/deepseek-v4-tp2-h200.yaml) | off-gate control, unvalidated | — | [gate](v0.31.0/results/20261015-gate.md) |
+| v0.33.0 | [`gemma-tp2.yaml`](v0.33.0/engine/gemma-tp2.yaml) | shipping | 51.9 gate decode tok/s; short sample | [PCIe gate](v0.33.0/results/20261105-gate.md) |
+| v0.33.0 | [`qwen-tp2.yaml`](v0.33.0/engine/qwen-tp2.yaml) | shipping | 190.0 decode tok/s | [PCIe gate](v0.33.0/results/20261105-gate.md) |
+| v0.33.0 | [`gemma-tp2-kvauto.yaml`](v0.33.0/engine/gemma-tp2-kvauto.yaml) | control | 29.7 gate decode tok/s; short sample | [PCIe gate](v0.33.0/results/20261105-gate.md) |
+| v0.33.0 | [`gemma-tp2-nospec.yaml`](v0.33.0/engine/gemma-tp2-nospec.yaml) | control | 85.1 decode tok/s | [PCIe gate](v0.33.0/results/20261105-gate.md) |
+| v0.33.0 | [`gemma-tp1.yaml`](v0.33.0/engine/gemma-tp1.yaml) | gating | 100 constrained outputs, zero corruption | [PCIe gate](v0.33.0/results/20261105-gate.md) |
+| v0.33.0 | [`gemma-tp1.yaml`](v0.33.0/engine/gemma-tp1.yaml) | control, two replicas | 55.5 gate decode tok/s | [PCIe gate](v0.33.0/results/20261105-gate.md) |
+| v0.33.0 | [`gemma-tp1.yaml`](v0.33.0/engine/gemma-tp1.yaml) | negative / V2 diagnostic | booted; full V2 behavior unvalidated | [PCIe gate](v0.33.0/results/20261105-gate.md) |
+| v0.33.0 | [`qwen-tp1.yaml`](v0.33.0/engine/qwen-tp1.yaml) | gating | zero FSM HTTP failures across 60 requests | [PCIe gate](v0.33.0/results/20261105-gate.md) |
+| v0.33.0 | [`qwen-tp2-noflags.yaml`](v0.33.0/engine/qwen-tp2-noflags.yaml) | negative | booted; collective workarounds retained | [PCIe gate](v0.33.0/results/20261105-gate.md) |
+| v0.33.0 | [`deepseek-v4-tp2-h200-dspark.yaml`](v0.33.0/engine/deepseek-v4-tp2-h200-dspark.yaml) | off-gate, unvalidated | — | [PCIe gate](v0.33.0/results/20261105-gate.md) |
+| v0.33.0 | [`deepseek-v4-tp2-h200.yaml`](v0.33.0/engine/deepseek-v4-tp2-h200.yaml) | off-gate control, unvalidated | — | [PCIe gate](v0.33.0/results/20261105-gate.md) |
 
 ## Pending release
 
