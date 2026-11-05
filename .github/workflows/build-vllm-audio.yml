@@ -106,6 +106,25 @@ jobs:
         with:
           ref: ${{ github.sha }}
 
+      - name: Ensure the release repository is public
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          HUB_URL="https://hub.docker.com/v2/repositories/${IMAGE_NAME#docker.io/}/"
+          if curl -fsS "$HUB_URL" | jq -e '.is_private == false' >/dev/null; then
+            exit 0
+          fi
+          HUB_TOKEN=$(jq -n '{identifier: env.DOCKERHUB_USERNAME, secret: env.DOCKERHUB_TOKEN}' |
+            curl -fsS -H 'Content-Type: application/json' --data-binary @- \
+              https://hub.docker.com/v2/auth/token | jq -er '.access_token')
+          echo "::add-mask::$HUB_TOKEN"
+          curl -fsS -X PATCH -H "Authorization: Bearer $HUB_TOKEN" \
+            -H 'Content-Type: application/json' -d '{"is_private": false}' \
+            "$HUB_URL" | jq -e '.is_private == false' >/dev/null
+          curl -fsS "$HUB_URL" | jq -e '.is_private == false' >/dev/null
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
