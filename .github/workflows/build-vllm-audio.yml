@@ -122,9 +122,9 @@ jobs:
             jq -er '.access_token // error("Authentication response fields: \(keys | join(", "))")')
           echo "::add-mask::$HUB_TOKEN"
           echo "Docker Hub API authentication succeeded"
-          curl -fsS -X PATCH -H "Authorization: Bearer $HUB_TOKEN" \
+          curl -fsS -X POST -H "Authorization: Bearer $HUB_TOKEN" \
             -H 'Content-Type: application/json' -d '{"is_private": false}' \
-            "$HUB_URL" | jq -e '.is_private == false or error("Visibility response fields: \(keys | join(", ")); is_private=\(.is_private)")' >/dev/null
+            "${HUB_URL}privacy/" >/dev/null
           curl -fsS "$HUB_URL" | jq -e '.is_private == false' >/dev/null
 
       - name: Set up Docker Buildx
