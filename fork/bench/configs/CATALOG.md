@@ -18,6 +18,11 @@ pre-release image on rented hardware. Promote the file into
 `<TAG>/engine/` and run the on-box parser validation the day a tag supports the
 architecture.
 
+The [v0.33.0 candidate fleet](v0.33.0/fleet.yaml) carries forward the nine
+v0.31.0 engine configurations under the new `openimage/vllm-audio` image name.
+Parser and GPU validation are pending; no prior measurements certify this
+release. See the [preparation record](v0.33.0/results/20261105-preparation.md).
+
 | release | profile / engine configuration | status | headline number | record |
 | --- | --- | --- | --- | --- |
 | v0.27.1 | [`gemma-tp2.yaml`](v0.27.1/engine/gemma-tp2.yaml) | shipping | 169.6 decode tok/s | [attempt 4](v0.27.1/results/20260811-attempt4.md#measured-configurations) |

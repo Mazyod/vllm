@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 #
-# vllm-openai + audio extras + fork patches.
+# vllm + audio extras + fork patches.
 #
 # This image is the Mazyod/vllm fork's release artifact. It does NOT rebuild
 # vLLM from source (that CUDA build is a monster); instead it layers on the
@@ -16,13 +16,13 @@
 #      See FORK.md.
 #
 # The entrypoint is inherited unchanged, so this is a drop-in replacement for
-# vllm/vllm-openai:${BASE_TAG}.
+# vllm/vllm:${BASE_TAG}.
 #
 # BASE_TAG MUST be a real upstream release tag (e.g. v0.26.0). The patch series
 # is generated against that tag; bumping BASE_TAG without running
 # fork/scripts/new-release.sh will fail the build by design.
-ARG BASE_TAG=v0.31.0
-FROM vllm/vllm-openai:${BASE_TAG}
+ARG BASE_TAG=v0.33.0
+FROM vllm/vllm:${BASE_TAG}
 
 # `uv pip show` reads metadata without importing vllm or needing a GPU.
 # Use upstream's UV_OVERRIDE so torch cannot downgrade its required NCCL.

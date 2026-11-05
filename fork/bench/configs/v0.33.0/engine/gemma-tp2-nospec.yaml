@@ -1,0 +1,25 @@
+# The checkpoint whose no-spec control is measured.
+model: RedHatAI/gemma-4-31B-it-FP8-block
+# Keep the API identity identical to the spec arm.
+served-model-name: gemma-4-31b
+# Match the shipping arm's two-GPU PCIe topology.
+tensor-parallel-size: 2
+# Preserve Gemma-4 reasoning content in OpenAI responses.
+reasoning-parser: gemma4
+# Parse Gemma-4 native tool calls.
+tool-call-parser: gemma4
+# Let the model select tools without a forced tool choice.
+enable-auto-tool-choice: true
+# Hold FP8 KV cache constant while speculative decoding is absent.
+kv-cache-dtype: fp8
+# Gemma ships with prefix caching on; hold that value against the spec arm.
+enable-prefix-caching: true
+# Hold the measured context cap constant against the spec arm.
+max-model-len: 8192
+# Speculative decoding is intentionally absent for this same-box control.
+# The PCIe pair must avoid the custom all-reduce path.
+disable-custom-all-reduce: true
+# The second PCIe workaround prevents fused all-reduce plus RMSNorm.
+compilation-config:
+  pass_config:
+    fuse_allreduce_rms: false

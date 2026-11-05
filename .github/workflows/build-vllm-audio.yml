@@ -1,4 +1,4 @@
-name: Build and Push vLLM-OpenAI (audio + fork patches) Image
+name: Build and Push vLLM (audio + fork patches) Image
 
 # Migrated from Mazyod/production-stack. This fork is the new home for building
 # the vLLM engine image; production-stack now only builds the router.
@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       vllm_tag:
-        description: "Upstream vllm/vllm-openai base tag to build (default: DEFAULT_BASE_TAG)"
+        description: "Upstream vllm/vllm base tag to build (default: DEFAULT_BASE_TAG)"
         required: false
         default: ""
       publish_tags:
@@ -47,10 +47,10 @@ on:
       - ".github/workflows/build-vllm-audio.yml"
 
 env:
-  IMAGE_NAME: docker.io/openimage/vllm-openai-audio
+  IMAGE_NAME: docker.io/openimage/vllm-audio
   # Deterministic upstream release the patch series is generated against.
   # Bump this in lockstep with fork/scripts/new-release.sh on each release.
-  DEFAULT_BASE_TAG: v0.31.0
+  DEFAULT_BASE_TAG: v0.33.0
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -125,14 +125,14 @@ jobs:
           fi
           EXPORT_HASH=$(fork/scripts/export-hash.sh)
           BASE_DIGEST=$(docker buildx imagetools inspect \
-            "vllm/vllm-openai:${BASE_TAG}" --format '{{.Manifest.Digest}}')
+            "vllm/vllm:${BASE_TAG}" --format '{{.Manifest.Digest}}')
 
           # The prebuilt base image must exist on Docker Hub, otherwise the build
           # fails later with a confusing pull error.
           BASE_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://hub.docker.com/v2/repositories/vllm/vllm-openai/tags/${BASE_TAG}")
+            "https://hub.docker.com/v2/repositories/vllm/vllm/tags/${BASE_TAG}")
           if [[ "$BASE_CODE" != "200" ]]; then
-            echo "::error::Base image vllm/vllm-openai:${BASE_TAG} not found on Docker Hub (HTTP $BASE_CODE)"
+            echo "::error::Base image vllm/vllm:${BASE_TAG} not found on Docker Hub (HTTP $BASE_CODE)"
             exit 1
           fi
 
@@ -180,7 +180,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
           echo "========================================"
-          echo "  Base image     : vllm/vllm-openai:$BASE_TAG"
+          echo "  Base image     : vllm/vllm:$BASE_TAG"
           echo "  Version        : $VERSION"
           echo "  Publish tags   : $PUBLISH_TAGS"
           echo "  Promote latest : $PROMOTE_LATEST"
@@ -221,7 +221,7 @@ jobs:
         with:
           context: .
           file: fork/docker/Dockerfile.audio
-          # vllm/vllm-openai is published for linux/amd64 only.
+          # The fork currently builds and validates linux/amd64 only.
           platforms: linux/amd64
           push: true
           build-args: |
@@ -240,7 +240,7 @@ jobs:
           {
             echo "### Build Complete"
             echo ""
-            echo "- **Base image:** \`vllm/vllm-openai:${{ needs.resolve.outputs.base_tag }}\`"
+            echo "- **Base image:** \`vllm/vllm:${{ needs.resolve.outputs.base_tag }}\`"
             echo "- **Tags:**"
             while IFS= read -r ref; do
               [[ -n "$ref" ]] && echo "  - \`$ref\`"

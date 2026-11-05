@@ -90,10 +90,10 @@ campaign is reserved for certification after the configuration is known.
 vLLM is a monster to build from source, so we do **not** compile it. Instead:
 
 ```text
-vllm/vllm-openai:<TAG>   (prebuilt upstream release image)
+vllm/vllm:<TAG>   (prebuilt upstream release image)
       └─ + vllm[audio]   (av / soundfile / soxr / scipy ...)
       └─ + fork/patches/ (applied to the installed package in site-packages)
-      = openimage/vllm-openai-audio:<TAG>
+      = openimage/vllm-audio:<TAG>
 ```
 
 | ref | content | mutability |
@@ -106,8 +106,8 @@ vllm/vllm-openai:<TAG>   (prebuilt upstream release image)
 The pointer from `main` to release source is `fork/patches/RELEASE`:
 
 ```text
-tag: v0.31.0
-release-sha: db9527a46873454610df6dbedf79a36d6bf1a7f6
+tag: v0.33.0
+release-sha: 4ba787ec9959e566d3b587a796dff07673324da5
 ```
 
 `export-patches.sh` writes that pointer with `series`, `upstream.map`, and one
@@ -209,11 +209,13 @@ patch -p1 --dry-run --force < /path/to/fork/patches/<patch-file>
 
 ## The image
 
-- **Registry / name:** `docker.io/openimage/vllm-openai-audio`
-- **Validated version:** `v0.31.0` on H100 PCIe; promotion uses the exact
-  digest in the [gate record](fork/bench/configs/v0.31.0/results/20261015-gate.md).
-  `latest` remains on `v0.28.0`, as requested.
-- **Drop-in:** entrypoint is inherited from `vllm/vllm-openai`, so it replaces
+- **Registry / name:** `docker.io/openimage/vllm-audio`
+- **Build target:** `v0.33.0`, with no source patches. GPU release validation
+  and publication under the new image name are pending.
+- **Last validated release:** `openimage/vllm-openai-audio:v0.31.0` on H100 PCIe;
+  see the [gate record](fork/bench/configs/v0.31.0/results/20261015-gate.md).
+  The legacy repository's `latest` remains on `v0.28.0`.
+- **Drop-in:** entrypoint is inherited from `vllm/vllm`, so it replaces
   the stock image directly.
 - **CI:** [`build-vllm-audio.yml`](.github/workflows/build-vllm-audio.yml) —
   builds on push to `main` that changes an actual image input (`fork/patches/*.patch`,

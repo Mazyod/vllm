@@ -299,6 +299,9 @@ class DryRunLauncher:
     def _fixture(self, profile: Profile) -> list[str]:
         tag = profile.engine_config.parent.parent.name
         candidate = _FIXTURES / f"{profile.id}-{tag}.log"
+        if not candidate.exists() and tag == "v0.33.0":
+            # ponytail: reuse v0.31.0 captures until the v0.33.0 GPU gate.
+            candidate = _FIXTURES / f"{profile.id}-v0.31.0.log"
         if not candidate.exists():
             candidate = _FIXTURES / f"{profile.id}.log"
         if not candidate.exists():
