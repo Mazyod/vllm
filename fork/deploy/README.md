@@ -109,3 +109,10 @@ Run `hopper-pcie-4-large` first. Use `hopper-fabric-4-large` only when the PCIe
 profile cannot be rented, and label its performance as a fallback/upper bound.
 Try the overlapping placements and smaller explicit cache policies before
 adding devices.
+
+## Closed experiments
+
+The [2026-11-08 closeout archive](../docs/archive/20261108-experiments/README.md)
+retains the V100/Whisper measurements, quality and security limits, and DeepInfer
+feasibility findings. Experimental worktrees and large local artifacts were
+retired; their committed source remains recoverable from Git history.

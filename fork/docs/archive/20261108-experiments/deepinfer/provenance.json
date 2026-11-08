@@ -1,0 +1,47 @@
+{
+  "status": "preparation_only_no_gpu_measurements",
+  "checked_on": "2026-10-20",
+  "model": {
+    "id": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+    "revision": "1bae0e1088993b9b82de08f59de5be5a34e42170",
+    "tensor_payload_bytes": 510286023000,
+    "weight_shards": 48,
+    "metadata_sha256": {
+      "config.json": "8be45ce0476004a3f529fd896115a4a2e800a129ad2d3ec05b16050f52e21879",
+      "tokenizer_config.json": "6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+      "tokenizer.json": "c90dfa01249db1be4245780a052ede752e1361c612ac6d08e2bdada7d599476b",
+      "model.safetensors.index.json": "74b0686a3d2891980d5e303251b075a3bccae2c2ff650747db2620a649b98fa8"
+    }
+  },
+  "deepinfer": {
+    "revision": "774ce244b87cc0eb8d4b94ab9f5de2ab22049f01",
+    "submodules": {
+      "vendor/DeepEP": "93eb6eb238127e96c6d7a4a625a6dad158348509",
+      "vendor/DeepEP-Ascend": "3b25377d04b24fc6154698ded78a2bcb2c59afff",
+      "vendor/DeepGEMM": "1fc9c66975ee322d628b3288534ca0e9ce12a64d",
+      "vendor/DeepGEMM-Ascend": "3a35326271b069b8b5bf1a754435acd6cc91575b",
+      "vendor/DeepSelect": "bfa4507d935f17ebfc3d0f00ff7d3c9a4d0e5c18",
+      "vendor/FlashMLA": "2e5429fc5653bab6e081f09477126f731882a6a9"
+    }
+  },
+  "vllm": {
+    "version": "0.32.0",
+    "source_revision": "5df63a7203cdb9328d824a27b682e77c7b9928be",
+    "image_index_digest": "sha256:befccf0e7e4089aa23926bb6f887a85c0d46c2a99e6de5c5ffdf5cb7957c5b34",
+    "image_linux_amd64_digest": "sha256:6ee133356d49ed24cee03dd0cda3d3980279a11c107ce3e752c89e76540f41c9"
+  },
+  "previous_model": {
+    "id": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "revision": "dba1be0a40aa45a94ad051997016db3960a90277",
+    "config_bytes_identical": true,
+    "tokenizer_config_bytes_identical": true
+  },
+  "preflight": {
+    "status": "PREFLIGHT GREEN",
+    "passed": 589,
+    "skipped": 8,
+    "mock_gate": true
+  },
+  "paid_resources_created": 0,
+  "new_gpu_measurements": []
+}

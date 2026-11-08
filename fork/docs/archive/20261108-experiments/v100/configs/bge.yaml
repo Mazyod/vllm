@@ -1,0 +1,13 @@
+model: /models/bge
+served-model-name: bge
+dtype: half
+tensor-parallel-size: 1
+max-model-len: 8192
+enforce-eager: true
+max-num-seqs: 4
+max-num-batched-tokens: 8192
+gpu-memory-utilization: 0.2
+host: 127.0.0.1
+runner: pooling
+attention-config:
+  backend: FLEX_ATTENTION

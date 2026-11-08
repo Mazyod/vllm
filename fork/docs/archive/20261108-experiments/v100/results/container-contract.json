@@ -1,0 +1,9 @@
+{
+  "uid": 10001,
+  "rootfs_read_only": true,
+  "models_read_only": true,
+  "tmp_and_cache_writable": true,
+  "capabilities_dropped": true,
+  "no_new_privileges": true,
+  "scope": "CPU container: generic isolation and writable cache permissions; GPU inference tested separately on Vast"
+}

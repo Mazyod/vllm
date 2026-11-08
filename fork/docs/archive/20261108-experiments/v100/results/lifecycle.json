@@ -1,0 +1,33 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "elapsed_seconds": 2084.5028269290924,
+      "hourly_rate_usd": 0.2237037037037037,
+      "full_rate_elapsed_upper_bound_usd": 0.12953083410135513,
+      "ingress_usd_per_gb": 0.005208333333333333,
+      "egress_usd_per_gb": 0.005208333333333333,
+      "teardown_confirmed": true
+    },
+    {
+      "attempt": 2,
+      "elapsed_seconds": 7369.606381654739,
+      "hourly_rate_usd": 0.242962962962963,
+      "full_rate_elapsed_upper_bound_usd": 0.4973726117659989,
+      "ingress_usd_per_gb": 0.0026041666666666665,
+      "egress_usd_per_gb": 0.00390625,
+      "teardown_confirmed": true
+    },
+    {
+      "attempt": 3,
+      "elapsed_seconds": 12869.78077173233,
+      "hourly_rate_usd": 0.4125925925925926,
+      "full_rate_elapsed_upper_bound_usd": 1.474993392974261,
+      "ingress_usd_per_gb": 0.00390625,
+      "egress_usd_per_gb": 0.00390625,
+      "teardown_confirmed": true
+    }
+  ],
+  "full_rate_elapsed_upper_bound_excluding_transfer_usd": 2.101896838841615,
+  "billing_note": "Upper bound applies the full hourly rate to loading and stopped periods too; not a provider invoice."
+}

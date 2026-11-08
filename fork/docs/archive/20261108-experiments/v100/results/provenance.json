@@ -1,0 +1,567 @@
+{
+  "audio-format-full-quality": {
+    "full_input_token_counts_verified": true,
+    "mode": "quality",
+    "parameters": {
+      "services": [
+        "snowflake",
+        "bge",
+        "whisper",
+        "gemma",
+        "jina"
+      ],
+      "ids": null,
+      "concurrency": [
+        1,
+        2,
+        4,
+        8
+      ],
+      "min_requests": 24,
+      "mixed_cohort": false,
+      "minutes": 20,
+      "rpm": 30
+    },
+    "validated_requests": 12,
+    "warmup_requests": 0,
+    "has_summary": true,
+    "harness_sha256": "4532403873a1a5ae57e215b6bf2fee4393f9878e2768d3dcf49551940709dff1",
+    "cases_sha256": "640cda4968c36bf6ce89512de0f7892a2c76dcbb1c05bbbedff984318ef71bd2",
+    "requests_sha256": "580ebdc324ca7e35f2a3aff701ee5ec43ae3eb9c0769e2b3ad17c1dd777de7ac",
+    "config_sha256": {
+      "whisper": "a4f386a2ec7897ba4526615487d06cf14736e8346f9365e7214a0aaf5212a4ea"
+    }
+  },
+  "audio-format-quality": {
+    "full_input_token_counts_verified": true,
+    "mode": "quality",
+    "parameters": {
+      "services": [
+        "snowflake",
+        "bge",
+        "whisper",
+        "gemma",
+        "jina"
+      ],
+      "ids": null,
+      "concurrency": [
+        1,
+        2,
+        4,
+        8
+      ],
+      "min_requests": 24,
+      "mixed_cohort": false,
+      "minutes": 20,
+      "rpm": 30
+    },
+    "validated_requests": 6,
+    "warmup_requests": 0,
+    "has_summary": true,
+    "harness_sha256": "4532403873a1a5ae57e215b6bf2fee4393f9878e2768d3dcf49551940709dff1",
+    "cases_sha256": "eb3ad4aee526e484cefec626a0eeaeccd087304cb19cae16589791140f83dd67",
+    "requests_sha256": "6a2287a6c3f0f173d76e51502d1579f0a4d20a6fef3e331d7630336e5d715fd3",
+    "config_sha256": {
+      "whisper": "a4f386a2ec7897ba4526615487d06cf14736e8346f9365e7214a0aaf5212a4ea"
+    }
+  },
+  "full-payload-bursts": {
+    "full_input_token_counts_verified": true,
+    "mode": "sweep",
+    "parameters": {
+      "services": [
+        "snowflake",
+        "bge",
+        "whisper",
+        "gemma",
+        "jina"
+      ],
+      "ids": [
+        "snowflake-batch",
+        "bge-8192",
+        "gemma-batch",
+        "ar-long-0",
+        "images-8"
+      ],
+      "concurrency": [
+        5,
+        10,
+        20
+      ],
+      "min_requests": 10,
+      "mixed_cohort": true,
+      "minutes": 20,
+      "rpm": 30
+    },
+    "validated_requests": 105,
+    "warmup_requests": 35,
+    "has_summary": true,
+    "harness_sha256": "4532403873a1a5ae57e215b6bf2fee4393f9878e2768d3dcf49551940709dff1",
+    "cases_sha256": "491e22826df712c4d709c617bf2303ba273bec59c6815d3d5f3d616dd8a0522a",
+    "requests_sha256": "4790f5764d2738df5d300b738acbf60bf16ddba94f48b42cf75dfcecdd8749a1",
+    "config_sha256": {
+      "bge": "654ae05806721bac6e6b160055103b78c444003f9998edf5bf012d6370ae1411",
+      "gemma": "14431fdd8607d8df3403eaa3786a00def772ec928f3617a0771a48d579f93498",
+      "jina": "5ef97155045db9b2b667c490a257df0cbcf1ec2a42aab08827c33f4f129f3b2d",
+      "snowflake": "4282878a033f35f84191f6cfa708debd4b5b7c47a1a0b913732f0df58010471f",
+      "whisper": "a4f386a2ec7897ba4526615487d06cf14736e8346f9365e7214a0aaf5212a4ea"
+    }
+  },
+  "isolated-bge": {
+    "full_input_token_counts_verified": true,
+    "mode": "sweep",
+    "parameters": {
+      "services": [
+        "bge"
+      ],
+      "ids": null,
+      "concurrency": [
+        1,
+        2,
+        4,
+        8
+      ],
+      "min_requests": 20,
+      "mixed_cohort": false,
+      "minutes": 20,
+      "rpm": 30
+    },
+    "validated_requests": 396,
+    "warmup_requests": 60,
+    "has_summary": true,
+    "harness_sha256": "4532403873a1a5ae57e215b6bf2fee4393f9878e2768d3dcf49551940709dff1",
+    "cases_sha256": "491e22826df712c4d709c617bf2303ba273bec59c6815d3d5f3d616dd8a0522a",
+    "requests_sha256": "94ac932c8a2e625d6d3da962bae457bd0d0023c4467c577b29f6c1672e7f28bf",
+    "config_sha256": {
+      "bge": "654ae05806721bac6e6b160055103b78c444003f9998edf5bf012d6370ae1411"
+    }
+  },
+  "isolated-gemma": {
+    "full_input_token_counts_verified": true,
+    "mode": "sweep",
+    "parameters": {
+      "services": [
+        "gemma"
+      ],
+      "ids": null,
+      "concurrency": [
+        1,
+        2,
+        4,
+        8
+      ],
+      "min_requests": 20,
+      "mixed_cohort": false,
+      "minutes": 20,
+      "rpm": 30
+    },
+    "validated_requests": 396,
+    "warmup_requests": 60,
+    "has_summary": true,
+    "harness_sha256": "4532403873a1a5ae57e215b6bf2fee4393f9878e2768d3dcf49551940709dff1",
+    "cases_sha256": "491e22826df712c4d709c617bf2303ba273bec59c6815d3d5f3d616dd8a0522a",
+    "requests_sha256": "76d7c38b9cce72d2eccee09e6961ede222d654cb097172908a00bb725be422cc",
+    "config_sha256": {
+      "gemma": "14431fdd8607d8df3403eaa3786a00def772ec928f3617a0771a48d579f93498"
+    }
+  },
+  "isolated-snowflake": {
+    "full_input_token_counts_verified": true,
+    "mode": "sweep",
+    "parameters": {
+      "services": [
+        "snowflake"
+      ],
+      "ids": null,
+      "concurrency": [
+        1,
+        2,
+        4,
+        8
+      ],
+      "min_requests": 20,
+      "mixed_cohort": false,
+      "minutes": 20,
+      "rpm": 30
+    },
+    "validated_requests": 396,
+    "warmup_requests": 60,
+    "has_summary": true,
+    "harness_sha256": "4532403873a1a5ae57e215b6bf2fee4393f9878e2768d3dcf49551940709dff1",
+    "cases_sha256": "491e22826df712c4d709c617bf2303ba273bec59c6815d3d5f3d616dd8a0522a",
+    "requests_sha256": "042b6139d5f4050232e2321a8935f9094f31f9d3b94cf8d60ae76af31a290630",
+    "config_sha256": {
+      "snowflake": "4282878a033f35f84191f6cfa708debd4b5b7c47a1a0b913732f0df58010471f"
+    }
+  },
+  "isolated-whisper": {
+    "full_input_token_counts_verified": true,
+    "mode": "sweep",
+    "parameters": {
+      "services": [
+        "whisper"
+      ],
+      "ids": [
+        "en-short-042",
+        "ar-short-110",
+        "en-short-048",
+        "ar-short-079",
+        "en-long-0",
+        "ar-long-0"
+      ],
+      "concurrency": [
+        1,
+        2,
+        4,
+        8
+      ],
+      "min_requests": 20,
+      "mixed_cohort": false,
+      "minutes": 20,
+      "rpm": 30
+    },
+    "validated_requests": 594,
+    "warmup_requests": 90,
+    "has_summary": true,
+    "harness_sha256": "4532403873a1a5ae57e215b6bf2fee4393f9878e2768d3dcf49551940709dff1",
+    "cases_sha256": "491e22826df712c4d709c617bf2303ba273bec59c6815d3d5f3d616dd8a0522a",
+    "requests_sha256": "385975dc6744b0cecdce37ee4e3dd608b9b65492ad59cc08b29c44c4625be344",
+    "config_sha256": {
+      "whisper": "a4f386a2ec7897ba4526615487d06cf14736e8346f9365e7214a0aaf5212a4ea"
+    }
+  },
+  "jina-full-sweep": {
+    "full_input_token_counts_verified": true,
+    "mode": "sweep",
+    "parameters": {
+      "services": [
+        "jina"
+      ],
+      "ids": [
+        "text-128",
+        "text-8192",
+        "text-32768",
+        "images-1",
+        "images-2",
+        "images-8"
+      ],
+      "concurrency": [
+        1,
+        2,
+        4,
+        8,
+        16
+      ],
+      "min_requests": 20,
+      "mixed_cohort": false,
+      "minutes": 20,
+      "rpm": 30
+    },
+    "validated_requests": 882,
+    "warmup_requests": 186,
+    "has_summary": true,
+    "harness_sha256": "4532403873a1a5ae57e215b6bf2fee4393f9878e2768d3dcf49551940709dff1",
+    "cases_sha256": "491e22826df712c4d709c617bf2303ba273bec59c6815d3d5f3d616dd8a0522a",
+    "requests_sha256": "f35ad3923ea87c0bb2f28b9bb25eb797938da32147e9d96bd89f7b0f1027aff9",
+    "config_sha256": {
+      "jina": "5ef97155045db9b2b667c490a257df0cbcf1ec2a42aab08827c33f4f129f3b2d"
+    }
+  },
+  "jina-mixed-cohorts": {
+    "full_input_token_counts_verified": true,
+    "mode": "sweep",
+    "parameters": {
+      "services": [
+        "jina"
+      ],
+      "ids": [
+        "text-128",
+        "text-8192",
+        "text-32768",
+        "images-1",
+        "images-2",
+        "images-8"
+      ],
+      "concurrency": [
+        1,
+        2,
+        4,
+        8,
+        16
+      ],
+      "min_requests": 20,
+      "mixed_cohort": true,
+      "minutes": 20,
+      "rpm": 30
+    },
+    "validated_requests": 147,
+    "warmup_requests": 31,
+    "has_summary": true,
+    "harness_sha256": "4532403873a1a5ae57e215b6bf2fee4393f9878e2768d3dcf49551940709dff1",
+    "cases_sha256": "491e22826df712c4d709c617bf2303ba273bec59c6815d3d5f3d616dd8a0522a",
+    "requests_sha256": "35c33688c7ed67edf793e1d9d2b21d5fa0ab746da9ab6c152fe191b1b098d94d",
+    "config_sha256": {
+      "jina": "5ef97155045db9b2b667c490a257df0cbcf1ec2a42aab08827c33f4f129f3b2d"
+    }
+  },
+  "mixed-10": {
+    "full_input_token_counts_verified": true,
+    "mode": "mixed",
+    "parameters": {
+      "services": [
+        "snowflake",
+        "bge",
+        "whisper",
+        "gemma",
+        "jina"
+      ],
+      "ids": [
+        "snowflake-64",
+        "snowflake-4096",
+        "snowflake-8192",
+        "snowflake-batch",
+        "bge-64",
+        "bge-4096",
+        "bge-8192",
+        "bge-batch",
+        "gemma-64",
+        "gemma-1024",
+        "gemma-2048",
+        "gemma-batch",
+        "text-128",
+        "text-8192",
+        "text-32768",
+        "images-1",
+        "images-2",
+        "images-8",
+        "en-short-042",
+        "en-short-048",
+        "en-long-0",
+        "ar-short-079",
+        "ar-short-110",
+        "ar-long-0"
+      ],
+      "concurrency": [
+        1,
+        2,
+        4,
+        8
+      ],
+      "min_requests": 24,
+      "mixed_cohort": false,
+      "minutes": 5.0,
+      "rpm": 10.0
+    },
+    "validated_requests": 50,
+    "warmup_requests": 0,
+    "has_summary": true,
+    "harness_sha256": "4532403873a1a5ae57e215b6bf2fee4393f9878e2768d3dcf49551940709dff1",
+    "cases_sha256": "491e22826df712c4d709c617bf2303ba273bec59c6815d3d5f3d616dd8a0522a",
+    "requests_sha256": "90cf045e75c93b6522a195a041e3142d98c08cee3ec6a0a16d2c97a3966752ee",
+    "config_sha256": {
+      "bge": "654ae05806721bac6e6b160055103b78c444003f9998edf5bf012d6370ae1411",
+      "gemma": "14431fdd8607d8df3403eaa3786a00def772ec928f3617a0771a48d579f93498",
+      "jina": "5ef97155045db9b2b667c490a257df0cbcf1ec2a42aab08827c33f4f129f3b2d",
+      "snowflake": "4282878a033f35f84191f6cfa708debd4b5b7c47a1a0b913732f0df58010471f",
+      "whisper": "a4f386a2ec7897ba4526615487d06cf14736e8346f9365e7214a0aaf5212a4ea"
+    }
+  },
+  "mixed-30": {
+    "full_input_token_counts_verified": true,
+    "mode": "mixed",
+    "parameters": {
+      "services": [
+        "snowflake",
+        "bge",
+        "whisper",
+        "gemma",
+        "jina"
+      ],
+      "ids": [
+        "snowflake-64",
+        "snowflake-4096",
+        "snowflake-8192",
+        "snowflake-batch",
+        "bge-64",
+        "bge-4096",
+        "bge-8192",
+        "bge-batch",
+        "gemma-64",
+        "gemma-1024",
+        "gemma-2048",
+        "gemma-batch",
+        "text-128",
+        "text-8192",
+        "text-32768",
+        "images-1",
+        "images-2",
+        "images-8",
+        "en-short-042",
+        "en-short-048",
+        "en-long-0",
+        "ar-short-079",
+        "ar-short-110",
+        "ar-long-0"
+      ],
+      "concurrency": [
+        1,
+        2,
+        4,
+        8
+      ],
+      "min_requests": 24,
+      "mixed_cohort": false,
+      "minutes": 20.0,
+      "rpm": 30.0
+    },
+    "validated_requests": 600,
+    "warmup_requests": 0,
+    "has_summary": true,
+    "harness_sha256": "4532403873a1a5ae57e215b6bf2fee4393f9878e2768d3dcf49551940709dff1",
+    "cases_sha256": "491e22826df712c4d709c617bf2303ba273bec59c6815d3d5f3d616dd8a0522a",
+    "requests_sha256": "72d97e3c5aa058f81f8644d410aaeaebcbe7953a29d7bf78fa95a978eddc439c",
+    "config_sha256": {
+      "bge": "654ae05806721bac6e6b160055103b78c444003f9998edf5bf012d6370ae1411",
+      "gemma": "14431fdd8607d8df3403eaa3786a00def772ec928f3617a0771a48d579f93498",
+      "jina": "5ef97155045db9b2b667c490a257df0cbcf1ec2a42aab08827c33f4f129f3b2d",
+      "snowflake": "4282878a033f35f84191f6cfa708debd4b5b7c47a1a0b913732f0df58010471f",
+      "whisper": "a4f386a2ec7897ba4526615487d06cf14736e8346f9365e7214a0aaf5212a4ea"
+    }
+  },
+  "mixed-60": {
+    "full_input_token_counts_verified": true,
+    "mode": "mixed",
+    "parameters": {
+      "services": [
+        "snowflake",
+        "bge",
+        "whisper",
+        "gemma",
+        "jina"
+      ],
+      "ids": [
+        "snowflake-64",
+        "snowflake-4096",
+        "snowflake-8192",
+        "snowflake-batch",
+        "bge-64",
+        "bge-4096",
+        "bge-8192",
+        "bge-batch",
+        "gemma-64",
+        "gemma-1024",
+        "gemma-2048",
+        "gemma-batch",
+        "text-128",
+        "text-8192",
+        "text-32768",
+        "images-1",
+        "images-2",
+        "images-8",
+        "en-short-042",
+        "en-short-048",
+        "en-long-0",
+        "ar-short-079",
+        "ar-short-110",
+        "ar-long-0"
+      ],
+      "concurrency": [
+        1,
+        2,
+        4,
+        8
+      ],
+      "min_requests": 24,
+      "mixed_cohort": false,
+      "minutes": 5.0,
+      "rpm": 60.0
+    },
+    "validated_requests": 300,
+    "warmup_requests": 0,
+    "has_summary": true,
+    "harness_sha256": "4532403873a1a5ae57e215b6bf2fee4393f9878e2768d3dcf49551940709dff1",
+    "cases_sha256": "491e22826df712c4d709c617bf2303ba273bec59c6815d3d5f3d616dd8a0522a",
+    "requests_sha256": "2e44a2cc3c784dab4c087b0ed6236767ad618c17c491c32dd2dae7c69aae128c",
+    "config_sha256": {
+      "bge": "654ae05806721bac6e6b160055103b78c444003f9998edf5bf012d6370ae1411",
+      "gemma": "14431fdd8607d8df3403eaa3786a00def772ec928f3617a0771a48d579f93498",
+      "jina": "5ef97155045db9b2b667c490a257df0cbcf1ec2a42aab08827c33f4f129f3b2d",
+      "snowflake": "4282878a033f35f84191f6cfa708debd4b5b7c47a1a0b913732f0df58010471f",
+      "whisper": "a4f386a2ec7897ba4526615487d06cf14736e8346f9365e7214a0aaf5212a4ea"
+    }
+  },
+  "quality-cohost-01": {
+    "full_input_token_counts_verified": true,
+    "mode": "quality",
+    "parameters": {
+      "services": [
+        "snowflake",
+        "bge",
+        "whisper",
+        "gemma",
+        "jina"
+      ],
+      "ids": null,
+      "concurrency": [
+        1,
+        2,
+        4,
+        8
+      ],
+      "min_requests": 24,
+      "mixed_cohort": false,
+      "minutes": 20,
+      "rpm": 30
+    },
+    "validated_requests": 295,
+    "warmup_requests": 0,
+    "has_summary": true,
+    "harness_sha256": "4532403873a1a5ae57e215b6bf2fee4393f9878e2768d3dcf49551940709dff1",
+    "cases_sha256": "491e22826df712c4d709c617bf2303ba273bec59c6815d3d5f3d616dd8a0522a",
+    "requests_sha256": "90e14bd59aa6875a4ae64d169dc8c2c6eb43977b8099f79bdbd2e8f85d873fb3",
+    "config_sha256": {
+      "bge": "654ae05806721bac6e6b160055103b78c444003f9998edf5bf012d6370ae1411",
+      "gemma": "14431fdd8607d8df3403eaa3786a00def772ec928f3617a0771a48d579f93498",
+      "jina": "5ef97155045db9b2b667c490a257df0cbcf1ec2a42aab08827c33f4f129f3b2d",
+      "snowflake": "4282878a033f35f84191f6cfa708debd4b5b7c47a1a0b913732f0df58010471f",
+      "whisper": "a4f386a2ec7897ba4526615487d06cf14736e8346f9365e7214a0aaf5212a4ea"
+    }
+  },
+  "quality-final": {
+    "full_input_token_counts_verified": true,
+    "mode": "quality",
+    "parameters": {
+      "services": [
+        "snowflake",
+        "bge",
+        "whisper",
+        "gemma",
+        "jina"
+      ],
+      "ids": null,
+      "concurrency": [
+        1,
+        2,
+        4,
+        8
+      ],
+      "min_requests": 24,
+      "mixed_cohort": false,
+      "minutes": 20,
+      "rpm": 30
+    },
+    "validated_requests": 295,
+    "warmup_requests": 0,
+    "has_summary": true,
+    "harness_sha256": "4532403873a1a5ae57e215b6bf2fee4393f9878e2768d3dcf49551940709dff1",
+    "cases_sha256": "491e22826df712c4d709c617bf2303ba273bec59c6815d3d5f3d616dd8a0522a",
+    "requests_sha256": "9686b679f8f970192296d7078715c75226c47c6c791de29379f0e8069eeb2f93",
+    "config_sha256": {
+      "bge": "654ae05806721bac6e6b160055103b78c444003f9998edf5bf012d6370ae1411",
+      "gemma": "14431fdd8607d8df3403eaa3786a00def772ec928f3617a0771a48d579f93498",
+      "jina": "5ef97155045db9b2b667c490a257df0cbcf1ec2a42aab08827c33f4f129f3b2d",
+      "snowflake": "4282878a033f35f84191f6cfa708debd4b5b7c47a1a0b913732f0df58010471f",
+      "whisper": "a4f386a2ec7897ba4526615487d06cf14736e8346f9365e7214a0aaf5212a4ea"
+    }
+  }
+}

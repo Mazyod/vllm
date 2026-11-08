@@ -1,0 +1,59 @@
+{
+  "compiler_and_sm70_assembler_nonroot_readonly": true,
+  "ffmpeg": "9.0.2",
+  "grype": {
+    "available_fixed_versions": [],
+    "high_critical": [
+      {
+        "fixed_versions": [],
+        "id": "CVE-2026-107696",
+        "package": "ffmpeg",
+        "version": "9.0.2"
+      }
+    ],
+    "raw_counts": {
+      "High": 1,
+      "Low": 89,
+      "Medium": 523,
+      "Negligible": 4
+    },
+    "version": "0.121.0"
+  },
+  "header_inventory": {
+    "elf_files": [],
+    "files": 990,
+    "kernel_image_packages": [],
+    "package_version": "6.8.0-147.147"
+  },
+  "image_digest": "sha256:0151cd685a671f16083a29c894dfa6a9f0b6eddeef4c9772d3ede172dd22cd44",
+  "prisma_scan_performed": false,
+  "raw_report_sha256": {
+    "grype-shipping.json": "012aad2d87cdf576723be6a939bce7980c43a39b72d66478b7c9fc3e4bfb46b5",
+    "sbom.cdx.json": "deed9750eb8913ae710cd1208fd35d8118617154aea8cd769cbf108484e0c8bf",
+    "trivy-shipping.json": "5c6f4163ab4ac44710ee039ecfcd6cfb72a87dfb18e94985ade96757344b86a6"
+  },
+  "rtsp_boundary": {
+    "connections_observed": 0,
+    "library_patched": false,
+    "operator_applicability_review_required": true,
+    "tested_contract": "asr-contract-file-media"
+  },
+  "source_revision": "c0ad1612cf697c678afd25a141dcf21b7f1770c5",
+  "trivy": {
+    "available_fixed_versions": [],
+    "excluding_header_package": {
+      "LOW": 21,
+      "MEDIUM": 87
+    },
+    "high_critical_packages": [
+      "linux-libc-dev"
+    ],
+    "raw_counts": {
+      "CRITICAL": 11,
+      "HIGH": 298,
+      "LOW": 579,
+      "MEDIUM": 1851
+    },
+    "version": "0.76.0"
+  }
+}
