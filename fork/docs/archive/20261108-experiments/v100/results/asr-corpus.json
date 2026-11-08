@@ -1,0 +1,50 @@
+[
+  {
+    "run": "quality-cohost-01",
+    "language": "en",
+    "clips": 128,
+    "complete_cases": true,
+    "words": 2725,
+    "actual_wer": 0.0763302752293578,
+    "reference_wer": 0.0763302752293578,
+    "actual_cer": 0.040169133192389,
+    "reference_cer": 0.040169133192389,
+    "normalized_transcripts_equal": 128
+  },
+  {
+    "run": "quality-cohost-01",
+    "language": "ar",
+    "clips": 128,
+    "complete_cases": true,
+    "words": 2264,
+    "actual_wer": 0.4995583038869258,
+    "reference_wer": 0.4991166077738516,
+    "actual_cer": 0.12862586515281127,
+    "reference_cer": 0.1283147989734816,
+    "normalized_transcripts_equal": 126
+  },
+  {
+    "run": "quality-final",
+    "language": "en",
+    "clips": 128,
+    "complete_cases": true,
+    "words": 2725,
+    "actual_wer": 0.0763302752293578,
+    "reference_wer": 0.0763302752293578,
+    "actual_cer": 0.040169133192389,
+    "reference_cer": 0.040169133192389,
+    "normalized_transcripts_equal": 128
+  },
+  {
+    "run": "quality-final",
+    "language": "ar",
+    "clips": 128,
+    "complete_cases": true,
+    "words": 2264,
+    "actual_wer": 0.4995583038869258,
+    "reference_wer": 0.4991166077738516,
+    "actual_cer": 0.12862586515281127,
+    "reference_cer": 0.1283147989734816,
+    "normalized_transcripts_equal": 126
+  }
+]

@@ -1,0 +1,13 @@
+model: /models/whisper
+served-model-name: whisper
+dtype: half
+tensor-parallel-size: 1
+max-model-len: 448
+enforce-eager: true
+max-num-seqs: 4
+max-num-batched-tokens: 8192
+gpu-memory-utilization: 0.4
+kv-cache-memory-bytes: 2147483648
+host: 127.0.0.1
+attention-config:
+  backend: TRITON_ATTN

@@ -1,0 +1,42 @@
+{
+  "public_snapshots": {
+    "snowflake": {
+      "repo": "Snowflake/snowflake-arctic-embed-l-v2.0",
+      "revision": "ac6544c8a46e00af67e330e85a9028c66b8cfd9a",
+      "elapsed_s": 11.955160849029198,
+      "snapshot_bytes": 2293220551,
+      "cache_reused": false
+    },
+    "bge": {
+      "repo": "BAAI/bge-reranker-v2-m3",
+      "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+      "elapsed_s": 0.01972467196173966,
+      "snapshot_bytes": 2293242108,
+      "cache_reused": true
+    },
+    "jina": {
+      "repo": "Mazyod/jina-embeddings-v4-vllm-mv",
+      "revision": "b262b5467551544a4db5efbbd0684a2dcd7c2167",
+      "elapsed_s": 34.966140375006944,
+      "snapshot_bytes": 7521930158,
+      "cache_reused": true
+    }
+  },
+  "file_scoped_transfers": [
+    {
+      "name": "gemma",
+      "sha256": "cbf5a78393b6a033e0b8a63a57549964f7ed5c6fbeb4ba0694214f36123f2fd2",
+      "bytes": 1211486072,
+      "cache_reused": true,
+      "elapsed_s": 0.9363032998517156
+    },
+    {
+      "name": "whisper",
+      "sha256": "79d6f3b3717e35761254622c0d9f8347f5385cbaef5d0f1c34d0fa220d6ac330",
+      "bytes": 3087130976,
+      "cache_reused": false,
+      "elapsed_s": 58.90902840392664
+    }
+  ],
+  "note": "Snapshot sizes are logical bytes. cache_reused can indicate partial reuse; elapsed rate is not network throughput for cached snapshots."
+}

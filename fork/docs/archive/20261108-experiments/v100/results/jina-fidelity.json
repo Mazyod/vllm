@@ -1,0 +1,295 @@
+{
+  "token_fidelity": [
+    {
+      "case": "query-en",
+      "rows": 10,
+      "cosine_mean": 0.9996329545974731,
+      "cosine_min": 0.9992019534111023,
+      "cosine_p01": 0.9992256164550781,
+      "rows_below_0_9": 0,
+      "negative_cosines": 0
+    },
+    {
+      "case": "query-ar",
+      "rows": 17,
+      "cosine_mean": 0.9996472597122192,
+      "cosine_min": 0.9992403388023376,
+      "cosine_p01": 0.9992746710777283,
+      "rows_below_0_9": 0,
+      "negative_cosines": 0
+    },
+    {
+      "case": "query-image",
+      "rows": 9,
+      "cosine_mean": 0.9995577335357666,
+      "cosine_min": 0.9992019534111023,
+      "cosine_p01": 0.9992195963859558,
+      "rows_below_0_9": 0,
+      "negative_cosines": 0
+    },
+    {
+      "case": "text-128",
+      "rows": 128,
+      "cosine_mean": 0.9995800256729126,
+      "cosine_min": 0.9992045760154724,
+      "cosine_p01": 0.9992516040802002,
+      "rows_below_0_9": 0,
+      "negative_cosines": 0
+    },
+    {
+      "case": "text-8192",
+      "rows": 8192,
+      "cosine_mean": 0.999504566192627,
+      "cosine_min": 0.9420413970947266,
+      "cosine_p01": 0.9982721209526062,
+      "rows_below_0_9": 0,
+      "negative_cosines": 0
+    },
+    {
+      "case": "text-32768",
+      "rows": 32768,
+      "cosine_mean": 0.9993917942047119,
+      "cosine_min": 0.5576403737068176,
+      "cosine_p01": 0.9965968132019043,
+      "rows_below_0_9": 4,
+      "negative_cosines": 0
+    },
+    {
+      "case": "images-1",
+      "rows": 4043,
+      "cosine_mean": 0.9945339560508728,
+      "cosine_min": 0.1792067289352417,
+      "cosine_p01": 0.8983587026596069,
+      "rows_below_0_9": 42,
+      "negative_cosines": 0
+    },
+    {
+      "case": "images-2",
+      "rows": 8073,
+      "cosine_mean": 0.9942911267280579,
+      "cosine_min": 0.09682723134756088,
+      "cosine_p01": 0.8818452954292297,
+      "rows_below_0_9": 89,
+      "negative_cosines": 0
+    },
+    {
+      "case": "images-8",
+      "rows": 32277,
+      "cosine_mean": 0.9931153655052185,
+      "cosine_min": -0.1910938173532486,
+      "cosine_p01": 0.8480347990989685,
+      "rows_below_0_9": 445,
+      "negative_cosines": 3
+    }
+  ],
+  "rankings": [
+    {
+      "query": "query-en",
+      "mode": "served_query_served_documents",
+      "reference_order": [
+        "text-32768",
+        "images-8",
+        "text-8192",
+        "images-1",
+        "images-2",
+        "text-128"
+      ],
+      "actual_order": [
+        "text-32768",
+        "images-8",
+        "text-8192",
+        "images-1",
+        "images-2",
+        "text-128"
+      ],
+      "top1_agrees": true,
+      "full_order_agrees": true,
+      "max_score_difference": 0.03852224349975586
+    },
+    {
+      "query": "query-en",
+      "mode": "served_query_fp32_documents",
+      "reference_order": [
+        "text-32768",
+        "images-8",
+        "text-8192",
+        "images-1",
+        "images-2",
+        "text-128"
+      ],
+      "actual_order": [
+        "text-32768",
+        "images-8",
+        "text-8192",
+        "images-1",
+        "images-2",
+        "text-128"
+      ],
+      "top1_agrees": true,
+      "full_order_agrees": true,
+      "max_score_difference": 0.011075496673583984
+    },
+    {
+      "query": "query-en",
+      "mode": "fp32_query_served_documents",
+      "reference_order": [
+        "text-32768",
+        "images-8",
+        "text-8192",
+        "images-1",
+        "images-2",
+        "text-128"
+      ],
+      "actual_order": [
+        "text-32768",
+        "text-8192",
+        "images-8",
+        "images-1",
+        "images-2",
+        "text-128"
+      ],
+      "top1_agrees": true,
+      "full_order_agrees": false,
+      "max_score_difference": 0.02462148666381836
+    },
+    {
+      "query": "query-ar",
+      "mode": "served_query_served_documents",
+      "reference_order": [
+        "text-32768",
+        "text-8192",
+        "images-8",
+        "text-128",
+        "images-1",
+        "images-2"
+      ],
+      "actual_order": [
+        "text-32768",
+        "text-8192",
+        "images-8",
+        "text-128",
+        "images-1",
+        "images-2"
+      ],
+      "top1_agrees": true,
+      "full_order_agrees": true,
+      "max_score_difference": 0.08080196380615234
+    },
+    {
+      "query": "query-ar",
+      "mode": "served_query_fp32_documents",
+      "reference_order": [
+        "text-32768",
+        "text-8192",
+        "images-8",
+        "text-128",
+        "images-1",
+        "images-2"
+      ],
+      "actual_order": [
+        "text-32768",
+        "text-8192",
+        "images-8",
+        "text-128",
+        "images-1",
+        "images-2"
+      ],
+      "top1_agrees": true,
+      "full_order_agrees": true,
+      "max_score_difference": 0.0061435699462890625
+    },
+    {
+      "query": "query-ar",
+      "mode": "fp32_query_served_documents",
+      "reference_order": [
+        "text-32768",
+        "text-8192",
+        "images-8",
+        "text-128",
+        "images-1",
+        "images-2"
+      ],
+      "actual_order": [
+        "text-32768",
+        "text-8192",
+        "images-8",
+        "text-128",
+        "images-1",
+        "images-2"
+      ],
+      "top1_agrees": true,
+      "full_order_agrees": true,
+      "max_score_difference": 0.07832050323486328
+    },
+    {
+      "query": "query-image",
+      "mode": "served_query_served_documents",
+      "reference_order": [
+        "text-32768",
+        "text-8192",
+        "images-8",
+        "images-1",
+        "images-2",
+        "text-128"
+      ],
+      "actual_order": [
+        "text-32768",
+        "text-8192",
+        "images-8",
+        "images-1",
+        "images-2",
+        "text-128"
+      ],
+      "top1_agrees": true,
+      "full_order_agrees": true,
+      "max_score_difference": 0.012476921081542969
+    },
+    {
+      "query": "query-image",
+      "mode": "served_query_fp32_documents",
+      "reference_order": [
+        "text-32768",
+        "text-8192",
+        "images-8",
+        "images-1",
+        "images-2",
+        "text-128"
+      ],
+      "actual_order": [
+        "text-32768",
+        "text-8192",
+        "images-8",
+        "images-1",
+        "images-2",
+        "text-128"
+      ],
+      "top1_agrees": true,
+      "full_order_agrees": true,
+      "max_score_difference": 0.010284423828125
+    },
+    {
+      "query": "query-image",
+      "mode": "fp32_query_served_documents",
+      "reference_order": [
+        "text-32768",
+        "text-8192",
+        "images-8",
+        "images-1",
+        "images-2",
+        "text-128"
+      ],
+      "actual_order": [
+        "text-32768",
+        "text-8192",
+        "images-8",
+        "images-1",
+        "images-2",
+        "text-128"
+      ],
+      "top1_agrees": true,
+      "full_order_agrees": true,
+      "max_score_difference": 0.011352062225341797
+    }
+  ],
+  "scope": "Numerical sensitivity on three queries and six documents; not a labeled relevance benchmark."
+}

@@ -1,0 +1,26 @@
+{
+  "python": "3.12.3",
+  "machine": "x86_64",
+  "packages": {
+    "av": "19.0.1",
+    "jina-v4-vllm-plugin": "0.1.1",
+    "torch": "2.13.0+cu126",
+    "torchcodec": "0.17.0+cpu",
+    "transformers": "5.19.0",
+    "triton": "3.7.1",
+    "vllm": "0.32.0+cu126",
+    "ctranslate2": "4.8.3",
+    "faster-whisper": "1.2.1"
+  },
+  "serving_source_sha256": {
+    "vllm/config/model.py": "04ca37ea1d50128a7ddede30e7baa4e0a56bccec85091577a2c81c5de1a8fab8",
+    "vllm/v1/core/encoder_cache_manager.py": "7ac571f00af4fb2ac7f0ef1206ca5c380043676adefd0cff242dd7142806dbc3",
+    "vllm/renderers/chat_utils.py": "9a5d1db66e15285303987073f0c69c3ef3b4745e8c4ab71b9b063f1579fb2061",
+    "vllm/model_executor/models/whisper.py": "5180807089d70d7036a5402b4ed016b4ef147e7c593aad0a57101ce40fddcd02"
+  },
+  "app_sha256": {
+    "entrypoint.sh": "ce5832ff94a0a9cdf4833d2e58150d5a466a92634cb9850e6aeb13f190dae3fe",
+    "models.json": "50066827acf7cb73c5b29ceb237b45ce03b201509e827690935bbccef4806aa0",
+    "engine/whisper.yaml": "a4f386a2ec7897ba4526615487d06cf14736e8346f9365e7214a0aaf5212a4ea"
+  }
+}
