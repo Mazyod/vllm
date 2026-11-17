@@ -1,5 +1,11 @@
 # DeepSeek V4.1 Flash + Gemma 4 31B on shared TP4 H200
 
+> Historical measured configuration. Current release preparation uses the
+> [v0.34.0 DeepSeek profile](https://github.com/Mazyod/vllm/blob/main/fork/bench/configs/v0.34.0/README.md), whose
+> hardware certification is pending. Preserve the files below as evidence of
+> their original runs; do not copy their runner environment or image limits
+> into the new release.
+
 For the selected one-model-per-node layout, use the [dedicated deployment](../deepseek-gemma4-dedicated/README.md). This shared layout remains a measured alternative.
 
 **Docker Swarm** configuration for two text-and-image services sharing
