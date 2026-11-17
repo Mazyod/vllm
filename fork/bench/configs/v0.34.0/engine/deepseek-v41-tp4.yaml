@@ -12,4 +12,4 @@ speculative-config:
   num_speculative_tokens: 5
   draft_sample_method: probabilistic
   rejection_sample_method: block
-max-num-batched-tokens: 4096
+max-num-seqs: 512
