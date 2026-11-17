@@ -27,7 +27,7 @@ from fork.bench.behaviour import acceptance_rate, parse_prometheus
 from fork.bench.receipts import ProbeResult
 
 _GENERATION_METRIC = "vllm:generation_tokens_total"
-_TOKEN_FIELDS = ("reasoning_content", "content")
+_TOKEN_FIELDS = ("reasoning", "reasoning_content", "content")
 _PROMPT = "Explain how speculative decoding verifies drafted tokens."
 _DECODE_TOKENS = 256
 _TTFT_SAMPLES = 4
@@ -56,6 +56,7 @@ def long_prompt(index: int) -> str:
 
     Returns:
         A prompt of roughly three thousand tokens, unique from its first token.
+
     """
     topic = _LONG_PROMPT_TOPICS[index % len(_LONG_PROMPT_TOPICS)]
     body = f"Background on {topic} in an inference server. " * _LONG_PROMPT_REPEATS
@@ -70,6 +71,7 @@ def run_concurrently(calls: Sequence[Callable[[], Any]]) -> list[Any]:
 
     Returns:
         Results in the order the calls were given.
+
     """
     if not calls:
         return []
@@ -86,6 +88,7 @@ def percentile(values: Sequence[float], fraction: float) -> float:
 
     Returns:
         The percentile, or NaN for an empty sample.
+
     """
     if not values:
         return math.nan
@@ -105,6 +108,7 @@ def token_field(delta: Mapping[str, str]) -> str | None:
 
     Returns:
         The field name carrying a token, or None.
+
     """
     for name in _TOKEN_FIELDS:
         if delta.get(name):
@@ -120,6 +124,7 @@ def ttft_from_stream(events: Sequence[tuple[float, dict]]) -> float | None:
 
     Returns:
         Elapsed seconds to the first token, or None if none arrived.
+
     """
     for elapsed, delta in events:
         if token_field(delta):
@@ -141,6 +146,7 @@ def throughput(
 
     Returns:
         Tokens per second, or 0.0 for an empty window.
+
     """
     if elapsed_s <= 0:
         return 0.0
@@ -162,6 +168,7 @@ def machine_fingerprint(
 
     Returns:
         Fingerprint fields, with "unknown" wherever discovery failed.
+
     """
     runner = run or _run_command
     fingerprint = {
@@ -211,6 +218,7 @@ def gpu_link_type(run: Callable[[list[str]], str] | None = None) -> str:
     Returns:
         The link code from `nvidia-smi topo -m`, for example "SYS" or "NV4",
         or "unknown" when the matrix could not be read.
+
     """
     return machine_fingerprint(run=run)["interconnect"]
 
@@ -227,6 +235,7 @@ def has_nvlink(run: Callable[[list[str]], str] | None = None) -> bool | None:
 
     Returns:
         True or False, or None when the topology could not be determined.
+
     """
     link = gpu_link_type(run=run)
     if link == "unknown":
@@ -249,6 +258,7 @@ def write_baseline(
         fingerprint: Machine identity for this run.
         perf: Profile id to measurements.
         config_identity: Fleet and engine paths plus SHA-256 identities.
+
     """
     path.parent.mkdir(parents=True, exist_ok=True)
     body = {
@@ -270,6 +280,7 @@ class Fleet:
 
     Attributes:
         base_urls: Every replica's base URL.
+
     """
 
     def __init__(self, base_urls: Sequence[str], timeout_s: float = 600.0) -> None:
@@ -297,6 +308,7 @@ class Fleet:
         Returns:
             A client. Requests are handed out under a lock because the
             concurrency probes issue them from many threads at once.
+
         """
         with self._lock:
             client = self._clients[self._next % len(self._clients)]
@@ -308,6 +320,7 @@ class Fleet:
 
         Returns:
             Metric name to total across the fleet.
+
         """
         totals: dict[str, float] = {}
         for client in self._clients:
@@ -427,9 +440,12 @@ def _p4(fleet: Fleet, model: str) -> tuple[str, dict]:
     Deliberately does not set ignore_eos (invariant 5): forced filler is
     unusually predictable and inflates the acceptance rate.
     """
+    before = fleet.metrics()
     for index in range(_TTFT_SAMPLES):
         _stream_events(fleet, model, long_prompt(index), max_tokens=_DECODE_TOKENS)
-    samples = fleet.metrics()
+    samples = {
+        name: value - before.get(name, 0) for name, value in fleet.metrics().items()
+    }
     rate = acceptance_rate(samples)
     return f"acceptance={rate}", {"acceptance_rate": rate}
 
@@ -452,6 +468,7 @@ def run_perf_probe(
 
     Raises:
         KeyError: If probe_id is not a known performance probe.
+
     """
     if probe_id not in _PROBES:
         raise KeyError(probe_id)

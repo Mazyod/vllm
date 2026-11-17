@@ -72,6 +72,7 @@ def count_corrupt_openers(text: str) -> int:
 
     Returns:
         1 if the body opens with a doubled brace, otherwise 0.
+
     """
     stripped = text.lstrip().removeprefix("```json").removeprefix("```").lstrip()
     return 1 if _CORRUPT_RE.match(stripped) else 0
@@ -90,6 +91,7 @@ def constrained_outputs(message: dict[str, Any]) -> list[str]:
 
     Returns:
         Each constrained payload, in the order the response carried them.
+
     """
     outputs: list[str] = []
     content = message.get("content")
@@ -113,6 +115,7 @@ def is_fsm_error(status: int, body: str) -> bool:
 
     Returns:
         True when this is a 500 carrying the FSM message.
+
     """
     return status == 500 and _FSM_MESSAGE in body
 
@@ -127,6 +130,7 @@ def parse_prometheus(text: str) -> dict[str, float]:
 
     Returns:
         Mapping of metric name to summed value.
+
     """
     samples: dict[str, float] = {}
     for raw in text.splitlines():
@@ -152,10 +156,16 @@ def acceptance_rate(samples: dict[str, float]) -> float | None:
 
     Returns:
         Accepted over drafted, or None when the counters are absent or zero.
+
     """
     drafted = samples.get(_DRAFT_METRIC)
     accepted = samples.get(_ACCEPTED_METRIC)
-    if not drafted or accepted is None:
+    if (
+        drafted is None
+        or drafted <= 0
+        or accepted is None
+        or not 0 <= accepted <= drafted
+    ):
         return None
     return accepted / drafted
 
@@ -174,6 +184,7 @@ def wav_bytes(seconds: float, rate: int = _AUDIO_RATE) -> bytes:
 
     Returns:
         A complete RIFF/WAVE file.
+
     """
     frames = max(1, int(seconds * rate))
     samples = (
@@ -210,6 +221,7 @@ def audio_survived(statuses: list[int], healthy: bool) -> tuple[bool, str]:
 
     Returns:
         Whether the burst was survived, and a one-line detail.
+
     """
     bad = [code for code in statuses if code not in (200, 400)]
     rejected = statuses.count(400)
@@ -252,8 +264,8 @@ def _response_shape(response: httpx.Response, outputs: list[str]) -> str:
         return "constrained"
     try:
         choice = response.json()["choices"][0]
-    except Exception:  # noqa: BLE001 - an unparseable body is itself the shape
-        return "unparseable"
+    except Exception:  # noqa: BLE001 - an unparsable body is itself the shape
+        return "unparsable"
     if choice.get("finish_reason") == "length":
         return "truncated"
     message = choice.get("message") or {}
@@ -400,6 +412,7 @@ def run_behaviour_probe(
 
     Raises:
         KeyError: If probe_id is not a known behavioural probe.
+
     """
     if probe_id not in _PROBES:
         raise KeyError(probe_id)

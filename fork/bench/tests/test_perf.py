@@ -39,8 +39,9 @@ def test_percentile_of_empty_is_nan():
     assert math.isnan(percentile([], 0.5))
 
 
-def test_token_field_recognises_reasoning_content():
-    assert token_field({"reasoning_content": "thinking"}) == "reasoning_content"
+@pytest.mark.parametrize("field", ["reasoning", "reasoning_content"])
+def test_token_field_recognises_reasoning_content(field):
+    assert token_field({field: "thinking"}) == field
 
 
 def test_token_field_recognises_content():
@@ -131,6 +132,7 @@ def test_p1_measures_a_ttft_against_the_mock():
 
 def test_p4_reports_the_acceptance_rate():
     with serve(MockConfig(spec_decode=True)) as base_url:
+        run_perf_probe("P2", base_url, "mock")
         result = run_perf_probe("P4", base_url, "mock")
     assert result.data["acceptance_rate"] == pytest.approx(0.8)
 
