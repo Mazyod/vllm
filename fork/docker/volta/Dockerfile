@@ -20,6 +20,7 @@ RUN uv venv --python /usr/bin/python3 /opt/vllm \
       -r /tmp/requirements-runtime.lock \
     && uv pip install --python /opt/vllm/bin/python --no-cache --no-deps \
       /wheels/vllm-0.32.0+cu126-cp312-cp312-linux_x86_64.whl \
+    && uv pip uninstall --python /opt/vllm/bin/python opencv-python-headless \
     && uv pip check --python /opt/vllm/bin/python \
     && mkdir -p /opt/fork && cp /wheels/SHA256SUMS /wheels/runtime-dependency.patch /opt/fork/ \
     && rm -rf /wheels /tmp/requirements-runtime.lock
