@@ -8,7 +8,6 @@ enable-auto-tool-choice: true
 reasoning-parser: deepseek_v41
 speculative-config:
   method: dspark
-  num_speculative_tokens: 5
   draft_sample_method: probabilistic
   rejection_sample_method: block
 max-num-seqs: 512
