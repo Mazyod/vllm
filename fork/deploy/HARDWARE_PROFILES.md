@@ -13,7 +13,7 @@ one is deployed, or that the profile mirrors a private topology.
 | `cuda-budget-1` | cheapest available CUDA GPU | process lifecycle, HTTP routing, two-service orchestration with small fixtures |
 | `hopper-budget` | cheapest Hopper venue that fits the reduced workload | Hopper-only kernels, speculative-decoding control flow, backend selection |
 | `hopper-pcie-2` | two Hopper GPUs without an NVLink-class GPU fabric | isolated TP2 behavior and PCIe collective workarounds |
-| `hopper-pcie-4-large` | four high-memory Hopper GPUs without an NVLink-class GPU fabric | primary four-GPU multi-model packing and PCIe behavior |
+| `hopper-pcie-4-large` | four high-memory Hopper GPUs without an NVLink-class GPU fabric | TP4 memory fit, packing and PCIe behavior |
 | `hopper-fabric-4-large` | four high-memory Hopper GPUs with NVLink/SXM-class fabric | memory-fit fallback and throughput upper bound when the PCIe profile is unavailable |
 | `hopper-fabric-large` | larger fabric-connected Hopper venue, count recorded only in the result | historical/disjoint controls; never the default packing target |
 
@@ -34,7 +34,7 @@ the first row below that preserves it:
 | SM90/Hopper backend selection or crash | `hopper-budget`; prefer H100-class when memory permits |
 | exact long-context memory fit | the smallest count/memory profile that can carry the real checkpoints |
 | PCIe collective behavior | matching `hopper-pcie-*`; a fabric venue is not equivalent |
-| final four-GPU multi-model proof | `hopper-pcie-4-large`; `hopper-fabric-4-large` only as a labeled fallback |
+| final four-GPU proof | matching `hopper-*-4-large` interconnect; a fabric venue does not certify PCIe behavior |
 
 Using a stronger GPU “to be safe” is not neutral: it costs more and can hide the
 memory pressure or interconnect behavior being tested. Escalate only after the
@@ -42,18 +42,17 @@ cheaper venue is ruled out for a written reason.
 
 ## Placement policy
 
-GPU sets are not exclusive territories. Multi-model packing asks whether
-processes can share the same physical GPUs within a memory and performance
-policy. Test overlapping placements before adding devices:
+The versioned fleet defines the release workload. A dedicated-model result
+does not certify multiple engines sharing its GPUs. When testing packing,
+measure overlapping placements before adding devices:
 
 1. spread both models across all four GPUs when that balances memory;
 2. compare a smaller TP size for the smaller model when it reduces communication;
 3. explicitly cap KV bytes and sequence count for the required service policy;
 4. add GPUs only when the four-GPU profiles cannot satisfy the stated request.
 
-The primary GLM+Gemma matrix is therefore four total GPUs: GLM TP4 plus Gemma
-TP4 on all four, and GLM TP4 plus Gemma TP2 overlapping two of them. A six-GPU
-disjoint placement is a diagnostic control, not the target proof.
+Each engine needs a memory budget that accounts for every resident, including
+ones started later. Extensible KV sizing does not coordinate independent engines.
 
 ## Privacy rules
 
@@ -77,6 +76,7 @@ Choose one before renting:
 
 - one rental, one model download, many process restarts;
 - detached watchdog and hard cap remain armed throughout;
+- an authorized extension replaces the watchdog before retiring the old guard;
 - configuration/probe failures are evidence: save logs, stop process groups,
   push the fix, and relaunch on the same instance;
 - keep the model cache and compilation cache warm;

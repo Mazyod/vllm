@@ -79,6 +79,10 @@ nohup fork/bench/watchdog.sh fork-bench-dev $$ 14400 \
 # Only after "armed": create under exactly fork-bench-dev.
 ```
 
+When the authorized session needs more time, renew its guard before expiry:
+arm and verify the replacement first, then retire the old watchdog. Preserve
+the rental and cache during the handover; never leave paid hardware unguarded.
+
 Use the provider adapter's `AUTHORIZED_KEYS_REPAIR` onstart command. For
 `Permission denied (publickey)`, inspect provider logs first; incorrect key-file
 ownership can be repaired without weakening sshd's `StrictModes`.
