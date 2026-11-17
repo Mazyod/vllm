@@ -346,8 +346,8 @@ jobs:
       - name: Check runtime version and committed configuration parser on CPU
         run: |
           docker run --rm -e VLLM_TARGET_DEVICE=cpu \
-            -v "$PWD/fork:/opt/fork:ro" -w /opt --entrypoint python \
-            "$SOURCE_REF" -m fork.bench.config_validation \
+            -v "$PWD/fork:/opt/fork:ro" -w /opt --entrypoint uv \
+            "$SOURCE_REF" run --no-project -- python3 -m fork.bench.config_validation \
             --tag "${{ needs.resolve.outputs.base_tag }}"
 
       - name: Assert the image carries exactly the declared patch series
