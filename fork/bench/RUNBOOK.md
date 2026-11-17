@@ -125,6 +125,18 @@ A shared-GPU deployment needs explicit budgets, including later allocations by
 other residents. Fixed `kv-cache-memory-bytes` opts out of extensible sizing.
 Validate co-residency separately; a dedicated-engine pass cannot establish it.
 
+With the engine still healthy, run the supplementary vision/retrieval gate:
+
+```bash
+uv run --no-project --with httpx -- python -m fork.bench.deepseek_probe \
+  --url http://127.0.0.1:8000 --out runs/<TAG>/supplemental
+```
+
+Its target is 1,047,552 prompt tokens. The probe includes the secret only at the
+start, sizes through the real `/tokenize` endpoint, and checks inference usage.
+Historical retrieval runs whose final question repeated the secret prove input
+processing and capacity, not independent retrieval from the beginning.
+
 After tuning, run the final committed configuration again. A reviewed public
 gate record may contain capabilities, versions, hashes, timings, rates and
 limitations. Keep private deployment plans, ownership, addresses, provider ids,

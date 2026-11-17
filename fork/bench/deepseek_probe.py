@@ -1,0 +1,144 @@
+# SPDX-License-Identifier: Apache-2.0
+"""Supplement the release gate with vision and full-window retrieval requests.
+
+Run against an already healthy engine. Token counts come from its real prompt
+encoder and are checked against inference usage. Results are written per request
+so a later failure cannot erase earlier evidence.
+"""
+
+import argparse
+import base64
+import json
+import struct
+import time
+import uuid
+import zlib
+from pathlib import Path
+
+import httpx
+
+from fork.deploy.probe import FILLER
+
+
+def red_png(shade: int) -> str:
+    """Build a distinct small RGB fixture without an image dependency."""
+
+    def chunk(kind: bytes, data: bytes) -> bytes:
+        return (
+            struct.pack("!I", len(data))
+            + kind
+            + data
+            + struct.pack("!I", zlib.crc32(kind + data))
+        )
+
+    pixels = (b"\0" + bytes((shade, 0, 0)) * 224) * 224
+    png = b"\x89PNG\r\n\x1a\n"
+    png += chunk(b"IHDR", struct.pack("!2I5B", 224, 224, 8, 2, 0, 0, 0))
+    png += chunk(b"IDAT", zlib.compress(pixels)) + chunk(b"IEND", b"")
+    return "data:image/png;base64," + base64.b64encode(png).decode()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--url", default="http://127.0.0.1:8000")
+    parser.add_argument("--model", default="deepseek-v4.1-flash")
+    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--long-tokens", type=int, default=1047552)
+    args = parser.parse_args()
+    if args.long_tokens < 1024:
+        parser.error("--long-tokens must be at least 1024")
+    args.out.mkdir(parents=True, exist_ok=True)
+    with httpx.Client(base_url=args.url, timeout=1800) as client:
+
+        def post(endpoint: str, payload: dict) -> dict:
+            response = client.post(endpoint, json=payload)
+            response.raise_for_status()
+            return response.json()
+
+        def chat(name: str, content: str | list) -> dict:
+            started = time.monotonic()
+            body = post(
+                "/v1/chat/completions",
+                {
+                    "model": args.model,
+                    "messages": [{"role": "user", "content": content}],
+                    "max_tokens": 256,
+                    "temperature": 0,
+                    "chat_template_kwargs": {"enable_thinking": False},
+                },
+            )
+            (args.out / f"{name}.json").write_text(
+                json.dumps(
+                    {
+                        "elapsed_s": time.monotonic() - started,
+                        "response": body,
+                    },
+                    indent=2,
+                )
+                + "\n"
+            )
+            assert body["choices"][0]["finish_reason"] == "stop", body
+            return body
+
+        models = client.get("/v1/models")
+        models.raise_for_status()
+        assert args.model in {item["id"] for item in models.json()["data"]}
+        for count in (1, 9):
+            content = [
+                {"type": "image_url", "image_url": {"url": red_png(230 + i)}}
+                for i in range(count)
+            ]
+            content.append(
+                {
+                    "type": "text",
+                    "text": "What color fills every image? Reply with one color word.",
+                }
+            )
+            body = chat(f"images-{count}", content)
+            assert "red" in body["choices"][0]["message"]["content"].lower(), body
+
+        needle = "ARCHIVE-" + uuid.uuid4().hex
+        prefix = f"Remember this exact archive code: {needle}.\n"
+        suffix = (
+            "\nWhat archive code appeared at the beginning? Reply with that code only."
+        )
+        repeats = args.long_tokens // 13
+        for _ in range(8):
+            content = prefix + FILLER * repeats + suffix
+            tokens = post(
+                "/tokenize",
+                {
+                    "model": args.model,
+                    "messages": [{"role": "user", "content": content}],
+                    "chat_template_kwargs": {"enable_thinking": False},
+                    "add_generation_prompt": True,
+                },
+            )
+            count = tokens["count"]
+            if args.long_tokens - 128 <= count <= args.long_tokens:
+                break
+            repeats = max(1, int(repeats * (args.long_tokens - 64) / count))
+        assert args.long_tokens - 128 <= count <= args.long_tokens, count
+        assert count + 256 <= tokens["max_model_len"], tokens["max_model_len"]
+        assert content.count(needle) == 1
+        body = chat("long-context", content)
+        assert body["usage"]["prompt_tokens"] == count, body["usage"]
+        assert needle in body["choices"][0]["message"]["content"], body
+        client.get("/health").raise_for_status()
+        (args.out / "passed.json").write_text(
+            json.dumps(
+                {
+                    "passed": True,
+                    "images": [1, 9],
+                    "prompt_tokens": count,
+                    "max_model_len": tokens["max_model_len"],
+                    "needle": needle,
+                },
+                indent=2,
+            )
+            + "\n"
+        )
+
+
+if __name__ == "__main__":
+    main()
