@@ -56,8 +56,6 @@ jobs:
             OVERLAY_REVISION=${{ github.sha }}
           labels: |
             io.openimage.volta-recipe=${{ steps.recipe.outputs.sha }}
-          cache-from: type=gha,scope=volta
-          cache-to: type=gha,scope=volta,mode=max
       - name: Resolve the exact artifact
         env:
           PROMOTE_FROM: ${{ inputs.promote_from }}
