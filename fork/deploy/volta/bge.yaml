@@ -1,0 +1,12 @@
+model: BAAI/bge-reranker-v2-m3
+served-model-name: bge
+dtype: half
+max-model-len: 8192
+enforce-eager: true
+max-num-seqs: 4
+max-num-batched-tokens: 8192
+gpu-memory-utilization: 0.2
+runner: pooling
+attention-config:
+  backend: FLEX_ATTENTION
+revision: 953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e

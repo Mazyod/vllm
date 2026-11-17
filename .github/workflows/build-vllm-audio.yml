@@ -1,0 +1,124 @@
+name: Frozen vLLM audio for SM70
+
+on:
+  workflow_dispatch:
+    inputs:
+      promote_from:
+        description: "Candidate tag to promote without rebuilding; empty builds a candidate"
+        default: ""
+      gate_record:
+        description: "Committed JSON hardware gate record; required for promotion"
+        default: ""
+
+concurrency:
+  group: frozen-volta-release
+  cancel-in-progress: false
+
+env:
+  IMAGE_NAME: docker.io/openimage/vllm-audio
+  RELEASE_TAG: 0.32.0-cu126-sm70
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: write
+    steps:
+      - name: Require main
+        run: test "$GITHUB_REF" = refs/heads/main
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+      - name: Check overlay alignment
+        run: fork/scripts/check-alignment.sh --fetch
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Identify frozen recipe
+        id: recipe
+        run: echo "sha=$(git rev-parse HEAD:fork/docker/volta)" >> "$GITHUB_OUTPUT"
+      - name: Build candidate
+        id: build
+        if: inputs.promote_from == ''
+        uses: docker/build-push-action@v7
+        with:
+          context: fork/docker/volta
+          file: fork/docker/volta/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:${{ env.RELEASE_TAG }}-cand-${{ github.sha }}
+          build-args: |
+            MAX_JOBS=2
+            OVERLAY_REVISION=${{ github.sha }}
+          labels: |
+            io.openimage.volta-recipe=${{ steps.recipe.outputs.sha }}
+          cache-from: type=gha,scope=volta
+          cache-to: type=gha,scope=volta,mode=max
+      - name: Resolve the exact artifact
+        env:
+          PROMOTE_FROM: ${{ inputs.promote_from }}
+          BUILT_DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          set -euo pipefail
+          digest="$BUILT_DIGEST"
+          if [[ -n "$PROMOTE_FROM" ]]; then
+            [[ "$PROMOTE_FROM" =~ ^[a-zA-Z0-9_.-]+$ ]]
+            digest=$(docker buildx imagetools inspect "$IMAGE_NAME:$PROMOTE_FROM" --format '{{.Manifest.Digest}}')
+          fi
+          [[ "$digest" =~ ^sha256:[a-f0-9]{64}$ ]]
+          echo "SOURCE_REF=$IMAGE_NAME@$digest" >> "$GITHUB_ENV"
+          echo "IMAGE_DIGEST=$digest" >> "$GITHUB_ENV"
+      - name: Verify CPU audio and recipe identity
+        env:
+          RECIPE_SHA: ${{ steps.recipe.outputs.sha }}
+        run: |
+          set -euo pipefail
+          docker pull "$SOURCE_REF"
+          test "$(docker inspect "$SOURCE_REF" --format '{{index .Config.Labels "io.openimage.volta-recipe"}}')" = "$RECIPE_SHA"
+          test "$(docker inspect "$SOURCE_REF" --format '{{index .Config.Labels "io.openimage.vllm-source"}}')" = 5df63a7203cdb9328d824a27b682e77c7b9928be
+          docker run --rm -i -e VLLM_TARGET_DEVICE=cpu --entrypoint python \
+            "$SOURCE_REF" < fork/docker/volta/check_audio.py
+      - name: Freeze and promote the hardware-tested digest
+        if: inputs.promote_from != ''
+        env:
+          GATE_RECORD: ${{ inputs.gate_record }}
+          RECIPE_SHA: ${{ steps.recipe.outputs.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$GATE_RECORD" == fork/deploy/volta/results/*.json ]]
+          git ls-files --error-unmatch -- "$GATE_RECORD"
+          jq -e --arg digest "$IMAGE_DIGEST" --arg recipe "$RECIPE_SHA" '
+            .image_digest == $digest and .recipe_sha == $recipe and .passed == true and
+            (.gpus | length == 2) and
+            all(.gpus[]; .compute_capability == "7.0" and .memory_bytes >= 16106127360 and .memory_bytes <= 17179869184) and
+            .checks.native_kernels == true and .checks.audio == true and
+            .checks.whisper == true and .checks.bge == true and .checks.snowflake == true and
+            .checks.concurrent == true and .checks.cold_restart == true
+          ' "$GATE_RECORD" >/dev/null
+          source_sha=$(docker inspect "$SOURCE_REF" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')
+          git merge-base --is-ancestor "$source_sha" HEAD
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          tag="audio/v$RELEASE_TAG"
+          if git rev-parse --verify "refs/tags/$tag" >/dev/null 2>&1; then
+            test "$(git rev-parse "$tag^{commit}")" = "$source_sha"
+            git tag -l --format='%(contents)' "$tag" | grep -Fx "Image-Digest: $IMAGE_DIGEST"
+          else
+            printf 'Frozen SM70 audio release\n\nImage-Digest: %s\nRecipe: %s\nGate: %s\n' \
+              "$IMAGE_DIGEST" "$RECIPE_SHA" "$GATE_RECORD" > /tmp/tag-message
+            git tag -a "$tag" "$source_sha" -F /tmp/tag-message
+            git push origin "refs/tags/$tag"
+          fi
+          for version in "$RELEASE_TAG" "v$RELEASE_TAG"; do
+            existing=$(docker buildx imagetools inspect "$IMAGE_NAME:$version" --format '{{.Manifest.Digest}}' 2>/dev/null || true)
+            [[ -z "$existing" || "$existing" == "$IMAGE_DIGEST" ]]
+            docker buildx imagetools create --tag "$IMAGE_NAME:$version" "$SOURCE_REF"
+            test "$(docker buildx imagetools inspect "$IMAGE_NAME:$version" --format '{{.Manifest.Digest}}')" = "$IMAGE_DIGEST"
+          done
+      - name: Summary
+        run: |
+          echo "Artifact (no rebuild during promotion): $SOURCE_REF" >> "$GITHUB_STEP_SUMMARY"
