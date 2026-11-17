@@ -76,8 +76,9 @@ def test_prompt_sizer_counts_batch_encoding_tokens_not_fields():
             ids = list(range(count))
             return UserDict({"input_ids": [ids], "attention_mask": [[1] * count]})
 
-    _, count = _messages(FakeTokenizer(), 100, "NEEDLE")
+    messages, count = _messages(FakeTokenizer(), 100, "NEEDLE")
     assert 93 <= count <= 100
+    assert messages[0]["content"].count("NEEDLE") == 1
 
 
 def test_proved_deployment_has_long_context_and_speculative_evidence():

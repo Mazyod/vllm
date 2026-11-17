@@ -49,7 +49,7 @@ def _spec_totals(metrics: dict[str, float]) -> dict[str, float]:
 
 def _messages(tokenizer, target: int, needle: str) -> tuple[list[dict[str, str]], int]:
     prefix = f"Remember this exact code: {needle}. "
-    suffix = f" What exact code were you told to remember? Reply with {needle} only."
+    suffix = " What exact code were you told to remember? Reply with the code only."
 
     def candidate(repeats: int) -> tuple[list[dict[str, str]], int]:
         content = prefix + FILLER * repeats + suffix
