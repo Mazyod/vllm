@@ -1,5 +1,11 @@
 # Dedicated DeepSeek and Gemma: one four-H200 node each
 
+> Historical measured configuration. Current release preparation uses the
+> [v0.34.0 DeepSeek profile](https://github.com/Mazyod/vllm/blob/main/fork/bench/configs/v0.34.0/README.md), whose
+> hardware certification is pending. Preserve the files below as evidence of
+> their original runs; do not copy their runner environment or image limits
+> into the new release.
+
 Canonical Docker Swarm deployment for **two separate nodes**, each with four
 H200 GPUs and 2 TB host RAM. DeepSeek occupies one node; Gemma occupies the other.
 Both support text, up to eight images per request, tool calls, and optional
@@ -36,7 +42,7 @@ previous overlapping Gemma drivers were excluded from the results.
 
 The venue had NVLink and driver 595.71.05. PCIe-only throughput is unmeasured.
 Physical capacity was 140.4 GiB/GPU. See the
-[executive slides and detailed measurements](../index.html).
+[executive slides and detailed measurements](../../bench/configs/pending/gemma-4-nightly/shared-h200/index.html).
 Swarm packaging and the optional router have separate validation below.
 
 ## Files and pinned images
@@ -216,7 +222,7 @@ DeepSeek offloads only Engram (~188.8 GiB across the node) into pinned host RAM.
 The 64-GiB `/dev/shm` mount is a separate IPC ceiling, not where that Engram
 allocation resides. Gemma uses an 8-GiB IPC mount. A future native CPU KV tier
 would require larger mounts; it is a separate unvalidated experiment described
-in the [cache research](../CACHE_RESEARCH.md).
+in the [cache research](../../bench/configs/pending/gemma-4-nightly/shared-h200/CACHE_RESEARCH.md).
 
 Gemma retains the measured 280-soft-token image budget. Higher image resolutions
 or OCR-oriented budgets require new quality/memory checks. Reasoning is disabled

@@ -108,17 +108,12 @@ jobs:
           ref: ${{ github.sha }}
 
       - name: Verify the release repository is public
+        # Provision once; builds must not silently change repository visibility.
         # Credentials here would make GitHub suppress image_refs as a secret.
         run: |
           set -euo pipefail
-          code=$(curl -sS -o /tmp/repository.json -w '%{http_code}' \
-            "https://hub.docker.com/v2/repositories/${IMAGE_NAME#docker.io/}/")
-          if [[ "$code" == 404 ]]; then
-            echo "Repository will be created by the candidate push."
-          else
-            [[ "$code" == 200 ]]
-            jq -e '.is_private == false' /tmp/repository.json >/dev/null
-          fi
+          curl -fsS "https://hub.docker.com/v2/repositories/${IMAGE_NAME#docker.io/}/" |
+            jq -e '.is_private == false' >/dev/null
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -228,39 +223,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Make the release repository public
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          # Only this fork's release repository; no account-wide visibility change.
-          test "$IMAGE_NAME" = docker.io/openimage/vllm
-          umask 077
-          auth_dir=$(mktemp -d)
-          trap 'rm -rf "$auth_dir"' EXIT
-          jq -n '{identifier: env.DOCKERHUB_USERNAME, secret: env.DOCKERHUB_TOKEN}' |
-            curl -fsS --json @- https://hub.docker.com/v2/auth/token > "$auth_dir/auth.json"
-          token=$(jq -er '.access_token' "$auth_dir/auth.json")
-          echo "::add-mask::$token"
-          echo "Registry authentication succeeded."
-          printf 'header = "Authorization: Bearer %s"\n' "$token" > "$auth_dir/curl.conf"
-          repository="https://hub.docker.com/v2/repositories/openimage/vllm/"
-          code=$(curl -sS --config "$auth_dir/curl.conf" -o "$auth_dir/repository.json" -w '%{http_code}' "$repository")
-          echo "Authenticated repository lookup: HTTP $code"
-          if [[ "$code" == 404 ]]; then
-            curl -fsS --config "$auth_dir/curl.conf" --json '{"name":"vllm","namespace":"openimage","registry":"docker.io","is_private":false}' \
-              https://hub.docker.com/v2/namespaces/openimage/repositories >/dev/null
-          else
-            [[ "$code" == 200 ]]
-            if jq -e '.is_private' "$auth_dir/repository.json" >/dev/null; then
-              curl -fsS --config "$auth_dir/curl.conf" \
-                --json '{"is_private":false}' "${repository}privacy/" >/dev/null
-            fi
-          fi
-          echo "Verifying anonymous repository access."
-          curl -fsS "$repository" | jq -e '.is_private == false' >/dev/null
 
       - name: Build and push image
         id: build

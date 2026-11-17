@@ -1,5 +1,11 @@
 # Dedicated DeepSeek and Gemma: one four-H200 node each
 
+> Historical measured configuration. Current release preparation uses the
+> [v0.34.0 DeepSeek profile](https://github.com/Mazyod/vllm/blob/main/fork/bench/configs/v0.34.0/README.md), whose
+> hardware certification is pending. Preserve the files below as evidence of
+> their original runs; do not copy their runner environment or image limits
+> into the new release.
+
 Canonical Docker Swarm deployment for **two separate nodes**, each with four
 H200 GPUs and 2 TB host RAM. DeepSeek occupies one node; Gemma occupies the other.
 Both support text, up to eight images per request, tool calls, and optional
