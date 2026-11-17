@@ -20,7 +20,7 @@ import httpx
 from fork.deploy.probe import FILLER
 
 
-def red_png(shade: int) -> str:
+def solid_png(rgb: tuple[int, int, int]) -> str:
     """Build a distinct small RGB fixture without an image dependency."""
 
     def chunk(kind: bytes, data: bytes) -> bytes:
@@ -31,7 +31,7 @@ def red_png(shade: int) -> str:
             + struct.pack("!I", zlib.crc32(kind + data))
         )
 
-    pixels = (b"\0" + bytes((shade, 0, 0)) * 224) * 224
+    pixels = (b"\0" + bytes(rgb) * 224) * 224
     png = b"\x89PNG\r\n\x1a\n"
     png += chunk(b"IHDR", struct.pack("!2I5B", 224, 224, 8, 2, 0, 0, 0))
     png += chunk(b"IDAT", zlib.compress(pixels)) + chunk(b"IEND", b"")
@@ -55,7 +55,7 @@ def main() -> None:
             response.raise_for_status()
             return response.json()
 
-        def chat(name: str, content: str | list) -> dict:
+        def chat(name: str, content: str | list, **options) -> dict:
             started = time.monotonic()
             body = post(
                 "/v1/chat/completions",
@@ -65,6 +65,7 @@ def main() -> None:
                     "max_tokens": 256,
                     "temperature": 0,
                     "chat_template_kwargs": {"enable_thinking": False},
+                    **options,
                 },
             )
             (args.out / f"{name}.json").write_text(
@@ -77,15 +78,50 @@ def main() -> None:
                 )
                 + "\n"
             )
-            assert body["choices"][0]["finish_reason"] == "stop", body
+            assert body["choices"][0]["finish_reason"] in ("stop", "tool_calls"), body
             return body
 
         models = client.get("/v1/models")
         models.raise_for_status()
         assert args.model in {item["id"] for item in models.json()["data"]}
+        tool = {
+            "type": "function",
+            "function": {
+                "name": "add_numbers",
+                "parameters": {
+                    "type": "object",
+                    "properties": {"a": {"type": "integer"}, "b": {"type": "integer"}},
+                    "required": ["a", "b"],
+                    "additionalProperties": False,
+                },
+            },
+        }
+        body = chat(
+            "automatic-tool",
+            "Call add_numbers with a=17 and b=25.",
+            tools=[tool],
+            tool_choice="auto",
+        )
+        calls = body["choices"][0]["message"]["tool_calls"]
+        assert len(calls) == 1 and calls[0]["function"]["name"] == "add_numbers", body
+        assert json.loads(calls[0]["function"]["arguments"]) == {"a": 17, "b": 25}
+        body = chat(
+            "reasoning",
+            "Compute 17 + 25. Give the final sum after reasoning.",
+            max_tokens=4096,
+            chat_template_kwargs={"enable_thinking": True},
+        )
+        message = body["choices"][0]["message"]
+        assert message.get("reasoning"), body
+        assert "42" in message["content"], body
         for count in (1, 9):
             content = [
-                {"type": "image_url", "image_url": {"url": red_png(230 + i)}}
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": solid_png((0, 0, 230) if count == 1 else (230 + i, 0, 0))
+                    },
+                }
                 for i in range(count)
             ]
             content.append(
@@ -95,7 +131,8 @@ def main() -> None:
                 }
             )
             body = chat(f"images-{count}", content)
-            assert "red" in body["choices"][0]["message"]["content"].lower(), body
+            color = "blue" if count == 1 else "red"
+            assert color in body["choices"][0]["message"]["content"].lower(), body
 
         needle = "ARCHIVE-" + uuid.uuid4().hex
         prefix = f"Remember this exact archive code: {needle}.\n"
