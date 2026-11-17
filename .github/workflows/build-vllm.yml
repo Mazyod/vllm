@@ -255,8 +255,8 @@ jobs:
           else
             [[ "$code" == 200 ]]
             if jq -e '.is_private' "$auth_dir/repository.json" >/dev/null; then
-              curl -fsS --config "$auth_dir/curl.conf" --request PATCH \
-                --json '{"is_private":false}' "$repository" >/dev/null
+              curl -fsS --config "$auth_dir/curl.conf" \
+                --json '{"is_private":false}' "${repository}privacy/" >/dev/null
             fi
           fi
           echo "Verifying anonymous repository access."
