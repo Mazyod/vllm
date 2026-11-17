@@ -131,15 +131,19 @@ def main() -> None:
                 )
             )
             content = [
-                {
-                    "type": "image_url",
-                    "image_url": {
-                        "url": solid_png(
-                            (230 + i, 0, 0) if color == "red" else (0, 0, 230 + i)
-                        )
-                    },
-                }
+                item
                 for i, color in enumerate(colors)
+                for item in (
+                    {"type": "text", "text": f"Image {i + 1}:"},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": solid_png(
+                                (230 + i, 0, 0) if color == "red" else (0, 0, 230 + i)
+                            )
+                        },
+                    },
+                )
             ]
             content.append(
                 {
@@ -158,7 +162,12 @@ def main() -> None:
                         "schema": {
                             "type": "object",
                             "properties": {
-                                "colors": {"type": "array", "items": {"type": "string"}}
+                                "colors": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                    "minItems": count,
+                                    "maxItems": count,
+                                }
                             },
                             "required": ["colors"],
                             "additionalProperties": False,
