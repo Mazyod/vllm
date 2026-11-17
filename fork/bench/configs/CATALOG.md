@@ -1,7 +1,7 @@
 # Configuration catalog
 
-Current recurring release candidate: [v0.34.0](v0.34.0/README.md), DeepSeek V4.1
-Flash TP4 with no added audio extra. Its hardware gate is pending. Older entries
+Current recurring release configuration: [v0.34.0](v0.34.0/README.md), DeepSeek V4.1
+Flash TP4 with no added audio extra. Its [hardware gate](v0.34.0/results/20261117-gate.md) passed. Older entries
 below are historical evidence and retain their original configurations.
 
 Status describes why a profile uses an engine file: `shipping` is a
