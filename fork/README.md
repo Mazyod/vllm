@@ -20,7 +20,7 @@ fork/
 │   ├── upstream.map            # generated retirement map
 │   └── *.patch                 # generated unified diffs
 ├── docker/
-│   ├── Dockerfile.audio
+│   ├── Dockerfile
 │   └── apply-patches.sh
 └── scripts/
     ├── check-alignment.sh
@@ -72,9 +72,9 @@ configuration without results, and bumps the four pins.
 ## Building the image locally
 
 ```bash
-docker build -f fork/docker/Dockerfile.audio \
-  --build-arg BASE_TAG=v0.33.0 \
-  -t openimage/vllm-audio:v0.33.0 .
+docker build -f fork/docker/Dockerfile \
+  --build-arg BASE_TAG=v0.34.0 \
+  -t openimage/vllm:v0.34.0 .
 ```
 
 The build fails if any declared patch does not apply to the installed vLLM

@@ -1,5 +1,9 @@
 # Configuration catalog
 
+Current recurring release candidate: [v0.34.0](v0.34.0/README.md), DeepSeek V4.1
+Flash TP4 with no added audio extra. Its hardware gate is pending. Older entries
+below are historical evidence and retain their original configurations.
+
 Status describes why a profile uses an engine file: `shipping` is a
 production-topology argument set, `gating` is a release-blocking non-shipping
 profile, `control` isolates a comparison, `negative` tests a known failure or

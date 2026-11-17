@@ -76,22 +76,22 @@ def test_each_replica_is_pinned_to_its_own_gpu():
 
 
 def test_a_single_replica_profile_still_sees_every_gpu_it_asked_for():
-    profile = profiles.get("gemma-tp2")
+    profile = profiles.load("v0.33.0").get("gemma-tp2")
     assert build_local_env(profile, base={})["CUDA_VISIBLE_DEVICES"] == "0,1"
 
 
 def test_the_tp1x2_arm_is_a_control_against_the_tp2_one():
     """Same box, same GPUs, minutes apart: the difference is the topology."""
-    arm = profiles.get("gemma-perf-tp1x2")
+    arm = profiles.load("v0.33.0").get("gemma-perf-tp1x2")
     assert arm.control_for == "gemma-perf"
     assert arm.replicas == 2
     assert arm.tensor_parallel_size == 1
-    assert arm.gpu_indices == profiles.get("gemma-perf").gpu_indices
+    assert arm.gpu_indices == profiles.load("v0.33.0").get("gemma-perf").gpu_indices
 
 
 def test_the_tp1x2_arm_does_not_gate_a_release():
     """It answers how to deploy, not whether the release is sound."""
-    assert not profiles.get("gemma-perf-tp1x2").gating
+    assert not profiles.load("v0.33.0").get("gemma-perf-tp1x2").gating
 
 
 class RecordingLauncher:
@@ -100,6 +100,7 @@ class RecordingLauncher:
     Attributes:
         launches: Profile id, port and replica index of every launch.
         serving: Replica indices that report having come up.
+
     """
 
     def __init__(self, serving=None):
@@ -114,7 +115,7 @@ class RecordingLauncher:
 
 def test_a_replicated_profile_puts_up_one_server_per_replica(tmp_path):
     launcher = RecordingLauncher()
-    run_phase(3, "img:tag", launcher, tmp_path)
+    run_phase(3, "img:tag", launcher, tmp_path, profiles.load("v0.33.0"))
     tp1x2 = [call for call in launcher.launches if call[0] == "gemma-perf-tp1x2"]
     assert len(tp1x2) == 2
     assert tp1x2[0][1] != tp1x2[1][1]
@@ -123,19 +124,19 @@ def test_a_replicated_profile_puts_up_one_server_per_replica(tmp_path):
 
 def test_a_single_server_profile_is_launched_once(tmp_path):
     launcher = RecordingLauncher()
-    run_phase(3, "img:tag", launcher, tmp_path)
+    run_phase(3, "img:tag", launcher, tmp_path, profiles.load("v0.33.0"))
     assert len([c for c in launcher.launches if c[0] == "gemma-perf"]) == 1
 
 
 def test_a_replica_that_never_served_fails_the_profile(tmp_path):
     """Half a fleet measures half the deployment and would read as a win."""
     launcher = RecordingLauncher(serving={"gemma-perf-tp1x2": {0}})
-    results = run_phase(3, "img:tag", launcher, tmp_path)
+    results = run_phase(3, "img:tag", launcher, tmp_path, profiles.load("v0.33.0"))
     tp1x2 = [r for r in results if r.profile_id == "gemma-perf-tp1x2"]
     assert not any(r.probe_id.startswith("P") for r in tp1x2)
 
 
 def test_every_replicas_boot_log_is_kept(tmp_path):
-    run_phase(3, "img:tag", RecordingLauncher(), tmp_path)
+    run_phase(3, "img:tag", RecordingLauncher(), tmp_path, profiles.load("v0.33.0"))
     saved = (tmp_path / "gemma-perf-tp1x2.log").read_text(encoding="utf-8")
     assert saved.count("boot log") == 2

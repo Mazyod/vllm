@@ -68,10 +68,10 @@ def release_fixture(tmp_path: Path, *, conflict: bool = False) -> Path:
     repo = tmp_path / "overlay"
     repo.mkdir()
     git(repo, "init", "-q", "-b", "main")
-    _write(repo, "fork/docker/Dockerfile.audio", "ARG BASE_TAG=v9.9.9\n")
+    _write(repo, "fork/docker/Dockerfile", "ARG BASE_TAG=v9.9.9\n")
     _write(
         repo,
-        ".github/workflows/build-vllm-audio.yml",
+        ".github/workflows/build-vllm.yml",
         "env:\n  DEFAULT_BASE_TAG: v9.9.9\n",
     )
     _write(repo, "fork/bench/profiles.py", 'DEFAULT_TAG = "v9.9.9"\n')
@@ -117,10 +117,10 @@ def test_new_release_bumps_all_four_pins_and_copies_configs(tmp_path):
     repo = release_fixture(tmp_path)
     result = _run(repo)
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "ARG BASE_TAG=v9.9.10" in (repo / "fork/docker/Dockerfile.audio").read_text()
+    assert "ARG BASE_TAG=v9.9.10" in (repo / "fork/docker/Dockerfile").read_text()
     assert (
         "DEFAULT_BASE_TAG: v9.9.10"
-        in (repo / ".github/workflows/build-vllm-audio.yml").read_text()
+        in (repo / ".github/workflows/build-vllm.yml").read_text()
     )
     assert 'DEFAULT_TAG = "v9.9.10"' in (repo / "fork/bench/profiles.py").read_text()
     assert "--tag v9.9.10" in (repo / "fork/bench/preflight.sh").read_text()

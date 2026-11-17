@@ -31,18 +31,10 @@ ignore = [
     "D205", "D209", "D301", "D400", "D401", "D404", "D415",
     # incompatible pydocstyle pairs; pin the half `ruff` already picks
     "D203", "D213",
-    # star imports
-    "F405", "F403",
     # lambda expression assignment
     "E731",
     # zip without `strict=`
     "B905",
-    # Loop control variable not used within loop body
-    "B007",
-    # f-string format
-    "UP032",
-    # str enum inheritance
-    "UP042",
 ]
 
 [tool.ruff.lint.pydocstyle]

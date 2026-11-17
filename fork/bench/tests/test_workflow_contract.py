@@ -7,7 +7,7 @@ from pathlib import Path
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-WORKFLOW_PATH = REPO_ROOT / ".github/workflows/build-vllm-audio.yml"
+WORKFLOW_PATH = REPO_ROOT / ".github/workflows/build-vllm.yml"
 
 
 def _workflow():
@@ -99,7 +99,7 @@ def test_both_workflows_run_alignment_with_the_same_flags():
     both, so they must never drift apart."""
     root = REPO_ROOT / ".github" / "workflows"
     invocations = []
-    for name in ("build-vllm-audio.yml", "fork-alignment.yml"):
+    for name in ("build-vllm.yml", "fork-alignment.yml"):
         text = (root / name).read_text(encoding="utf-8")
         line = next(ln for ln in text.splitlines() if "check-alignment.sh" in ln)
         invocations.append(line.split("check-alignment.sh", 1)[1].strip())

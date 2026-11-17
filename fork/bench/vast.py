@@ -25,8 +25,7 @@ from fork.bench.provision import (
     Requirements,
 )
 
-# Repairs the key file the provider writes. On some hosts (machine 56779 and
-# host 598051, observed 2026-08-29 and 2026-08-30) the host daemon writes
+# Repairs the key file the provider writes. On affected hosts the daemon writes
 # `/root/.ssh/authorized_keys` into the container's overlay as its own user
 # (`vastai_kaalia:docker`, mode 644). sshd's default `StrictModes yes` refuses
 # a key file not owned by root, so every login fails with
@@ -35,7 +34,7 @@ from fork.bench.provision import (
 # its wrapper build, is a no-op on the stock config, where the line is
 # commented out. Whether the daemon writes the file before or after onstart is
 # not documented, so this re-applies the ownership for three minutes rather
-# than once. Verified on machine 56779: login on the first attempt.
+# than once. Verified on an affected host: login on the first attempt.
 AUTHORIZED_KEYS_REPAIR = (
     "nohup bash -c 'for i in $(seq 1 90); do "
     "chown root:root /root/.ssh/authorized_keys 2>/dev/null; "
@@ -62,6 +61,7 @@ def _rows(payload: str, key: str) -> list[dict]:
 
     Returns:
         The rows, empty when the response carried none.
+
     """
     text = payload.strip()
     if not text:
@@ -92,6 +92,7 @@ class VastCli:
 
     Attributes:
         binary: Name of the client executable.
+
     """
 
     def __init__(
@@ -112,6 +113,7 @@ class VastCli:
 
         Returns:
             Offers the provider returned.
+
         """
         query = " ".join(
             (
@@ -152,6 +154,7 @@ class VastCli:
 
         Returns:
             The offer.
+
         """
         return Offer(
             id=int(row["id"]),
@@ -203,6 +206,7 @@ class VastCli:
 
         Raises:
             RuntimeError: If the provider declined to create the instance.
+
         """
         argv = [
             self.binary,
@@ -242,6 +246,7 @@ class VastCli:
             The instance, or None once the provider no longer reports it. That
             None is the only evidence teardown ever gets, so an absent or empty
             response counts as gone rather than as an error.
+
         """
         rows = _rows(
             self._run([self.binary, "show", "instance", str(instance_id), "--raw"]),
@@ -254,6 +259,7 @@ class VastCli:
 
         Returns:
             The instances, used to find a stray by its run label.
+
         """
         rows = _rows(
             self._run([self.binary, "show", "instances", "--raw"]), "instances"
@@ -268,6 +274,7 @@ class VastCli:
 
         Args:
             instance_id: Instance to destroy.
+
         """
         self._run([self.binary, "destroy", "instance", str(instance_id), "-y"])
 
@@ -285,6 +292,7 @@ class VastCli:
 
         Raises:
             RuntimeError: If no address could be read.
+
         """
         printed = self._run([self.binary, "ssh-url", str(instance_id)])
         for token in printed.split():

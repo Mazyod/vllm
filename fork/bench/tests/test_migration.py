@@ -231,7 +231,7 @@ def test_branch_cleanup_deletes_release_model_from_the_active_checkout(tmp_path)
 
 def test_overlay_tree_strips_pre_migration_from_both_workflows(tmp_path):
     repo = _repo_with_origin(tmp_path)
-    for name in ("fork-alignment.yml", "build-vllm-audio.yml"):
+    for name in ("fork-alignment.yml", "build-vllm.yml"):
         _write(
             repo,
             f".github/workflows/{name}",
@@ -241,7 +241,7 @@ def test_overlay_tree_strips_pre_migration_from_both_workflows(tmp_path):
         repo,
         "fork/alignment.ledger",
         "add FORK.md permanent charter\nadd fork/** permanent overlay\n"
-        "add .github/workflows/build-vllm-audio.yml permanent build\n"
+        "add .github/workflows/build-vllm.yml permanent build\n"
         "add .github/workflows/fork-alignment.yml permanent alignment\n",
     )
     git(repo, "add", "-A")
@@ -249,6 +249,6 @@ def test_overlay_tree_strips_pre_migration_from_both_workflows(tmp_path):
     git(repo, "push", "-q", "origin", "main")
     result = run_script(MIGRATE, "--dry-run", cwd=repo)
     assert result.returncode == 0, result.stdout + result.stderr
-    for name in ("fork-alignment.yml", "build-vllm-audio.yml"):
+    for name in ("fork-alignment.yml", "build-vllm.yml"):
         content = git(repo, "show", f"overlay-main:.github/workflows/{name}")
         assert "--pre-migration" not in content, name

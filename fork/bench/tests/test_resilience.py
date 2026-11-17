@@ -25,6 +25,7 @@ class ExplodingLauncher:
 
     Attributes:
         launched: Profile ids it was asked to launch, in order.
+
     """
 
     def __init__(self):
@@ -41,7 +42,7 @@ def test_a_probe_that_raises_becomes_a_failed_result():
     """It is a finding about the release, not a reason to stop testing it."""
     results = list(
         evaluate(
-            profiles.get("gemma-full"),
+            profiles.load("v0.33.0").get("gemma-full"),
             ["boot log"],
             served=True,
             base_urls="http://127.0.0.1:1",
@@ -55,7 +56,7 @@ def test_a_probe_that_raises_becomes_a_failed_result():
 def test_a_probe_that_raises_says_what_went_wrong():
     results = list(
         evaluate(
-            profiles.get("gemma-full"),
+            profiles.load("v0.33.0").get("gemma-full"),
             ["boot log"],
             served=True,
             base_urls="http://127.0.0.1:1",
@@ -69,7 +70,7 @@ def test_the_probes_before_a_failing_one_are_still_reported():
     """The receipts were already computed; losing them proves nothing."""
     results = list(
         evaluate(
-            profiles.get("gemma-full"),
+            profiles.load("v0.33.0").get("gemma-full"),
             ["boot log"],
             served=True,
             base_urls="http://127.0.0.1:1",
@@ -81,13 +82,13 @@ def test_the_probes_before_a_failing_one_are_still_reported():
 def test_one_dead_server_does_not_stop_the_remaining_profiles(tmp_path):
     """Phases 3 and 4 were lost to this; they are the numbers."""
     launcher = ExplodingLauncher()
-    run_phase(2, "img:tag", launcher, tmp_path)
-    assert len(launcher.launched) == len(profiles.for_phase(2))
+    run_phase(2, "img:tag", launcher, tmp_path, profiles.load("v0.33.0"))
+    assert len(launcher.launched) == len(profiles.load("v0.33.0").for_phase(2))
 
 
 def test_results_reach_disk_as_they_are_produced(tmp_path):
     launcher = ExplodingLauncher()
-    run_phase(2, "img:tag", launcher, tmp_path)
+    run_phase(2, "img:tag", launcher, tmp_path, profiles.load("v0.33.0"))
     lines = (tmp_path / "results.jsonl").read_text(encoding="utf-8").splitlines()
     recorded = {json.loads(line)["profile_id"] for line in lines}
     assert "gemma-full" in recorded
@@ -97,7 +98,7 @@ def test_results_reach_disk_as_they_are_produced(tmp_path):
 def test_evaluate_streams_rather_than_batching():
     """A profile that dies part way through keeps what it already measured."""
     produced = evaluate(
-        profiles.get("gemma-full"),
+        profiles.load("v0.33.0").get("gemma-full"),
         ["boot log"],
         served=True,
         base_urls="http://127.0.0.1:1",
@@ -107,7 +108,7 @@ def test_evaluate_streams_rather_than_batching():
 
 
 def test_shutdown_kills_an_engine_that_ignores_being_asked(tmp_path):
-    """vLLM spawns workers that hold GPU memory; a survivor poisons the next
+    """VLLM spawns workers that hold GPU memory; a survivor poisons the next
     profile with an out-of-memory failure that says nothing about the release.
     """
     launcher = LocalLauncher()
@@ -117,7 +118,7 @@ def test_shutdown_kills_an_engine_that_ignores_being_asked(tmp_path):
         ["bash", "-c", script],
         None,
     )
-    monkeypatched = profiles.get("gemma-full")
+    monkeypatched = profiles.load("v0.33.0").get("gemma-full")
     with patch("fork.bench.gate.wait_for_health", return_value=True):
         launcher.launch(monkeypatched, "", 8000)
     pids = [process.pid for process, _ in launcher._running]
@@ -155,6 +156,6 @@ def test_the_saved_log_keeps_what_the_engine_said_during_the_probes(tmp_path):
     """The engine's last words are how a mid-probe death is diagnosed."""
     launcher = ChattyLauncher()
     launcher.say("dying words")
-    run_phase(2, "img:tag", launcher, tmp_path)
+    run_phase(2, "img:tag", launcher, tmp_path, profiles.load("v0.33.0"))
     saved = (tmp_path / "gemma-full.log").read_text(encoding="utf-8")
     assert "dying words" in saved

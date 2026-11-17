@@ -25,18 +25,20 @@ from fork.bench.remote import _redirected, stage_command, start_gate_command
 
 
 def test_every_model_a_phase_needs_is_named():
-    models = profiles.models_for((2,))
-    assert profiles.GEMMA_MODEL in models
-    assert profiles.QWEN_MODEL in models
+    models = profiles.load("v0.33.0").models_for((2,))
+    assert profiles.load("v0.33.0").get("gemma-full").model in models
+    assert profiles.load("v0.33.0").get("qwen-full").model in models
 
 
 def test_the_draft_model_is_staged_too():
     """A missing draft fails the boot as surely as a missing target."""
-    assert profiles.GEMMA_DRAFT in profiles.models_for((2,))
+    assert profiles.load("v0.33.0").get("gemma-full").draft in profiles.load(
+        "v0.33.0"
+    ).models_for((2,))
 
 
 def test_each_model_is_named_once_however_many_profiles_use_it():
-    models = profiles.models_for((2, 3, 4))
+    models = profiles.load("v0.33.0").models_for((2, 3, 4))
     assert len(models) == len(set(models))
 
 
@@ -107,6 +109,7 @@ class StockedProvider:
 
     Attributes:
         rented: GPU model of the offer that was actually rented.
+
     """
 
     def __init__(self, offers):

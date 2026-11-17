@@ -8,6 +8,7 @@ one is deployed, or that the profile mirrors a private topology.
 
 | profile | capability | valid questions |
 | --- | --- | --- |
+| `volta-16gb` | Tesla V100, SM70, 16 GB per GPU; count recorded per result | frozen CUDA 12.6 image, native Whisper and full-context pooling/reranking |
 | `cpu-mock` | no accelerator | schemas, token construction, controller state, collection, reports |
 | `cuda-budget-1` | cheapest available CUDA GPU | process lifecycle, HTTP routing, two-service orchestration with small fixtures |
 | `hopper-budget` | cheapest Hopper venue that fits the reduced workload | Hopper-only kernels, speculative-decoding control flow, backend selection |

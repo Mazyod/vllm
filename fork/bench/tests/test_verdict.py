@@ -60,8 +60,18 @@ def test_exit_code_is_zero_for_a_blind_probe_verdict():
     """A blind probe means the harness owes work, not that the image is bad:
     the release still ships with the patch applied."""
     results = [ProbeResult("R1", "gemma-full", True, "ok")]
-    assert exit_code(results, {"0001": PATCH_PROBE_BLIND}) == 0
-    assert exit_code(results, {"0001": PATCH_RETIREMENT_UNCONFIRMED}) == 0
+    assert (
+        exit_code(results, {"0001": PATCH_PROBE_BLIND}, profile_store=load("v0.33.0"))
+        == 0
+    )
+    assert (
+        exit_code(
+            results,
+            {"0001": PATCH_RETIREMENT_UNCONFIRMED},
+            profile_store=load("v0.33.0"),
+        )
+        == 0
+    )
 
 
 def test_both_fail_means_broken():
@@ -74,37 +84,44 @@ def test_leave_one_out_passes_and_full_series_fails_means_harmful():
 
 def test_exit_code_is_zero_when_everything_is_still_required_and_passing():
     results = [ProbeResult("R1", "gemma-full", True, "ok")]
-    assert exit_code(results, {"0001": PATCH_STILL_REQUIRED}) == 0
+    assert (
+        exit_code(
+            results, {"0001": PATCH_STILL_REQUIRED}, profile_store=load("v0.33.0")
+        )
+        == 0
+    )
 
 
 def test_exit_code_is_zero_for_a_retired_patch():
     results = [ProbeResult("R1", "gemma-full", True, "ok")]
-    assert exit_code(results, {"0001": PATCH_RETIRED}) == 0
+    assert (
+        exit_code(results, {"0001": PATCH_RETIRED}, profile_store=load("v0.33.0")) == 0
+    )
 
 
 def test_exit_code_is_nonzero_for_a_broken_patch():
-    assert exit_code([], {"0001": PATCH_BROKEN}) != 0
+    assert exit_code([], {"0001": PATCH_BROKEN}, profile_store=load("v0.33.0")) != 0
 
 
 def test_exit_code_is_nonzero_for_a_harmful_patch():
-    assert exit_code([], {"0001": PATCH_HARMFUL}) != 0
+    assert exit_code([], {"0001": PATCH_HARMFUL}, profile_store=load("v0.33.0")) != 0
 
 
 def test_exit_code_is_nonzero_when_a_full_series_probe_fails():
     results = [ProbeResult("R1", "gemma-full", False, "kept separate")]
-    assert exit_code(results, {}) != 0
+    assert exit_code(results, {}, profile_store=load("v0.33.0")) != 0
 
 
 def test_exit_code_ignores_failures_on_non_gating_profiles():
     """Leave-one-out boots land here when the series carries patches again."""
     results = [ProbeResult("R5", "qwen-tp2-noflags", False, "crashed as expected")]
-    assert exit_code(results, {}) == 0
+    assert exit_code(results, {}, profile_store=load("v0.33.0")) == 0
 
 
 def test_exit_code_ignores_a_negative_probe_crashing_as_predicted():
     """N1 is expected to crash. A run where every prediction held exits zero."""
     results = [ProbeResult("R5", "gemma-v2-kvfp8", False, "crashed as predicted")]
-    assert exit_code(results, {}) == 0
+    assert exit_code(results, {}, profile_store=load("v0.33.0")) == 0
 
 
 def test_exit_code_ignores_an_exploratory_probe_whose_outcome_is_unknown():
@@ -116,7 +133,7 @@ def test_exit_code_ignores_an_exploratory_probe_whose_outcome_is_unknown():
 def test_exit_code_gates_on_an_unrecognised_profile():
     """An id nothing declares is a harness bug, so fail rather than waive."""
     results = [ProbeResult("R5", "not-a-declared-profile", False, "?")]
-    assert exit_code(results, {}) != 0
+    assert exit_code(results, {}, profile_store=load("v0.33.0")) != 0
 
 
 def test_report_names_the_tag_and_every_patch_verdict():
@@ -126,6 +143,7 @@ def test_report_names_the_tag_and_every_patch_verdict():
         [ProbeResult("R1", "gemma-full", True, "ok")],
         {"0001": PATCH_STILL_REQUIRED},
         {},
+        profile_store=load("v0.33.0"),
     )
     assert "v0.26.0" in report
     assert "0001" in report
@@ -133,7 +151,14 @@ def test_report_names_the_tag_and_every_patch_verdict():
 
 
 def test_report_includes_the_machine_fingerprint():
-    report = build_report("v0.26.0", {"gpu": "H100", "interconnect": "SYS"}, [], {}, {})
+    report = build_report(
+        "v0.26.0",
+        {"gpu": "H100", "interconnect": "SYS"},
+        [],
+        {},
+        {},
+        profile_store=load("v0.33.0"),
+    )
     assert "H100" in report
     assert "SYS" in report
 
@@ -145,6 +170,7 @@ def test_report_marks_failing_probes_visibly():
         [ProbeResult("R2", "qwen-full", False, "selected=FLASHINFER")],
         {},
         {},
+        profile_store=load("v0.33.0"),
     )
     assert "FAIL" in report
     assert "selected=FLASHINFER" in report
@@ -165,6 +191,7 @@ def test_report_distinguishes_a_diagnostic_failure_from_a_gating_one():
         ],
         {},
         {},
+        profile_store=load("v0.33.0"),
     )
     assert "fail (as expected)" in report
     assert "**FAIL**" not in report
@@ -176,7 +203,7 @@ def test_a_negative_arm_that_stopped_crashing_is_reported():
     finding worth seeing rather than one to lose."""
     detail = "served=True crashed=False lines=812"
     results = [ProbeResult("R5", "qwen-tp2-noflags", True, detail)]
-    assert expectation_mismatches(results) == [
+    assert expectation_mismatches(results, profile_store=load("v0.33.0")) == [
         ("qwen-tp2-noflags", "boot_crash", "served", detail)
     ]
 
@@ -191,7 +218,7 @@ def test_a_negative_arm_that_crashed_as_declared_is_not_a_mismatch():
             {"crash_signature": _CRASH_SIGNATURE},
         )
     ]
-    assert expectation_mismatches(results) == []
+    assert expectation_mismatches(results, profile_store=load("v0.33.0")) == []
 
 
 @pytest.mark.parametrize("data", [{}, {"crash_signature": ""}])
@@ -203,7 +230,7 @@ def test_a_negative_arm_that_failed_without_a_crash_signature_is_reported(data):
     is a crash, and only that one confirms the declaration."""
     detail = "served=False crashed=False lines=0"
     results = [ProbeResult("R5", "qwen-tp2-noflags", False, detail, data)]
-    assert expectation_mismatches(results) == [
+    assert expectation_mismatches(results, profile_store=load("v0.33.0")) == [
         ("qwen-tp2-noflags", "boot_crash", "R5 failed (no crash signature)", detail)
     ]
 
@@ -228,7 +255,7 @@ def test_a_profile_that_promised_to_serve_and_crashed_still_names_the_receipt():
 
 def test_a_profile_that_served_as_declared_is_not_a_mismatch():
     results = [ProbeResult("R5", "gemma-full", True, "served=True crashed=False")]
-    assert expectation_mismatches(results) == []
+    assert expectation_mismatches(results, profile_store=load("v0.33.0")) == []
 
 
 def test_a_profile_that_promised_to_serve_and_did_not_is_a_mismatch():
@@ -264,19 +291,19 @@ def test_a_profile_with_no_boot_receipt_claims_nothing():
     """Without R5 the outcome was never observed; guessing it would invent a
     finding out of a profile the run never reached."""
     results = [ProbeResult("B3", "qwen-tp2-noflags", True, "ok")]
-    assert expectation_mismatches(results) == []
+    assert expectation_mismatches(results, profile_store=load("v0.33.0")) == []
 
 
 def test_an_undeclared_profile_makes_no_expectation_claim():
     """exit_code already gates on it; there is no declared expect to contradict."""
     results = [ProbeResult("R5", "not-a-declared-profile", True, "served=True")]
-    assert expectation_mismatches(results) == []
+    assert expectation_mismatches(results, profile_store=load("v0.33.0")) == []
 
 
 def test_a_negative_arm_that_serves_does_not_fail_the_gate():
     """A first sighting on a new release informs; it does not block."""
     results = [ProbeResult("R5", "qwen-tp2-noflags", True, "served=True")]
-    assert exit_code(results, {}) == 0
+    assert exit_code(results, {}, profile_store=load("v0.33.0")) == 0
 
 
 def test_report_names_a_negative_arm_that_stopped_crashing():
@@ -286,6 +313,7 @@ def test_report_names_a_negative_arm_that_stopped_crashing():
         [ProbeResult("R5", "qwen-tp2-noflags", True, "served=True lines=812")],
         {},
         {},
+        profile_store=load("v0.33.0"),
     )
     assert "Expectation mismatches" in report
     assert (
@@ -308,6 +336,7 @@ def test_report_omits_the_mismatch_section_when_every_prediction_held():
         ],
         {},
         {},
+        profile_store=load("v0.33.0"),
     )
     assert "Expectation mismatches" not in report
 
@@ -317,7 +346,7 @@ def test_controls_are_differenced_against_the_profile_they_control_for():
         "gemma-perf": {"decode_tok_s": 160.0, "ttft_p50": 0.40},
         "gemma-perf-nospec": {"decode_tok_s": 120.0, "ttft_p50": 0.40},
     }
-    rows = compare_controls(perf)
+    rows = compare_controls(perf, profile_store=load("v0.33.0"))
     decode = [r for r in rows if r[2] == "decode_tok_s"]
     assert len(decode) == 1
     control, baseline_id, _, base, value, change = decode[0]
@@ -327,7 +356,13 @@ def test_controls_are_differenced_against_the_profile_they_control_for():
 
 
 def test_controls_are_skipped_when_the_baseline_did_not_run():
-    assert compare_controls({"gemma-perf-nospec": {"decode_tok_s": 120.0}}) == []
+    assert (
+        compare_controls(
+            {"gemma-perf-nospec": {"decode_tok_s": 120.0}},
+            profile_store=load("v0.33.0"),
+        )
+        == []
+    )
 
 
 def test_controls_ignore_a_zero_baseline_rather_than_dividing_by_it():
@@ -335,7 +370,7 @@ def test_controls_ignore_a_zero_baseline_rather_than_dividing_by_it():
         "gemma-perf": {"decode_tok_s": 0.0},
         "gemma-perf-nospec": {"decode_tok_s": 120.0},
     }
-    assert compare_controls(perf) == []
+    assert compare_controls(perf, profile_store=load("v0.33.0")) == []
 
 
 def test_report_shows_the_control_comparison():
@@ -343,7 +378,7 @@ def test_report_shows_the_control_comparison():
         "gemma-perf": {"decode_tok_s": 160.0},
         "gemma-perf-nospec": {"decode_tok_s": 120.0},
     }
-    report = build_report("v0.26.0", {}, [], {}, perf)
+    report = build_report("v0.26.0", {}, [], {}, perf, profile_store=load("v0.33.0"))
     assert "Same-box controls" in report
     assert "-25.0%" in report
 
@@ -356,7 +391,7 @@ def test_controls_do_not_compare_bookkeeping_as_though_it_were_a_measurement():
         "gemma-perf": {"decode_tok_s": 100.0, "n": 4, "elapsed_s": 1.5},
         "gemma-perf-nospec": {"decode_tok_s": 50.0, "n": 4, "elapsed_s": 3.0},
     }
-    metrics = {row[2] for row in compare_controls(perf)}
+    metrics = {row[2] for row in compare_controls(perf, profile_store=load("v0.33.0"))}
     assert "decode_tok_s" in metrics
     assert "n" not in metrics
     assert "elapsed_s" not in metrics

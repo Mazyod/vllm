@@ -17,10 +17,10 @@ PREV_RELEASE_SHA="$(sed -n 's/^release-sha: //p' "$RELEASE_FILE" | head -1)"
 RELEASE_BRANCH="release/$TAG"
 BUMP_BRANCH="fork/bump-$TAG"
 
-[ -n "$PREV_TAG" ] && [ -n "$PREV_RELEASE_SHA" ] || {
+if [ -z "$PREV_TAG" ] || [ -z "$PREV_RELEASE_SHA" ]; then
   echo "ERROR: incomplete release pointer at $RELEASE_FILE" >&2
   exit 1
-}
+fi
 for branch in "$RELEASE_BRANCH" "$BUMP_BRANCH"; do
   if git -C "$REPO" show-ref --verify --quiet "refs/heads/$branch"; then
     echo "ERROR: branch $branch already exists" >&2
@@ -80,9 +80,9 @@ while IFS= read -r item; do
 done < <(find "$SOURCE_CONFIG" -mindepth 1 -maxdepth 1 ! -name results -print)
 
 sed -i "s/^ARG BASE_TAG=.*/ARG BASE_TAG=$TAG/" \
-  "$REPO/fork/docker/Dockerfile.audio"
+  "$REPO/fork/docker/Dockerfile"
 sed -i "s/DEFAULT_BASE_TAG: $PREV_TAG/DEFAULT_BASE_TAG: $TAG/" \
-  "$REPO/.github/workflows/build-vllm-audio.yml"
+  "$REPO/.github/workflows/build-vllm.yml"
 sed -i "s/^DEFAULT_TAG = \"$PREV_TAG\"/DEFAULT_TAG = \"$TAG\"/" \
   "$REPO/fork/bench/profiles.py"
 sed -i "s/--tag $PREV_TAG/--tag $TAG/" "$REPO/fork/bench/preflight.sh"

@@ -14,7 +14,7 @@ set -euo pipefail
 }
 REPO="${REPO:-$(git -C . rev-parse --show-toplevel)}"
 PATCH_DIR="${PATCH_DIR:-$REPO/fork/patches}"
-BASE_TAG="${BASE_TAG:-$(sed -n 's/^ARG BASE_TAG=//p' "$REPO/fork/docker/Dockerfile.audio" | head -1)}"
+BASE_TAG="${BASE_TAG:-$(sed -n 's/^ARG BASE_TAG=//p' "$REPO/fork/docker/Dockerfile" | head -1)}"
 [ -n "$BASE_TAG" ] || {
   echo "ERROR: no base tag (ARG BASE_TAG or \$BASE_TAG)" >&2
   exit 1

@@ -19,7 +19,7 @@ PATCH_DIR = REPO_ROOT / "fork" / "patches"
 
 
 def _base_tag() -> str:
-    workflow = (REPO_ROOT / ".github" / "workflows" / "build-vllm-audio.yml").read_text(
+    workflow = (REPO_ROOT / ".github" / "workflows" / "build-vllm.yml").read_text(
         encoding="utf-8"
     )
     for line in workflow.splitlines():
