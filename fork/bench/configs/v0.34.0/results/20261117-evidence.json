@@ -1,0 +1,1257 @@
+{
+  "image": "openimage/vllm@sha256:32a0c7999d89cffba871b172cfffdfedafe33afb86f398cc6196a1d6d85ff828",
+  "candidate_tag": "v0.34.0-cand-3f64a0e",
+  "image_provenance": {
+    "org.opencontainers.image.revision": "3f64a0eabb8377825563de6f301a2cabf432b6ce",
+    "io.openimage.base-digest": "sha256:20fdb089454afbb324efa4110a2c025ff7b27cc1a086e07aa580b18df8ad1ce1",
+    "io.openimage.patch-export": "sha256:d0c02f3c46d3d5738f8a98bb481339189d097d86e5603df7e1bb718be19ded9d",
+    "io.openimage.release-sha": "62d4bc3c7e33b1b6c906e233e6af2d3506c482ca"
+  },
+  "gate_source": "40467091e0c99ff541b48ea9ee2f1891d09acf55",
+  "config_sha256": "61c0c16ea5aace1ea029dd727986204737172c34037e316ba064821f55de4785",
+  "runtime_environment": {
+    "HF_HUB_OFFLINE": "1"
+  },
+  "hardware_profile": "hopper-fabric-4-large",
+  "interconnect": "NV6",
+  "driver": "610.57.04",
+  "runtime": {
+    "packages": {
+      "vllm": "0.34.0",
+      "torch": "2.14.0",
+      "transformers": "5.22.2",
+      "triton": "3.8.0"
+    },
+    "cuda": "13.0",
+    "gpus": [
+      {
+        "name": "NVIDIA H200 NVL",
+        "memory_bytes": 150101688320,
+        "compute_capability": "9.0"
+      },
+      {
+        "name": "NVIDIA H200 NVL",
+        "memory_bytes": 150101688320,
+        "compute_capability": "9.0"
+      },
+      {
+        "name": "NVIDIA H200 NVL",
+        "memory_bytes": 150101688320,
+        "compute_capability": "9.0"
+      },
+      {
+        "name": "NVIDIA H200 NVL",
+        "memory_bytes": 150101688320,
+        "compute_capability": "9.0"
+      }
+    ]
+  },
+  "gate_results": [
+    {
+      "probe_id": "R5",
+      "profile_id": "deepseek-tp4",
+      "passed": true,
+      "detail": "served=True crashed=False lines=591",
+      "data": {
+        "crash_signature": ""
+      },
+      "launch_ids": []
+    },
+    {
+      "probe_id": "B1",
+      "profile_id": "deepseek-tp4",
+      "passed": true,
+      "detail": "0/100 corrupt (102 constrained outputs inspected)",
+      "data": {
+        "corrupt": 0,
+        "inspected": 102,
+        "shapes": {
+          "constrained": 100
+        }
+      },
+      "launch_ids": []
+    },
+    {
+      "probe_id": "B3",
+      "profile_id": "deepseek-tp4",
+      "passed": true,
+      "detail": "acceptance=0.360447381799695",
+      "data": {
+        "acceptance_rate": 0.360447381799695
+      },
+      "launch_ids": []
+    },
+    {
+      "probe_id": "B4",
+      "profile_id": "deepseek-tp4",
+      "passed": true,
+      "detail": "status=200",
+      "data": {
+        "status": 200
+      },
+      "launch_ids": []
+    },
+    {
+      "probe_id": "P1",
+      "profile_id": "deepseek-tp4",
+      "passed": true,
+      "detail": "ttft_p50=0.076 (4/4 samples)",
+      "data": {
+        "ttft_p50": 0.07555089390370995,
+        "ttft_p99": 0.12986968201585114,
+        "n": 4
+      },
+      "launch_ids": []
+    },
+    {
+      "probe_id": "P2",
+      "profile_id": "deepseek-tp4",
+      "passed": true,
+      "detail": "decode_tok_s=249.2",
+      "data": {
+        "decode_tok_s": 249.1800998868105,
+        "elapsed_s": 1.027369361021556
+      },
+      "launch_ids": []
+    },
+    {
+      "probe_id": "P3",
+      "profile_id": "deepseek-tp4",
+      "passed": true,
+      "detail": "aggregate throughput recorded",
+      "data": {
+        "throughput_conc1": 279.8288020546503,
+        "throughput_conc8": 942.1818604821191,
+        "throughput_conc32": 2556.6390407402314
+      },
+      "launch_ids": []
+    },
+    {
+      "probe_id": "P4",
+      "profile_id": "deepseek-tp4",
+      "passed": true,
+      "detail": "acceptance=0.39112426035502956",
+      "data": {
+        "acceptance_rate": 0.39112426035502956
+      },
+      "launch_ids": []
+    }
+  ],
+  "supplemental": {
+    "passed": true,
+    "images": [
+      1,
+      9
+    ],
+    "prompt_tokens": 1047474,
+    "max_model_len": 1048576
+  },
+  "full_context_elapsed_s": 40.25553833099548,
+  "performance": {
+    "seq512-restart": {
+      "config_sha256": "c0d47d2afbfc984bedea572f1786477bfa033c8ee7f9b241db7b93b21940710c",
+      "samples": [
+        {
+          "probe_id": "P1",
+          "profile_id": "",
+          "passed": true,
+          "detail": "ttft_p50=0.078 (4/4 samples)",
+          "data": {
+            "ttft_p50": 0.07821404200512916,
+            "ttft_p99": 0.12122842203825712,
+            "n": 4
+          },
+          "launch_ids": [],
+          "round": 0
+        },
+        {
+          "probe_id": "P2",
+          "profile_id": "",
+          "passed": true,
+          "detail": "decode_tok_s=281.5",
+          "data": {
+            "decode_tok_s": 281.54862485764386,
+            "elapsed_s": 0.9092567940242589
+          },
+          "launch_ids": [],
+          "round": 0
+        },
+        {
+          "probe_id": "P3",
+          "profile_id": "",
+          "passed": true,
+          "detail": "aggregate throughput recorded",
+          "data": {
+            "throughput_conc1": 287.8820449008506,
+            "throughput_conc8": 1033.4976230516015,
+            "throughput_conc32": 2545.943726946054
+          },
+          "launch_ids": [],
+          "round": 0
+        },
+        {
+          "probe": "vision",
+          "round": 0,
+          "images": 1,
+          "elapsed_s": 0.13881474209483713,
+          "usage": {
+            "prompt_tokens": 695,
+            "total_tokens": 697,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe": "vision",
+          "round": 0,
+          "images": 9,
+          "elapsed_s": 0.5249282140284777,
+          "usage": {
+            "prompt_tokens": 5916,
+            "total_tokens": 5918,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe_id": "P1",
+          "profile_id": "",
+          "passed": true,
+          "detail": "ttft_p50=0.068 (4/4 samples)",
+          "data": {
+            "ttft_p50": 0.06756007403600961,
+            "ttft_p99": 0.07485714601352811,
+            "n": 4
+          },
+          "launch_ids": [],
+          "round": 1
+        },
+        {
+          "probe_id": "P2",
+          "profile_id": "",
+          "passed": true,
+          "detail": "decode_tok_s=274.6",
+          "data": {
+            "decode_tok_s": 274.59200257469524,
+            "elapsed_s": 0.9322922648862004
+          },
+          "launch_ids": [],
+          "round": 1
+        },
+        {
+          "probe_id": "P3",
+          "profile_id": "",
+          "passed": true,
+          "detail": "aggregate throughput recorded",
+          "data": {
+            "throughput_conc1": 272.6504566610657,
+            "throughput_conc8": 1017.5241456385197,
+            "throughput_conc32": 2451.234700119604
+          },
+          "launch_ids": [],
+          "round": 1
+        },
+        {
+          "probe": "vision",
+          "round": 1,
+          "images": 1,
+          "elapsed_s": 0.15700530901085585,
+          "usage": {
+            "prompt_tokens": 693,
+            "total_tokens": 695,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe": "vision",
+          "round": 1,
+          "images": 9,
+          "elapsed_s": 0.45535628008656204,
+          "usage": {
+            "prompt_tokens": 5915,
+            "total_tokens": 5917,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe_id": "P1",
+          "profile_id": "",
+          "passed": true,
+          "detail": "ttft_p50=0.086 (4/4 samples)",
+          "data": {
+            "ttft_p50": 0.08614362590014935,
+            "ttft_p99": 0.08919124607928097,
+            "n": 4
+          },
+          "launch_ids": [],
+          "round": 2
+        },
+        {
+          "probe_id": "P2",
+          "profile_id": "",
+          "passed": true,
+          "detail": "decode_tok_s=284.5",
+          "data": {
+            "decode_tok_s": 284.454029591676,
+            "elapsed_s": 0.8999696730170399
+          },
+          "launch_ids": [],
+          "round": 2
+        },
+        {
+          "probe_id": "P3",
+          "profile_id": "",
+          "passed": true,
+          "detail": "aggregate throughput recorded",
+          "data": {
+            "throughput_conc1": 283.61947136322095,
+            "throughput_conc8": 1042.0456410010108,
+            "throughput_conc32": 2437.4552892372217
+          },
+          "launch_ids": [],
+          "round": 2
+        },
+        {
+          "probe": "vision",
+          "round": 2,
+          "images": 1,
+          "elapsed_s": 0.1562513989629224,
+          "usage": {
+            "prompt_tokens": 690,
+            "total_tokens": 692,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe": "vision",
+          "round": 2,
+          "images": 9,
+          "elapsed_s": 0.45663384499493986,
+          "usage": {
+            "prompt_tokens": 5914,
+            "total_tokens": 5916,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe_id": "P1",
+          "profile_id": "",
+          "passed": true,
+          "detail": "ttft_p50=0.081 (4/4 samples)",
+          "data": {
+            "ttft_p50": 0.08123755000997335,
+            "ttft_p99": 0.08987246500328183,
+            "n": 4
+          },
+          "launch_ids": [],
+          "round": 3
+        },
+        {
+          "probe_id": "P2",
+          "profile_id": "",
+          "passed": true,
+          "detail": "decode_tok_s=255.8",
+          "data": {
+            "decode_tok_s": 255.8296867455469,
+            "elapsed_s": 1.0006657290505245
+          },
+          "launch_ids": [],
+          "round": 3
+        },
+        {
+          "probe_id": "P3",
+          "profile_id": "",
+          "passed": true,
+          "detail": "aggregate throughput recorded",
+          "data": {
+            "throughput_conc1": 266.1683219277042,
+            "throughput_conc8": 1042.856172383914,
+            "throughput_conc32": 2487.6623374222568
+          },
+          "launch_ids": [],
+          "round": 3
+        },
+        {
+          "probe": "vision",
+          "round": 3,
+          "images": 1,
+          "elapsed_s": 0.15991987101733685,
+          "usage": {
+            "prompt_tokens": 697,
+            "total_tokens": 699,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe": "vision",
+          "round": 3,
+          "images": 9,
+          "elapsed_s": 0.45403961604461074,
+          "usage": {
+            "prompt_tokens": 5916,
+            "total_tokens": 5918,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        }
+      ]
+    },
+    "nospec": {
+      "config_sha256": "585cc30579f7dffcbfff1345f33c3623f3f1d3221e2c4415470929b4c0e4b9d9",
+      "samples": [
+        {
+          "probe_id": "P1",
+          "profile_id": "",
+          "passed": true,
+          "detail": "ttft_p50=0.072 (4/4 samples)",
+          "data": {
+            "ttft_p50": 0.07155948400031775,
+            "ttft_p99": 0.14325689699035138,
+            "n": 4
+          },
+          "launch_ids": [],
+          "round": 0
+        },
+        {
+          "probe_id": "P2",
+          "profile_id": "",
+          "passed": true,
+          "detail": "decode_tok_s=122.5",
+          "data": {
+            "decode_tok_s": 122.52206212438504,
+            "elapsed_s": 2.0894196160370484
+          },
+          "launch_ids": [],
+          "round": 0
+        },
+        {
+          "probe_id": "P3",
+          "profile_id": "",
+          "passed": true,
+          "detail": "aggregate throughput recorded",
+          "data": {
+            "throughput_conc1": 118.0446083805816,
+            "throughput_conc8": 694.3026460301218,
+            "throughput_conc32": 1966.4701099098465
+          },
+          "launch_ids": [],
+          "round": 0
+        },
+        {
+          "probe": "vision",
+          "round": 0,
+          "images": 1,
+          "elapsed_s": 0.16752057801932096,
+          "usage": {
+            "prompt_tokens": 692,
+            "total_tokens": 694,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe": "vision",
+          "round": 0,
+          "images": 9,
+          "elapsed_s": 0.5848414760548621,
+          "usage": {
+            "prompt_tokens": 5919,
+            "total_tokens": 5921,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe_id": "P1",
+          "profile_id": "",
+          "passed": true,
+          "detail": "ttft_p50=0.067 (4/4 samples)",
+          "data": {
+            "ttft_p50": 0.06658502598293126,
+            "ttft_p99": 0.07156799593940377,
+            "n": 4
+          },
+          "launch_ids": [],
+          "round": 1
+        },
+        {
+          "probe_id": "P2",
+          "profile_id": "",
+          "passed": true,
+          "detail": "decode_tok_s=122.2",
+          "data": {
+            "decode_tok_s": 122.24704098607391,
+            "elapsed_s": 2.0941202170215547
+          },
+          "launch_ids": [],
+          "round": 1
+        },
+        {
+          "probe_id": "P3",
+          "profile_id": "",
+          "passed": true,
+          "detail": "aggregate throughput recorded",
+          "data": {
+            "throughput_conc1": 118.29733940639386,
+            "throughput_conc8": 700.5780586686541,
+            "throughput_conc32": 1990.2875629232644
+          },
+          "launch_ids": [],
+          "round": 1
+        },
+        {
+          "probe": "vision",
+          "round": 1,
+          "images": 1,
+          "elapsed_s": 0.13354945392347872,
+          "usage": {
+            "prompt_tokens": 694,
+            "total_tokens": 696,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe": "vision",
+          "round": 1,
+          "images": 9,
+          "elapsed_s": 0.5404702889500186,
+          "usage": {
+            "prompt_tokens": 5920,
+            "total_tokens": 5922,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe_id": "P1",
+          "profile_id": "",
+          "passed": true,
+          "detail": "ttft_p50=0.068 (4/4 samples)",
+          "data": {
+            "ttft_p50": 0.06774461106397212,
+            "ttft_p99": 0.07264724303968251,
+            "n": 4
+          },
+          "launch_ids": [],
+          "round": 2
+        },
+        {
+          "probe_id": "P2",
+          "profile_id": "",
+          "passed": true,
+          "detail": "decode_tok_s=122.5",
+          "data": {
+            "decode_tok_s": 122.47362290056132,
+            "elapsed_s": 2.0902459969511256
+          },
+          "launch_ids": [],
+          "round": 2
+        },
+        {
+          "probe_id": "P3",
+          "profile_id": "",
+          "passed": true,
+          "detail": "aggregate throughput recorded",
+          "data": {
+            "throughput_conc1": 118.26564898685876,
+            "throughput_conc8": 708.1951154994888,
+            "throughput_conc32": 2017.1656582147991
+          },
+          "launch_ids": [],
+          "round": 2
+        },
+        {
+          "probe": "vision",
+          "round": 2,
+          "images": 1,
+          "elapsed_s": 0.13334983901586384,
+          "usage": {
+            "prompt_tokens": 692,
+            "total_tokens": 694,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe": "vision",
+          "round": 2,
+          "images": 9,
+          "elapsed_s": 0.4698572210036218,
+          "usage": {
+            "prompt_tokens": 5919,
+            "total_tokens": 5921,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe_id": "P1",
+          "profile_id": "",
+          "passed": true,
+          "detail": "ttft_p50=0.067 (4/4 samples)",
+          "data": {
+            "ttft_p50": 0.06727217708248645,
+            "ttft_p99": 0.07206053892150521,
+            "n": 4
+          },
+          "launch_ids": [],
+          "round": 3
+        },
+        {
+          "probe_id": "P2",
+          "profile_id": "",
+          "passed": true,
+          "detail": "decode_tok_s=122.6",
+          "data": {
+            "decode_tok_s": 122.56349058840146,
+            "elapsed_s": 2.0887133580399677
+          },
+          "launch_ids": [],
+          "round": 3
+        },
+        {
+          "probe_id": "P3",
+          "profile_id": "",
+          "passed": true,
+          "detail": "aggregate throughput recorded",
+          "data": {
+            "throughput_conc1": 118.3371293925252,
+            "throughput_conc8": 705.2749365269142,
+            "throughput_conc32": 2008.82068503863
+          },
+          "launch_ids": [],
+          "round": 3
+        },
+        {
+          "probe": "vision",
+          "round": 3,
+          "images": 1,
+          "elapsed_s": 0.13512002397328615,
+          "usage": {
+            "prompt_tokens": 692,
+            "total_tokens": 694,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe": "vision",
+          "round": 3,
+          "images": 9,
+          "elapsed_s": 0.4668103050207719,
+          "usage": {
+            "prompt_tokens": 5916,
+            "total_tokens": 5918,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        }
+      ]
+    },
+    "default-vision": {
+      "config_sha256": "229f0814cc387eed86c5e415eecb56d8d4b0483ed2384e46e24552201d283a97",
+      "samples": [
+        {
+          "probe_id": "P1",
+          "profile_id": "",
+          "passed": true,
+          "detail": "ttft_p50=0.077 (4/4 samples)",
+          "data": {
+            "ttft_p50": 0.07701545394957066,
+            "ttft_p99": 0.6361796340206638,
+            "n": 4
+          },
+          "launch_ids": [],
+          "round": 0
+        },
+        {
+          "probe_id": "P2",
+          "profile_id": "",
+          "passed": true,
+          "detail": "decode_tok_s=280.4",
+          "data": {
+            "decode_tok_s": 280.3922754157327,
+            "elapsed_s": 0.913006606977433
+          },
+          "launch_ids": [],
+          "round": 0
+        },
+        {
+          "probe_id": "P3",
+          "profile_id": "",
+          "passed": true,
+          "detail": "aggregate throughput recorded",
+          "data": {
+            "throughput_conc1": 279.6286992054044,
+            "throughput_conc8": 860.4949806307296,
+            "throughput_conc32": 2092.7529259543944
+          },
+          "launch_ids": [],
+          "round": 0
+        },
+        {
+          "probe": "vision",
+          "round": 0,
+          "images": 1,
+          "elapsed_s": 0.4004005850292742,
+          "usage": {
+            "prompt_tokens": 694,
+            "total_tokens": 696,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe": "vision",
+          "round": 0,
+          "images": 9,
+          "elapsed_s": 0.775646107038483,
+          "usage": {
+            "prompt_tokens": 5917,
+            "total_tokens": 5919,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe_id": "P1",
+          "profile_id": "",
+          "passed": true,
+          "detail": "ttft_p50=0.089 (4/4 samples)",
+          "data": {
+            "ttft_p50": 0.08947532693855464,
+            "ttft_p99": 0.09536652406677604,
+            "n": 4
+          },
+          "launch_ids": [],
+          "round": 1
+        },
+        {
+          "probe_id": "P2",
+          "profile_id": "",
+          "passed": true,
+          "detail": "decode_tok_s=274.4",
+          "data": {
+            "decode_tok_s": 274.42546202778664,
+            "elapsed_s": 0.9328580449800938
+          },
+          "launch_ids": [],
+          "round": 1
+        },
+        {
+          "probe_id": "P3",
+          "profile_id": "",
+          "passed": true,
+          "detail": "aggregate throughput recorded",
+          "data": {
+            "throughput_conc1": 290.2127531366556,
+            "throughput_conc8": 1083.6783137973744,
+            "throughput_conc32": 2358.5601051487047
+          },
+          "launch_ids": [],
+          "round": 1
+        },
+        {
+          "probe": "vision",
+          "round": 1,
+          "images": 1,
+          "elapsed_s": 0.14633315592072904,
+          "usage": {
+            "prompt_tokens": 695,
+            "total_tokens": 697,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe": "vision",
+          "round": 1,
+          "images": 9,
+          "elapsed_s": 0.5234861159697175,
+          "usage": {
+            "prompt_tokens": 5914,
+            "total_tokens": 5916,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe_id": "P1",
+          "profile_id": "",
+          "passed": true,
+          "detail": "ttft_p50=0.083 (4/4 samples)",
+          "data": {
+            "ttft_p50": 0.08327799197286367,
+            "ttft_p99": 0.09198729402851313,
+            "n": 4
+          },
+          "launch_ids": [],
+          "round": 2
+        },
+        {
+          "probe_id": "P2",
+          "profile_id": "",
+          "passed": true,
+          "detail": "decode_tok_s=287.3",
+          "data": {
+            "decode_tok_s": 287.2759127600574,
+            "elapsed_s": 0.8911293590208516
+          },
+          "launch_ids": [],
+          "round": 2
+        },
+        {
+          "probe_id": "P3",
+          "profile_id": "",
+          "passed": true,
+          "detail": "aggregate throughput recorded",
+          "data": {
+            "throughput_conc1": 242.16185226608093,
+            "throughput_conc8": 1059.2902121134875,
+            "throughput_conc32": 2474.351349479412
+          },
+          "launch_ids": [],
+          "round": 2
+        },
+        {
+          "probe": "vision",
+          "round": 2,
+          "images": 1,
+          "elapsed_s": 0.14198400208260864,
+          "usage": {
+            "prompt_tokens": 694,
+            "total_tokens": 696,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe": "vision",
+          "round": 2,
+          "images": 9,
+          "elapsed_s": 0.4947585209738463,
+          "usage": {
+            "prompt_tokens": 5920,
+            "total_tokens": 5922,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe_id": "P1",
+          "profile_id": "",
+          "passed": true,
+          "detail": "ttft_p50=0.083 (4/4 samples)",
+          "data": {
+            "ttft_p50": 0.0831829640083015,
+            "ttft_p99": 0.09083673299755901,
+            "n": 4
+          },
+          "launch_ids": [],
+          "round": 3
+        },
+        {
+          "probe_id": "P2",
+          "profile_id": "",
+          "passed": true,
+          "detail": "decode_tok_s=268.8",
+          "data": {
+            "decode_tok_s": 268.8499864802347,
+            "elapsed_s": 0.9522038790164515
+          },
+          "launch_ids": [],
+          "round": 3
+        },
+        {
+          "probe_id": "P3",
+          "profile_id": "",
+          "passed": true,
+          "detail": "aggregate throughput recorded",
+          "data": {
+            "throughput_conc1": 250.6902909086498,
+            "throughput_conc8": 988.8636545975769,
+            "throughput_conc32": 2441.9190573458613
+          },
+          "launch_ids": [],
+          "round": 3
+        },
+        {
+          "probe": "vision",
+          "round": 3,
+          "images": 1,
+          "elapsed_s": 0.1412577290320769,
+          "usage": {
+            "prompt_tokens": 694,
+            "total_tokens": 696,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe": "vision",
+          "round": 3,
+          "images": 9,
+          "elapsed_s": 0.4955495640169829,
+          "usage": {
+            "prompt_tokens": 5916,
+            "total_tokens": 5918,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        }
+      ]
+    },
+    "final": {
+      "config_sha256": "f0475e6104e38e5d9c814fafbd8cb09b71ca94713d1c0cfaf8fd1f9e6b22ea88",
+      "samples": [
+        {
+          "probe_id": "P1",
+          "profile_id": "",
+          "passed": true,
+          "detail": "ttft_p50=0.080 (4/4 samples)",
+          "data": {
+            "ttft_p50": 0.0795700770104304,
+            "ttft_p99": 0.25375450297724456,
+            "n": 4
+          },
+          "launch_ids": [],
+          "round": 0
+        },
+        {
+          "probe_id": "P2",
+          "profile_id": "",
+          "passed": true,
+          "detail": "decode_tok_s=291.2",
+          "data": {
+            "decode_tok_s": 291.2416491609209,
+            "elapsed_s": 0.8789951599901542
+          },
+          "launch_ids": [],
+          "round": 0
+        },
+        {
+          "probe_id": "P3",
+          "profile_id": "",
+          "passed": true,
+          "detail": "aggregate throughput recorded",
+          "data": {
+            "throughput_conc1": 258.31576205564267,
+            "throughput_conc8": 965.7182083767497,
+            "throughput_conc32": 2398.0449687969376
+          },
+          "launch_ids": [],
+          "round": 0
+        },
+        {
+          "probe": "vision",
+          "round": 0,
+          "images": 1,
+          "elapsed_s": 0.19661678199190646,
+          "usage": {
+            "prompt_tokens": 693,
+            "total_tokens": 695,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe": "vision",
+          "round": 0,
+          "images": 9,
+          "elapsed_s": 0.5083957070019096,
+          "usage": {
+            "prompt_tokens": 5915,
+            "total_tokens": 5917,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe_id": "P1",
+          "profile_id": "",
+          "passed": true,
+          "detail": "ttft_p50=0.076 (4/4 samples)",
+          "data": {
+            "ttft_p50": 0.07570237794425339,
+            "ttft_p99": 0.08566264598630369,
+            "n": 4
+          },
+          "launch_ids": [],
+          "round": 1
+        },
+        {
+          "probe_id": "P2",
+          "profile_id": "",
+          "passed": true,
+          "detail": "decode_tok_s=266.2",
+          "data": {
+            "decode_tok_s": 266.17289595963973,
+            "elapsed_s": 0.9617808720795438
+          },
+          "launch_ids": [],
+          "round": 1
+        },
+        {
+          "probe_id": "P3",
+          "profile_id": "",
+          "passed": true,
+          "detail": "aggregate throughput recorded",
+          "data": {
+            "throughput_conc1": 256.68199943452794,
+            "throughput_conc8": 1062.4578417322218,
+            "throughput_conc32": 2415.582174747621
+          },
+          "launch_ids": [],
+          "round": 1
+        },
+        {
+          "probe": "vision",
+          "round": 1,
+          "images": 1,
+          "elapsed_s": 0.15602744300849736,
+          "usage": {
+            "prompt_tokens": 693,
+            "total_tokens": 695,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe": "vision",
+          "round": 1,
+          "images": 9,
+          "elapsed_s": 0.46648165897931904,
+          "usage": {
+            "prompt_tokens": 5918,
+            "total_tokens": 5920,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe_id": "P1",
+          "profile_id": "",
+          "passed": true,
+          "detail": "ttft_p50=0.078 (4/4 samples)",
+          "data": {
+            "ttft_p50": 0.07762719900347292,
+            "ttft_p99": 0.0854893879732117,
+            "n": 4
+          },
+          "launch_ids": [],
+          "round": 2
+        },
+        {
+          "probe_id": "P2",
+          "profile_id": "",
+          "passed": true,
+          "detail": "decode_tok_s=255.4",
+          "data": {
+            "decode_tok_s": 255.38209255439688,
+            "elapsed_s": 1.0024195410078391
+          },
+          "launch_ids": [],
+          "round": 2
+        },
+        {
+          "probe_id": "P3",
+          "profile_id": "",
+          "passed": true,
+          "detail": "aggregate throughput recorded",
+          "data": {
+            "throughput_conc1": 265.24940455292676,
+            "throughput_conc8": 1032.7577756167682,
+            "throughput_conc32": 2441.8941306414163
+          },
+          "launch_ids": [],
+          "round": 2
+        },
+        {
+          "probe": "vision",
+          "round": 2,
+          "images": 1,
+          "elapsed_s": 0.15207764494698495,
+          "usage": {
+            "prompt_tokens": 693,
+            "total_tokens": 695,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe": "vision",
+          "round": 2,
+          "images": 9,
+          "elapsed_s": 0.43576719192788005,
+          "usage": {
+            "prompt_tokens": 5913,
+            "total_tokens": 5915,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe_id": "P1",
+          "profile_id": "",
+          "passed": true,
+          "detail": "ttft_p50=0.083 (4/4 samples)",
+          "data": {
+            "ttft_p50": 0.08280735299922526,
+            "ttft_p99": 0.09217541490215808,
+            "n": 4
+          },
+          "launch_ids": [],
+          "round": 3
+        },
+        {
+          "probe_id": "P2",
+          "profile_id": "",
+          "passed": true,
+          "detail": "decode_tok_s=255.9",
+          "data": {
+            "decode_tok_s": 255.86783122495123,
+            "elapsed_s": 1.0005165509646758
+          },
+          "launch_ids": [],
+          "round": 3
+        },
+        {
+          "probe_id": "P3",
+          "profile_id": "",
+          "passed": true,
+          "detail": "aggregate throughput recorded",
+          "data": {
+            "throughput_conc1": 271.96215569703065,
+            "throughput_conc8": 1061.2921752985205,
+            "throughput_conc32": 2489.689033594448
+          },
+          "launch_ids": [],
+          "round": 3
+        },
+        {
+          "probe": "vision",
+          "round": 3,
+          "images": 1,
+          "elapsed_s": 0.141641641035676,
+          "usage": {
+            "prompt_tokens": 691,
+            "total_tokens": 693,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        },
+        {
+          "probe": "vision",
+          "round": 3,
+          "images": 9,
+          "elapsed_s": 0.4349321909248829,
+          "usage": {
+            "prompt_tokens": 5916,
+            "total_tokens": 5918,
+            "completion_tokens": 2,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "passed": true,
+  "performance_method": "One warmup round followed by three measured rounds on the same GPU venue. Fresh leading nonce per probe and image UUIDs per image; eight prompt topics rotate within bursts; engine-counter throughput; fixed 256-token ignore-EOS decode. Median summaries in the gate record. No cross-hardware comparison.",
+  "control_changes": {
+    "seq512-restart": "Final effective configuration with explicit fp8 KV dtype and explicit DSpark width 5.",
+    "nospec": "seq512-restart with speculative-config removed.",
+    "default-vision": "Final effective configuration with default weights vision mode and explicit DSpark width 5.",
+    "final": "Shipping configuration with explicit DSpark width 5; certified removes this checkpoint-derived default."
+  },
+  "concurrent_submissions": [
+    {
+      "passed": true,
+      "images": [
+        1,
+        9
+      ],
+      "prompt_tokens": 1047478,
+      "max_model_len": 1048576
+    },
+    {
+      "passed": true,
+      "images": [
+        1,
+        9
+      ],
+      "prompt_tokens": 1047478,
+      "max_model_len": 1048576
+    }
+  ],
+  "concurrent_submission_scope": "Two near-window requests were submitted concurrently; prefill was queued. This is not a claim of simultaneous full-window decode or the startup estimate of eight full contexts."
+}

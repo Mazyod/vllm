@@ -2,13 +2,12 @@ model: deepseek-ai/DeepSeek-V4.1-Flash
 revision: dba1be0a40aa45a94ad051997016db3960a90277
 served-model-name: deepseek-v4.1-flash
 tensor-parallel-size: 4
-kv-cache-dtype: fp8
 mm-encoder-tp-mode: data
 tool-call-parser: deepseek_v41
 enable-auto-tool-choice: true
 reasoning-parser: deepseek_v41
 speculative-config:
   method: dspark
-  num_speculative_tokens: 5
   draft_sample_method: probabilistic
   rejection_sample_method: block
+max-num-seqs: 512

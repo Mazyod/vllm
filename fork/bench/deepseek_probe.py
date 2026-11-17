@@ -31,9 +31,9 @@ def solid_png(rgb: tuple[int, int, int]) -> str:
             + struct.pack("!I", zlib.crc32(kind + data))
         )
 
-    pixels = (b"\0" + bytes(rgb) * 224) * 224
+    pixels = (b"\0" + bytes(rgb) * 1024) * 1024
     png = b"\x89PNG\r\n\x1a\n"
-    png += chunk(b"IHDR", struct.pack("!2I5B", 224, 224, 8, 2, 0, 0, 0))
+    png += chunk(b"IHDR", struct.pack("!2I5B", 1024, 1024, 8, 2, 0, 0, 0))
     png += chunk(b"IDAT", zlib.compress(pixels)) + chunk(b"IEND", b"")
     return "data:image/png;base64," + base64.b64encode(png).decode()
 
@@ -115,24 +115,68 @@ def main() -> None:
         assert message.get("reasoning"), body
         assert "42" in message["content"], body
         for count in (1, 9):
+            colors = (
+                ("blue",)
+                if count == 1
+                else (
+                    "red",
+                    "blue",
+                    "blue",
+                    "red",
+                    "blue",
+                    "red",
+                    "red",
+                    "blue",
+                    "blue",
+                )
+            )
             content = [
-                {
-                    "type": "image_url",
-                    "image_url": {
-                        "url": solid_png((0, 0, 230) if count == 1 else (230 + i, 0, 0))
+                item
+                for i, color in enumerate(colors)
+                for item in (
+                    {"type": "text", "text": f"Image {i + 1}:"},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": solid_png(
+                                (230 + i, 0, 0) if color == "red" else (0, 0, 230 + i)
+                            )
+                        },
                     },
-                }
-                for i in range(count)
+                )
             ]
             content.append(
                 {
                     "type": "text",
-                    "text": "What color fills every image? Reply with one color word.",
+                    "text": "Report image colors in order, using basic color names.",
                 }
             )
-            body = chat(f"images-{count}", content)
-            color = "blue" if count == 1 else "red"
-            assert color in body["choices"][0]["message"]["content"].lower(), body
+            body = chat(
+                f"images-{count}",
+                content,
+                response_format={
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "colors",
+                        "strict": True,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "colors": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                    "minItems": count,
+                                    "maxItems": count,
+                                }
+                            },
+                            "required": ["colors"],
+                            "additionalProperties": False,
+                        },
+                    },
+                },
+            )
+            observed = json.loads(body["choices"][0]["message"]["content"])["colors"]
+            assert [color.strip().lower() for color in observed] == list(colors), body
 
         needle = "ARCHIVE-" + uuid.uuid4().hex
         prefix = f"Remember this exact archive code: {needle}.\n"

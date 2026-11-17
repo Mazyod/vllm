@@ -55,7 +55,7 @@ choice of base; a new image digest requires new hardware verification.
 
 `fork/patches/RELEASE` points at v0.34.0, upstream commit
 `62d4bc3c7e33b1b6c906e233e6af2d3506c482ca`. The patch series is empty.
-The v0.34.0 candidate is not certified until its own gate record exists.
+The v0.34.0 candidate passed its [hardware gate](fork/bench/configs/v0.34.0/results/20261117-gate.md).
 The preceding v0.33.0 audio release and its limitations remain documented in
 [its gate record](fork/bench/configs/v0.33.0/results/20261105-gate.md).
 
