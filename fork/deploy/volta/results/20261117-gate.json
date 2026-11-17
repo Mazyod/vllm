@@ -1,0 +1,575 @@
+{
+  "image_digest": "sha256:ddbb02258092f1888e19654e0757744e70d52be2c36c01584025a5ab5106dc5e",
+  "image": "openimage/vllm-audio",
+  "candidate_tag": "0.32.0-cu126-sm70-cand-a35888710977d5a35b3dc05c5bd3a25cba2bb295",
+  "recipe_sha": "ef428e14f6a7cd8bd104c5f2762af664e492bab1",
+  "image_provenance": {
+    "io.openimage.gpu-architecture": "sm70",
+    "io.openimage.vllm-source": "5df63a7203cdb9328d824a27b682e77c7b9928be",
+    "io.openimage.volta-recipe": "ef428e14f6a7cd8bd104c5f2762af664e492bab1",
+    "org.opencontainers.image.revision": "a35888710977d5a35b3dc05c5bd3a25cba2bb295",
+    "org.opencontainers.image.source": "https://github.com/Mazyod/vllm",
+    "org.opencontainers.image.version": "24.04"
+  },
+  "gpus": [
+    {
+      "name": "Tesla V100-SXM2-16GB",
+      "memory_bytes": 16928342016,
+      "compute_capability": "7.0"
+    },
+    {
+      "name": "Tesla V100-SXM2-16GB",
+      "memory_bytes": 16928342016,
+      "compute_capability": "7.0"
+    }
+  ],
+  "hardware_profile": "volta-16gb",
+  "driver": "580.178.04",
+  "cuda": "12.6",
+  "packages": {
+    "vllm": "0.32.0+cu126",
+    "torch": "2.13.0+cu126",
+    "torchaudio": "2.11.0+cu126",
+    "torchcodec": "0.17.0+cpu",
+    "transformers": "5.19.0",
+    "triton": "3.7.1",
+    "av": "19.0.1",
+    "soundfile": "0.14.0",
+    "numpy": "2.3.5"
+  },
+  "models": {
+    "whisper": {
+      "repo": "mlmlaziz/bbyn-v2",
+      "revision": "e910dbbc381deab0561e944c7149c3ace41b6bff",
+      "config_sha256": "e6eb5f8f2d127a726c59b1171ece566716132e837332e966b6708fb38ab2b12e",
+      "gpu_index": 0,
+      "initial_ready_s": 107.05789854400064,
+      "restart_ready_s": 61.7657527160045
+    },
+    "bge": {
+      "repo": "BAAI/bge-reranker-v2-m3",
+      "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+      "config_sha256": "1968ec0fc979d7243a53738f6c22b49a007bc983647c734657b4c532745e3c4a",
+      "gpu_index": 1,
+      "initial_ready_s": 78.12385863999953,
+      "restart_ready_s": 57.59113502200489
+    },
+    "snowflake": {
+      "repo": "Snowflake/snowflake-arctic-embed-l-v2.0",
+      "revision": "ac6544c8a46e00af67e330e85a9028c66b8cfd9a",
+      "config_sha256": "e0e0cfa6f970b2e7fd3e76005d5ecc991696019d924425ff12eff9244366fb9f",
+      "gpu_index": 1,
+      "initial_ready_s": 82.28708660999837,
+      "restart_ready_s": 55.542311213001085
+    }
+  },
+  "checks": {
+    "native_kernels": true,
+    "audio": true,
+    "whisper": true,
+    "bge": true,
+    "snowflake": true,
+    "concurrent": true,
+    "cold_restart": true
+  },
+  "passed": true,
+  "native_kernels": [
+    {
+      "index": 0,
+      "name": "Tesla V100-SXM2-16GB",
+      "memory_bytes": 16928342016,
+      "capability": [
+        7,
+        0
+      ],
+      "checked_allocation_bytes": 12884901888,
+      "elapsed_s": 0.6864391079943744,
+      "passed": true
+    },
+    {
+      "index": 1,
+      "name": "Tesla V100-SXM2-16GB",
+      "memory_bytes": 16928342016,
+      "capability": [
+        7,
+        0
+      ],
+      "checked_allocation_bytes": 12884901888,
+      "elapsed_s": 0.15149610600201413,
+      "passed": true
+    }
+  ],
+  "pooling": {
+    "passed": true,
+    "cases": [
+      {
+        "service": "snowflake",
+        "requested_budget": 64,
+        "input_tokens": 64,
+        "input_sha256": "9885de075870c39559d9093ddafedc62b7d0624293307f5602758e21bda6b533",
+        "server_tokens": 64,
+        "elapsed_s": 11.213254917995073,
+        "max_abs_difference": 0.00023475103080272675,
+        "cosine": [
+          0.9999983844068168
+        ],
+        "passed": true
+      },
+      {
+        "service": "snowflake",
+        "requested_budget": 4096,
+        "input_tokens": 4096,
+        "input_sha256": "5ef19e70504e5ff4a6f6fa2c6d5352f512697f3824f2891b7ee9a6a061051e60",
+        "server_tokens": 4096,
+        "elapsed_s": 17.37413906800066,
+        "max_abs_difference": 0.00022695958614349365,
+        "cosine": [
+          0.999998721981058
+        ],
+        "passed": true
+      },
+      {
+        "service": "snowflake",
+        "requested_budget": 8192,
+        "input_tokens": 8192,
+        "input_sha256": "471ef8212b5225bfdd33a8babe4b00c09f989d4cf15a5ccd2df1df6122987fc3",
+        "server_tokens": 8192,
+        "elapsed_s": 1.6281192059977911,
+        "max_abs_difference": 0.00018781796097755432,
+        "cosine": [
+          0.9999984948436158
+        ],
+        "passed": true
+      },
+      {
+        "service": "snowflake",
+        "id": "snowflake-batch",
+        "batch_size": 8,
+        "input_tokens": 22302,
+        "cosine": [
+          0.9999985423971409,
+          0.9999987277142496,
+          0.999998514175216,
+          0.9999987509271235,
+          0.9999987176329999,
+          0.999998721981058,
+          0.9999987379317404,
+          0.9999984948436158
+        ],
+        "retrieval_top1_agrees": true,
+        "elapsed_s": 14.273487065001973,
+        "passed": true
+      },
+      {
+        "service": "bge",
+        "requested_budget": 64,
+        "input_tokens": 64,
+        "input_sha256": "a403e98069f8312c8f0340f06af1e7fb1e3a67b1d035ac89022289605fdb562f",
+        "server_tokens": 64,
+        "elapsed_s": 4.311376960999041,
+        "max_abs_difference": 5.85534144192934e-06,
+        "reference_scores": [
+          0.001692288089543581
+        ],
+        "actual_scores": [
+          0.0016981434309855103
+        ],
+        "passed": true
+      },
+      {
+        "service": "bge",
+        "requested_budget": 4096,
+        "input_tokens": 4096,
+        "input_sha256": "4c74c4790caad6c781a70e7828d435bccec373fe5e20590da043b3c31793666e",
+        "server_tokens": 4096,
+        "elapsed_s": 4.50356051199924,
+        "max_abs_difference": 0.00021018460392951965,
+        "reference_scores": [
+          0.06102379411458969
+        ],
+        "actual_scores": [
+          0.06081360951066017
+        ],
+        "passed": true
+      },
+      {
+        "service": "bge",
+        "requested_budget": 8192,
+        "input_tokens": 8192,
+        "input_sha256": "12a26de521b1a726296c30fd9ab684016abad0ad6c8e1dd67de5c8b18d235c13",
+        "server_tokens": 8192,
+        "elapsed_s": 1.6742481859982945,
+        "max_abs_difference": 0.00017049908638000488,
+        "reference_scores": [
+          0.13178297877311707
+        ],
+        "actual_scores": [
+          0.13195347785949707
+        ],
+        "passed": true
+      },
+      {
+        "service": "bge",
+        "id": "bge-32-candidates",
+        "candidates": 32,
+        "input_tokens": 9572,
+        "elapsed_s": 0.5549960049975198,
+        "max_abs_difference": 0.00018180906772613525,
+        "passed": true
+      }
+    ],
+    "reference": "Transformers FP32 CPU"
+  },
+  "asr": {
+    "cases": 274,
+    "source": {
+      "repo": "google/fleurs",
+      "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+      "split": "validation",
+      "license": "CC-BY-4.0",
+      "parquet_sha256": {
+        "en_us": "7c3eeb11a9597bd52cdc1b0d637e85389fe094cfd8763913e7bf4fdf7a853959",
+        "ar_eg": "8b792937003d26852c567d1b413de5174ad677146f4b93dc480c17f8c398ecd3"
+      }
+    },
+    "fixture_sha256": "d8155d2c80cee960997cfe76d478ea312d155cb3d10dcdd12c2d98aaaaed20d1",
+    "corpus": [
+      {
+        "language": "en",
+        "variant": "json",
+        "clips": 128,
+        "distinct_prompts": 70,
+        "words": 2725,
+        "actual_wer": 0.0763302752293578,
+        "reference_wer": 0.0763302752293578,
+        "actual_cer": 0.040169133192389,
+        "reference_cer": 0.040169133192389,
+        "actual_word_errors": {
+          "substitutions": 135,
+          "deletions": 57,
+          "insertions": 16
+        },
+        "paired_delta_95ci": [
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "language": "ar",
+        "variant": "json",
+        "clips": 128,
+        "distinct_prompts": 70,
+        "words": 2264,
+        "actual_wer": 0.5,
+        "reference_wer": 0.4991166077738516,
+        "actual_cer": 0.12870363169764368,
+        "reference_cer": 0.1283147989734816,
+        "actual_word_errors": {
+          "substitutions": 1068,
+          "deletions": 28,
+          "insertions": 36
+        },
+        "paired_delta_95ci": [
+          0.0,
+          0.0023518344308560675
+        ],
+        "secondary_lossy_orthographic_fold_wer": {
+          "actual": 0.2416077738515901,
+          "reference": 0.24072438162544169
+        }
+      }
+    ],
+    "long_and_silence": [
+      {
+        "id": "en-long-0",
+        "kind": "long",
+        "duration_s": 190.06,
+        "word_errors": 65,
+        "reference_word_errors": 65,
+        "words": 393
+      },
+      {
+        "id": "en-long-0-shift",
+        "kind": "boundary_shift",
+        "duration_s": 191.06,
+        "word_errors": 73,
+        "reference_word_errors": 73,
+        "words": 393
+      },
+      {
+        "id": "en-long-1",
+        "kind": "long",
+        "duration_s": 186.4,
+        "word_errors": 72,
+        "reference_word_errors": 72,
+        "words": 394
+      },
+      {
+        "id": "en-long-1-shift",
+        "kind": "boundary_shift",
+        "duration_s": 187.4,
+        "word_errors": 76,
+        "reference_word_errors": 76,
+        "words": 394
+      },
+      {
+        "id": "en-long-2",
+        "kind": "long",
+        "duration_s": 184.17,
+        "word_errors": 58,
+        "reference_word_errors": 58,
+        "words": 403
+      },
+      {
+        "id": "en-long-2-shift",
+        "kind": "boundary_shift",
+        "duration_s": 185.17,
+        "word_errors": 71,
+        "reference_word_errors": 71,
+        "words": 403
+      },
+      {
+        "id": "en-long-3",
+        "kind": "long",
+        "duration_s": 182.5,
+        "word_errors": 60,
+        "reference_word_errors": 61,
+        "words": 400
+      },
+      {
+        "id": "en-long-3-shift",
+        "kind": "boundary_shift",
+        "duration_s": 183.5,
+        "word_errors": 59,
+        "reference_word_errors": 61,
+        "words": 400
+      },
+      {
+        "id": "en-silence",
+        "kind": "silence",
+        "duration_s": 10.0,
+        "word_errors": 0,
+        "reference_word_errors": 0,
+        "words": 0
+      },
+      {
+        "id": "ar-long-0",
+        "kind": "long",
+        "duration_s": 189.29,
+        "word_errors": 155,
+        "reference_word_errors": 155,
+        "words": 311
+      },
+      {
+        "id": "ar-long-0-shift",
+        "kind": "boundary_shift",
+        "duration_s": 190.29,
+        "word_errors": 157,
+        "reference_word_errors": 157,
+        "words": 311
+      },
+      {
+        "id": "ar-long-1",
+        "kind": "long",
+        "duration_s": 199.72,
+        "word_errors": 164,
+        "reference_word_errors": 164,
+        "words": 330
+      },
+      {
+        "id": "ar-long-1-shift",
+        "kind": "boundary_shift",
+        "duration_s": 200.72,
+        "word_errors": 163,
+        "reference_word_errors": 163,
+        "words": 330
+      },
+      {
+        "id": "ar-long-2",
+        "kind": "long",
+        "duration_s": 182.25,
+        "word_errors": 168,
+        "reference_word_errors": 168,
+        "words": 306
+      },
+      {
+        "id": "ar-long-2-shift",
+        "kind": "boundary_shift",
+        "duration_s": 183.25,
+        "word_errors": 168,
+        "reference_word_errors": 168,
+        "words": 306
+      },
+      {
+        "id": "ar-long-3",
+        "kind": "long",
+        "duration_s": 187.76,
+        "word_errors": 164,
+        "reference_word_errors": 164,
+        "words": 323
+      },
+      {
+        "id": "ar-long-3-shift",
+        "kind": "boundary_shift",
+        "duration_s": 188.76,
+        "word_errors": 166,
+        "reference_word_errors": 166,
+        "words": 323
+      },
+      {
+        "id": "ar-silence",
+        "kind": "silence",
+        "duration_s": 10.0,
+        "word_errors": 0,
+        "reference_word_errors": 0,
+        "words": 0
+      }
+    ],
+    "normalization": "NFKC, lowercase, punctuation to spaces, remove combining marks; no Arabic letter folding or English number expansion",
+    "limitation": "Public read speech; concatenated long cases are not natural conversations. Training overlap and production-domain accuracy are unknown.",
+    "api_contract": "Explicit en/ar language, JSON, native chunking, no timestamp-format qualification."
+  },
+  "encoded_audio": [
+    {
+      "id": "format-en-short-042-wav",
+      "elapsed_s": 2.2137868919962784,
+      "duration_s": 9.36,
+      "word_errors": 6,
+      "reference_word_errors": 6,
+      "words": 26,
+      "passed": true
+    },
+    {
+      "id": "format-en-short-042-mp3",
+      "elapsed_s": 2.311218300004839,
+      "duration_s": 9.36,
+      "word_errors": 6,
+      "reference_word_errors": 6,
+      "words": 26,
+      "passed": true
+    },
+    {
+      "id": "format-en-short-042-m4a",
+      "elapsed_s": 2.3128193419979652,
+      "duration_s": 9.424,
+      "word_errors": 5,
+      "reference_word_errors": 5,
+      "words": 26,
+      "passed": true
+    },
+    {
+      "id": "format-en-long-0-wav",
+      "elapsed_s": 12.826886187998753,
+      "duration_s": 190.06,
+      "word_errors": 65,
+      "reference_word_errors": 65,
+      "words": 393,
+      "passed": true
+    },
+    {
+      "id": "format-en-long-0-mp3",
+      "elapsed_s": 26.97754491699743,
+      "duration_s": 190.06,
+      "word_errors": 68,
+      "reference_word_errors": 68,
+      "words": 393,
+      "passed": true
+    },
+    {
+      "id": "format-en-long-0-m4a",
+      "elapsed_s": 17.30150050499651,
+      "duration_s": 190.124,
+      "word_errors": 116,
+      "reference_word_errors": 116,
+      "words": 393,
+      "passed": true
+    },
+    {
+      "id": "format-ar-short-110-wav",
+      "elapsed_s": 10.722438889999466,
+      "duration_s": 10.8,
+      "word_errors": 10,
+      "reference_word_errors": 10,
+      "words": 21,
+      "passed": true
+    },
+    {
+      "id": "format-ar-short-110-mp3",
+      "elapsed_s": 17.070632503004163,
+      "duration_s": 10.8,
+      "word_errors": 10,
+      "reference_word_errors": 10,
+      "words": 21,
+      "passed": true
+    },
+    {
+      "id": "format-ar-short-110-m4a",
+      "elapsed_s": 17.096659481001552,
+      "duration_s": 10.864,
+      "word_errors": 10,
+      "reference_word_errors": 10,
+      "words": 21,
+      "passed": true
+    },
+    {
+      "id": "format-ar-long-0-wav",
+      "elapsed_s": 31.205579466004565,
+      "duration_s": 189.29,
+      "word_errors": 155,
+      "reference_word_errors": 155,
+      "words": 311,
+      "passed": true
+    },
+    {
+      "id": "format-ar-long-0-mp3",
+      "elapsed_s": 37.17424059900077,
+      "duration_s": 189.2909375,
+      "word_errors": 155,
+      "reference_word_errors": 155,
+      "words": 311,
+      "passed": true
+    },
+    {
+      "id": "format-ar-long-0-m4a",
+      "elapsed_s": 51.10363626199978,
+      "duration_s": 189.354,
+      "word_errors": 158,
+      "reference_word_errors": 158,
+      "words": 311,
+      "passed": true
+    }
+  ],
+  "mixed_traffic": [
+    {
+      "passed": true,
+      "requests": 120,
+      "concurrency": 12,
+      "services": [
+        "bge",
+        "snowflake",
+        "whisper"
+      ],
+      "failures": []
+    },
+    {
+      "passed": true,
+      "requests": 120,
+      "concurrency": 12,
+      "services": [
+        "bge",
+        "snowflake",
+        "whisper"
+      ],
+      "failures": []
+    }
+  ],
+  "between_restarts_gpu_memory_mib": [
+    0,
+    0
+  ],
+  "max_observed_serving_memory_mib": [
+    6098,
+    3898
+  ],
+  "memory_scope": "One-second NVML samples from initial service launch through completed restart traffic, including warmup; excludes the separate FP32 reference jobs."
+}

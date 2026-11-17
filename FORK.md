@@ -42,7 +42,8 @@ no inference source changes. Packaging-only dependency edits are recorded in
 `new-release.sh`, rebuild its immutable release tag, or imply ongoing updates.
 Retire the image when its compatibility requirement ends. Historical V100
 [measurements](fork/docs/archive/20261108-experiments/v100/RECORD.md) explain the
-choice of base; a new image digest requires new hardware verification.
+choice of base; the new digest passed its own [V100 gate](fork/deploy/volta/results/20261117-gate.md).
+Any different digest requires new hardware verification.
 
 ## Release source and provenance
 
