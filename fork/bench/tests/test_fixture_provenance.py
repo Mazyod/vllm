@@ -49,13 +49,8 @@ _NOT_IN_FIXTURES: frozenset[str] = frozenset()
 
 
 def _base_tag() -> str:
-    workflow = (REPO_ROOT / ".github" / "workflows" / "build-vllm-audio.yml").read_text(
-        encoding="utf-8"
-    )
-    for line in workflow.splitlines():
-        if "DEFAULT_BASE_TAG:" in line:
-            return line.split(":", 1)[1].strip().strip("'\"")
-    raise AssertionError("DEFAULT_BASE_TAG not found in the build workflow")
+    # These captured logs belong to the final V1 release, not the current runner.
+    return "v0.33.0"
 
 
 def _source_at_tag(path: str) -> str:
@@ -149,7 +144,7 @@ def test_every_revert_receipt_replays_a_log_that_can_satisfy_it():
     from fork.bench.receipts import parse_boot_log
 
     launcher = DryRunLauncher()
-    for profile in profiles.PROFILES:
+    for profile in profiles.load("v0.33.0").profiles:
         if not profile.expect_boot_evidence:
             continue
         evidence = parse_boot_log(launcher._fixture(profile))

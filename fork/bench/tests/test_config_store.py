@@ -15,7 +15,7 @@ from fork.bench import profiles
 from fork.bench.runner import build_serve_command
 
 CONFIG_ROOT = profiles.REPO_ROOT / "fork" / "bench" / "configs"
-RELEASE = profiles.DEFAULT_TAG
+RELEASE = "v0.33.0"
 RELEASE_DIR = CONFIG_ROOT / RELEASE
 FLEET_PATH = RELEASE_DIR / "fleet.yaml"
 ENGINE_DIR = RELEASE_DIR / "engine"
@@ -300,7 +300,7 @@ def test_release_contains_exactly_the_approved_engine_files():
 
 def test_fleet_derives_drafts_only_from_engine_yaml():
     fleet = _load_yaml(FLEET_PATH)["profiles"]
-    for profile in profiles.PROFILES:
+    for profile in profiles.load("v0.33.0").profiles:
         entry = fleet[profile.id]
         assert "draft" not in entry
         engine = _load_yaml(RELEASE_DIR / entry["engine"])
@@ -340,7 +340,9 @@ def test_every_engine_key_is_accepted_by_its_release_parser(release_dir: Path):
         parser.parse_args(["serve", "--config", str(engine_path)])
 
 
-@pytest.mark.parametrize("profile", profiles.PROFILES, ids=lambda item: item.id)
+@pytest.mark.parametrize(
+    "profile", profiles.load("v0.33.0").profiles, ids=lambda item: item.id
+)
 def test_every_profile_has_pure_argv_parity(profile: profiles.Profile):
     """The launched config must expand to the argv the gate measured."""
     launched = _expand_config_argv(build_serve_command(profile, 8000))
@@ -353,13 +355,13 @@ def test_the_frozen_argv_covers_every_profile():
     """A profile missing from the oracle would pass parity by not being asked."""
     frozen = json.loads(LEGACY_ARGV_PATH.read_text(encoding="utf-8"))["profiles"]
     assert set(frozen) - {"gemma-v2-spec-kv-dtype"} == {
-        profile.id for profile in profiles.PROFILES
+        profile.id for profile in profiles.load("v0.33.0").profiles
     }
 
 
 def test_a_changed_engine_value_breaks_parity(tmp_path: Path):
     """The oracle has to fail when a config drifts, or it proves nothing."""
-    profile = profiles.get("gemma-tp2")
+    profile = profiles.load("v0.33.0").get("gemma-tp2")
     drifted = _load_yaml(profile.engine_config)
     drifted["max-model-len"] = 4096
     engine_path = tmp_path / "drifted.yaml"
@@ -372,7 +374,7 @@ def test_a_changed_engine_value_breaks_parity(tmp_path: Path):
 
 def test_every_profile_has_real_serve_parser_parity():
     parser = _release_parser(RELEASE)
-    for profile in profiles.PROFILES:
+    for profile in profiles.load("v0.33.0").profiles:
         frozen_namespace = _parse_effective_namespace(parser, _legacy_argv(profile.id))
         launched_namespace = _parse_effective_namespace(
             parser, build_serve_command(profile, 8000)

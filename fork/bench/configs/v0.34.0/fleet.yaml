@@ -1,0 +1,16 @@
+profiles:
+  deepseek-tp4:
+    engine: engine/deepseek-v41-tp4.yaml
+    phase: 4
+    env: {}
+    gpus: [0, 1, 2, 3]
+    replicas: 1
+    revert_patches: []
+    probes: [R5, B1, B3, B4, P1, P2, P3, P4]
+    expect: serves
+    expect_boot_evidence: {}
+    expect_attention_backend: ""
+    gating: true
+    control_for: null
+    venue: gate
+manual: {}

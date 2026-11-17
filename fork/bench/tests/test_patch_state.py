@@ -122,7 +122,7 @@ def test_every_profile_restates_the_series_before_it_launches(monkeypatch):
     )
     launcher = LocalLauncher()
 
-    launcher.prepare(profiles.get("gemma-full"))
+    launcher.prepare(profiles.load("v0.33.0").get("gemma-full"))
     launcher.prepare(
         Profile(
             id="synthetic-minus-one",
@@ -148,7 +148,7 @@ def test_the_run_stops_if_the_patch_state_cannot_be_set(monkeypatch):
 
     monkeypatch.setattr("fork.bench.gate.run_argv", explode)
     with pytest.raises(RuntimeError):
-        LocalLauncher().prepare(profiles.get("gemma-full"))
+        LocalLauncher().prepare(profiles.load("v0.33.0").get("gemma-full"))
 
 
 @pytest.mark.parametrize("reverted", [(), ("0001-a.patch",), ("0002-b.patch",)])

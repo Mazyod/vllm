@@ -164,8 +164,8 @@ def _leave_one_out_profile(**overrides):
 
     fields = dict(
         id="gemma-minus-0001",
-        model=profiles.GEMMA_MODEL,
-        served_name=profiles.GEMMA_SERVED,
+        model=profiles.load("v0.33.0").get("gemma-full").model,
+        served_name=profiles.load("v0.33.0").get("gemma-full").served_name,
         phase=2,
         revert_patches=("0001-synthetic.patch",),
         expect_boot_evidence={"keeps_separate": True},
@@ -194,9 +194,7 @@ def test_r6_fails_when_the_engine_still_ran_patched_code():
 
 
 def test_r6_fails_when_no_expected_evidence_is_declared():
-    profile = _leave_one_out_profile(
-        id="gemma-minus-0002", expect_boot_evidence={}
-    )
+    profile = _leave_one_out_profile(id="gemma-minus-0002", expect_boot_evidence={})
     evidence = _evidence("gemma-full-boot.log")
     result = receipt_probe("R6", profile.id, evidence, served=True, profile=profile)
     assert not result.passed

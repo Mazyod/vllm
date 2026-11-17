@@ -1,5 +1,10 @@
 # Multi-model deployment proofs
 
+The current release configuration is [DeepSeek V4.1 TP4 for v0.34.0](../bench/configs/v0.34.0/README.md).
+Its validation is pending. Earlier layouts below retain historical image pins
+and evidence; do not apply their V1 runner environment to v0.34.0. Private
+placement and redundancy plans are maintained outside this repository.
+
 This directory answers a different question from `fork/bench`: not “does one
 engine configuration work in isolation?”, but “do all services in a proposed
 deployment fit and serve at the same time on one anonymous capability profile?”

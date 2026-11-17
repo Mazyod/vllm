@@ -6,27 +6,27 @@ default_stages:
   - manual
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.0
+    rev: f368fb366ff7f2f808dd324b83a6d32267799e19
     hooks:
       - id: ruff-check
         args: [--output-format, github, --fix]
       - id: ruff-format
   - repo: https://github.com/crate-ci/typos
-    rev: v1.43.5
+    rev: 9023c1f779400877cafdd98052113fc777e2cfdc
     hooks:
       - id: typos
         args: [--force-exclude]
         # Matplotlib generates hexadecimal SVG IDs; check prose in the renderer.
         exclude: ^fork/bench/configs/pending/gemma-4-nightly/shared-h200/.*\.svg$
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.21.0
+    rev: 341e2a331ba578029e66c2e01183e7a6b5ca9ab4
     hooks:
       - id: markdownlint-cli2
-        language_version: lts
+        language_version: 24.22.1
         args: [--config, .markdownlint.yaml, --fix]
         exclude: (^|/)CLAUDE\.md$
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.7
+    rev: 914e7df21a07ef503a81201c76d2b11c789d3fca
     hooks:
       - id: actionlint
   - repo: https://github.com/shellcheck-py/shellcheck-py

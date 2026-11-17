@@ -79,9 +79,9 @@ legacy_check() {
   local status path pattern behind
 
   base_tag="$(sed -n 's/^ARG BASE_TAG=//p' \
-    "$REPO/fork/docker/Dockerfile.audio" | head -1)"
+    "$REPO/fork/docker/Dockerfile" | head -1)"
   [ -n "$base_tag" ] || {
-    echo "ERROR: no ARG BASE_TAG in fork/docker/Dockerfile.audio" >&2
+    echo "ERROR: no ARG BASE_TAG in fork/docker/Dockerfile" >&2
     exit 1
   }
   ensure_base_tag "$base_tag"
@@ -96,7 +96,7 @@ legacy_check() {
   base="$(git -C "$REPO" rev-parse "$base_tag^{commit}")"
   git -C "$REPO" merge-base --is-ancestor "$base" HEAD || {
     echo "ERROR: HEAD is not built on $base_tag ($base)." >&2
-    echo "       The fork must sit on the tag fork/docker/Dockerfile.audio pins." >&2
+    echo "       The fork must sit on the tag fork/docker/Dockerfile pins." >&2
     exit 1
   }
 
@@ -218,10 +218,10 @@ main_check() {
   fi
 
   docker_tag="$(sed -n 's/^ARG BASE_TAG=//p' \
-    "$REPO/fork/docker/Dockerfile.audio" | head -1)"
+    "$REPO/fork/docker/Dockerfile" | head -1)"
   workflow_tag="$(sed -n \
     's/^[[:space:]]*DEFAULT_BASE_TAG:[[:space:]]*//p' \
-    "$REPO/.github/workflows/build-vllm-audio.yml" | head -1)"
+    "$REPO/.github/workflows/build-vllm.yml" | head -1)"
   profile_tag="$(sed -n 's/^DEFAULT_TAG = "\([^"]*\)"/\1/p' \
     "$REPO/fork/bench/profiles.py" | head -1)"
   preflight_tag="$(sed -n 's/.*--tag \([^[:space:]]*\).*/\1/p' \

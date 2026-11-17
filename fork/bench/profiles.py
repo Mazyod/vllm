@@ -14,7 +14,7 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BENCH_ROOT = Path(__file__).resolve().parent
 CONFIG_ROOT = BENCH_ROOT / "configs"
-DEFAULT_TAG = "v0.33.0"
+DEFAULT_TAG = "v0.34.0"
 
 # Patches with no leave-one-out arm, and why. test_static holds the series to
 # this: every patch in fork/patches/series is either exercised leave-one-out
@@ -255,12 +255,6 @@ def load(tag: str) -> ProfileStore:
 
 DEFAULT_STORE = load(DEFAULT_TAG)
 PROFILES = DEFAULT_STORE.profiles
-
-GEMMA_MODEL = DEFAULT_STORE.get("gemma-full").model
-GEMMA_DRAFT = DEFAULT_STORE.get("gemma-full").draft or ""
-GEMMA_SERVED = DEFAULT_STORE.get("gemma-full").served_name
-QWEN_MODEL = DEFAULT_STORE.get("qwen-full").model
-QWEN_SERVED = DEFAULT_STORE.get("qwen-full").served_name
 
 
 def get(profile_id: str) -> Profile:

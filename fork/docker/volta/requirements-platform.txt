@@ -1,0 +1,5 @@
+# Published SM70-capable PyTorch binaries. CPU media decoding avoids CUDA 13 codecs.
+torch @ https://download-r2.pytorch.org/whl/cu126/torch-2.13.0%2Bcu126-cp312-cp312-manylinux_2_28_x86_64.whl#sha256=8695f3c6b7966d44560275b90c5c28e5091ba33ddbb1ab33b2173782ca1e9145
+torchvision @ https://download-r2.pytorch.org/whl/cu126/torchvision-0.28.0%2Bcu126-cp312-cp312-manylinux_2_28_x86_64.whl#sha256=9afeeea3ec8fdf1d62b473bb13d5bd2dae3dc4d902afa0106f40b0ae5eb48e7b
+torchaudio @ https://download-r2.pytorch.org/whl/cu126/torchaudio-2.11.0%2Bcu126-cp312-cp312-manylinux_2_28_x86_64.whl#sha256=fe8ba48c690cacc58087603c4d853580006e3d1c0ebe22c0d75f99a004bc981a
+torchcodec @ https://download.pytorch.org/whl/cpu/torchcodec-0.17.0%2Bcpu-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl#sha256=de8e58e5f30692ee7cf92b1b313d0ffdeaac95148525ef2a865067fca0255246

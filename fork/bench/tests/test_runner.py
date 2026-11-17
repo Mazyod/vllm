@@ -32,7 +32,7 @@ _WITH_REVERT = Profile(
     model="org/model",
     served_name="model",
     phase=2,
-    engine_config=profiles.get("gemma-full").engine_config,
+    engine_config=profiles.load("v0.33.0").get("gemma-full").engine_config,
     revert_patches=("0001-synthetic.patch",),
     probes=("R5",),
     expect="boot_crash",
@@ -42,7 +42,7 @@ _WITH_REVERT = Profile(
 
 def test_serve_command_reads_the_committed_config_and_nothing_else():
     """Parity: the engine is told the file, never a synthesized argument."""
-    profile = profiles.get("gemma-full")
+    profile = profiles.load("v0.33.0").get("gemma-full")
     command = build_serve_command(profile, 8000)
     assert command == [
         "vllm",
@@ -57,29 +57,31 @@ def test_serve_command_reads_the_committed_config_and_nothing_else():
 
 
 def test_the_config_it_points_at_names_the_model_and_the_served_name():
-    engine = profiles.engine_settings(profiles.get("gemma-full"))
+    engine = profiles.engine_settings(profiles.load("v0.33.0").get("gemma-full"))
     assert engine["model"] == "RedHatAI/gemma-4-31B-it-FP8-block"
     assert engine["served-model-name"] == "gemma-4-31b"
 
 
 def test_the_config_it_points_at_carries_the_speculative_config():
-    engine = profiles.engine_settings(profiles.get("gemma-full"))
+    engine = profiles.engine_settings(profiles.load("v0.33.0").get("gemma-full"))
     assert engine["speculative-config"]["method"] == "mtp"
     assert engine["speculative-config"]["model"] == ("google/gemma-4-31B-it-assistant")
 
 
 def test_the_config_it_points_at_sets_tensor_parallel_size_for_tp2():
-    engine = profiles.engine_settings(profiles.get("gemma-tp2"))
+    engine = profiles.engine_settings(profiles.load("v0.33.0").get("gemma-tp2"))
     assert engine["tensor-parallel-size"] == 2
 
 
 def test_docker_command_pins_the_visible_gpus():
-    command = " ".join(build_docker_command(profiles.get("qwen-full"), "img:tag", 8001))
+    command = " ".join(
+        build_docker_command(profiles.load("v0.33.0").get("qwen-full"), "img:tag", 8001)
+    )
     assert "CUDA_VISIBLE_DEVICES=1" in command
 
 
 def test_docker_mount_and_hashed_config_are_the_same_file(tmp_path, monkeypatch):
-    profile = profiles.get("gemma-full")
+    profile = profiles.load("v0.33.0").get("gemma-full")
     monkeypatch.chdir(tmp_path)
     command = build_docker_command(profile, "img:tag", 8000)
     mount = command[command.index("-v") + 1]
@@ -101,14 +103,18 @@ def test_docker_command_reverts_the_patch_under_test_before_serving():
 
 def test_docker_command_does_not_revert_anything_for_the_full_series():
     command = " ".join(
-        build_docker_command(profiles.get("gemma-full"), "img:tag", 8000)
+        build_docker_command(
+            profiles.load("v0.33.0").get("gemma-full"), "img:tag", 8000
+        )
     )
     assert "revert-patch.sh" not in command
 
 
 def test_docker_command_passes_the_profile_environment():
     command = " ".join(
-        build_docker_command(profiles.get("gemma-full"), "img:tag", 8000)
+        build_docker_command(
+            profiles.load("v0.33.0").get("gemma-full"), "img:tag", 8000
+        )
     )
     assert "VLLM_USE_V2_MODEL_RUNNER=0" in command
     assert "VLLM_LOGGING_LEVEL=INFO" in command
@@ -158,7 +164,7 @@ def test_evaluate_runs_only_the_receipt_probes_when_the_server_never_served():
     log = (FIXTURES / "boot-crash.log").read_text(encoding="utf-8")
     results = list(
         evaluate(
-            profiles.get("gemma-v2-kvfp8"),
+            profiles.load("v0.33.0").get("gemma-v2-kvfp8"),
             log.splitlines(),
             served=False,
             base_urls=None,
@@ -173,7 +179,7 @@ def test_evaluate_stamps_the_profile_id_on_every_result():
     with serve(MockConfig()) as base_url:
         results = list(
             evaluate(
-                profiles.get("gemma-full"),
+                profiles.load("v0.33.0").get("gemma-full"),
                 log.splitlines(),
                 served=True,
                 base_urls=base_url,
@@ -188,7 +194,7 @@ def test_evaluate_runs_performance_probes_for_a_perf_profile():
     with serve(MockConfig()) as base_url:
         results = list(
             evaluate(
-                profiles.get("gemma-perf"),
+                profiles.load("v0.33.0").get("gemma-perf"),
                 log.splitlines(),
                 served=True,
                 base_urls=base_url,
@@ -215,5 +221,7 @@ def test_the_harness_never_disables_peer_access():
 
 
 def test_docker_command_leaves_peer_access_alone_by_default():
-    command = " ".join(build_docker_command(profiles.get("gemma-tp2"), "img:tag", 8000))
+    command = " ".join(
+        build_docker_command(profiles.load("v0.33.0").get("gemma-tp2"), "img:tag", 8000)
+    )
     assert "NCCL_P2P_DISABLE" not in command

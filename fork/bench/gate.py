@@ -704,9 +704,9 @@ def classify_topology(
 ) -> str:
     """Decide whether this machine can answer the all-reduce question at all.
 
-    Production is PCIe-attached H200s with no NVLink, and the bug class the
-    TP2 workarounds exist for **only appears on hardware that genuinely lacks
-    the link**. Renting an NVLink box and disabling peer access with
+    The historical collective regression profile requires PCIe without NVLink.
+    The TP2 regression only appears on hardware that lacks the link.
+    Renting an NVLink box and disabling peer access with
     `NCCL_P2P_DISABLE` does not bring it back — the gate used to do exactly
     that and call the result equivalent, which would have produced a green run
     that said nothing about the configuration being shipped.
@@ -725,9 +725,7 @@ def classify_topology(
     """
     store = profile_store or profiles.DEFAULT_STORE
     tp2_scheduled = any(
-        profile.tensor_parallel_size >= 2
-        for phase in phases
-        for profile in store.for_phase(phase)
+        "R3" in profile.probes for phase in phases for profile in store.for_phase(phase)
     )
     if not tp2_scheduled or nvlink is False:
         return TOPOLOGY_NATIVE
@@ -775,7 +773,7 @@ def run_gate(
                 "be trusted either way. Run where `nvidia-smi topo -m` works."
                 if topology == TOPOLOGY_UNKNOWN
                 else (
-                    "This pair is NVLink-connected. Production is PCIe with no "
+                    "This pair is NVLink-connected. The R3 regression requires no "
                     "NVLink, and the bug class the TP2 workarounds exist for does "
                     "not reproduce on a linked pair — not even with peer access "
                     "disabled. A green run here would say nothing about what "

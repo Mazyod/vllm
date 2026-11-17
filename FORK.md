@@ -1,121 +1,66 @@
 # Mazyod/vllm — fork notes
 
-This is a soft fork of [`vllm-project/vllm`](https://github.com/vllm-project/vllm).
-It exists to ship a small set of upstream fixes that we need in production
-**before** they land in an upstream release, plus an audio-enabled OpenAI server
-image.
+This is a soft fork of [vLLM](https://github.com/vllm-project/vllm). `main` is an
+orphan overlay containing only fork-owned release infrastructure. Upstream
+source lives on release branches and in separate worktrees.
 
-The guiding rule: **upstream stays pristine, our changes sit clearly on top.**
-`main` is an orphan branch containing only the fork overlay. Engine changes
-exist only as patch commits on a release work branch and as generated unified
-diffs applied into the upstream image.
+## Alignment first
 
-## Charter: alignment first
+**R1 — Overlay main; source-only release commits.** Never add upstream files to
+`main`. Engine changes are commits touching only regular text under `vllm/**`
+on `release/<tag>`, exported into `fork/patches/` and applied at image build time.
 
-This fork's standing goal is to stay **as close to upstream as it can while
-still being useful**. Every divergence is a liability we have chosen to carry,
-so every divergence has to earn its place. Three rules, in priority order:
+**R2 — One patch, one concrete goal.** Backport one upstream PR or address one
+narrowly stated need per patch. Keep the diff small and document its evidence.
 
-**R1 — Overlay main; source-only release commits.** `main` contains no upstream
-file. Release commits touch only `vllm/**`; the generated patches are applied
-to upstream's installed package at image-build time.
+**R3 — Every divergence has an exit criterion.** First drop what upstream has
+absorbed, then replay survivors. The empty patch series is the preferred state.
 
-**R2 — One patch, one concrete goal, traceable to upstream.** A patch backports
-exactly one upstream PR, or serves one narrowly-stated fork need. It touches the
-fewest files that achieve that goal and documents its impact, root cause,
-reproduce case, validation, and exit criterion in the commit. No omnibus
-patches, no drive-by edits riding along, no local "improvements" to vLLM.
+[`fork/scripts/check-alignment.sh`](fork/scripts/check-alignment.sh) checks the
+add-only ledger, release pins, patch commit contract, reproducible export, and
+immutable release tag. Protected `main` requires a PR and the `alignment` check.
+Commit with `git commit -s`, using `[fork]` subjects for the overlay.
 
-**R3 — Every divergence carries an exit criterion.** A patch records the
-upstream commit that will retire it; every overlay entry records why it is
-needed. Nothing diverges "just because", and nothing outlives its reason.
+## Two artifacts
 
-**The standing obligation.** At every release, *first* drop what upstream has
-absorbed, *then* rebase what it hasn't. The series is expected to shrink by
-default; growing it is the exception that needs an argument.
+| artifact | purpose | lifecycle |
+| --- | --- | --- |
+| `openimage/vllm:<tag>` | upstream runtime plus declared source patches | recurring upstream release, starting at v0.34.0; no added audio extra |
+| `openimage/vllm-audio:0.32.0-cu126-sm70` | native Whisper, embeddings and reranking on SM70 | one frozen CUDA 12.6 build; independent of recurring release bumps |
 
-R1 is enforced mechanically by
-[`fork/scripts/check-alignment.sh`](fork/scripts/check-alignment.sh). It checks
-that every tracked path matches an `add` entry in
-[`fork/alignment.ledger`](fork/alignment.ledger), all release pins agree, the
-pointed-to release history obeys the patch contract, a fresh export is
-byte-identical, and an existing frozen tag still targets that release SHA. It
-runs on every pull request and as an image-build gate.
+The recurring image uses upstream's prebuilt `vllm/vllm` image by digest and
+inherits its entrypoint. It installs no Python extras. The patch application
+scaffolding remains inert when the series is empty. Build and promotion use
+[build-vllm.yml](.github/workflows/build-vllm.yml).
 
-## What we add
+The frozen image is a deliberate exception to prebuilt-image reuse: modern
+upstream CUDA 13 wheels do not contain executable SM70 kernels. Its isolated
+[recipe](fork/docker/volta/Dockerfile) compiles the v0.32.0 native extensions for
+SM70, uses CUDA 12.6 PyTorch binaries and locked audio dependencies, and carries
+no inference source changes. Packaging-only dependency edits are recorded in
+`runtime-dependency.patch` inside the image. Do not bump these pins with
+`new-release.sh`, rebuild its immutable release tag, or imply ongoing updates.
+Retire the image when its compatibility requirement ends. Historical V100
+[measurements](fork/docs/archive/20261108-experiments/v100/RECORD.md) explain the
+choice of base; a new image digest requires new hardware verification.
 
-**The patch series is currently empty.** `v0.27.1` absorbed everything the fork
-carried (0001 [#47953](https://github.com/vllm-project/vllm/pull/47953),
-0002 [#44993](https://github.com/vllm-project/vllm/pull/44993),
-0003 [#49302](https://github.com/vllm-project/vllm/pull/49302)). It also
-carried a fourth divergence for one release: a dependency pin,
-`transformers==5.14.1` in
-[`fork/docker/Dockerfile.audio`](fork/docker/Dockerfile.audio), because the
-stock `v0.27.1` image shipped transformers 5.15.0 and could not boot Gemma-4
-at all. That pin's exit criterion (upstream `70b84f0bcb`, #49797) landed
-upstream and the pin was retired in `v0.28.0`. **The image now adds no
-Python package, no version pin, and no source patch beyond `vllm[audio]`
-itself** — the patch-application scaffolding (the OS `patch` package,
-`/opt/fork/patches`, `apply-patches.sh`) still ships in every build and
-stays inert while the series is empty; it is not gone, just idle. Notice
-if a package, pin, or patch shows up here that isn't `vllm[audio]`. The
-retirement record and commit convention for the next patch live in
-[`fork/patches/README.md`](fork/patches/README.md). Every patch commit carries
-its full context and the trailers that make its upstream retirement mechanical.
-
-**Every configuration we serve is a committed file.** The exact YAML each
-benchmarked configuration ran — and the one to deploy on-prem — lives per
-release under [`fork/bench/configs/`](fork/bench/configs/), indexed by
-[`CATALOG.md`](fork/bench/configs/CATALOG.md); the gate launches
-`vllm serve --config` against those bytes and records their digest in every
-result, so a number always names the configuration that produced it.
-
-The fleet's `env` values are part of the deployment configuration too. On
-`v0.29.0`, the Gemma Hopper FP8 path still needs
-`VLLM_USE_V2_MODEL_RUNNER=0`. The TP2 profiles also set
-`VLLM_ALLREDUCE_USE_FLASHINFER=0`: upstream enabled standalone FlashInfer
-all-reduce by default, independently of the two existing engine workarounds.
-An engine YAML alone does not apply these environment settings.
-
-**Hardware evidence is capability-scoped, private, and cost-bounded.** Deployment
-records name anonymous profiles such as `hopper-pcie-4-large`; they do not claim
-that a person or organization owns that shape, and they carry no private
-location, host id, IP, or provider account detail. Experiments use the cheapest
-venue that can reproduce the property under test. Configuration development
-reuses one watched rental and its model cache; a one-shot rent/collect/destroy
-campaign is reserved for certification after the configuration is known.
-
-## The model: pristine tag + documented patch commits
-
-vLLM is a monster to build from source, so we do **not** compile it. Instead:
-
-```text
-vllm/vllm:<TAG>   (prebuilt upstream release image)
-      └─ + vllm[audio]   (av / soundfile / soxr / scipy ...)
-      └─ + fork/patches/ (applied to the installed package in site-packages)
-      = openimage/vllm-audio:<TAG>
-```
+## Release source and provenance
 
 | ref | content | mutability |
 | --- | --- | --- |
-| upstream `vX.Y.Z` | pristine upstream release commit | immutable upstream ref |
-| `release/<tag>` | tag plus one linear `[fork-patch]` commit per patch | disposable work branch |
-| `fork/<tag>` | annotated tag at the exact release commit shipped | immutable after promotion |
-| `main` | fork overlay only; no upstream source | normal protected PR history |
+| upstream `vX.Y.Z` | pristine upstream commit | immutable upstream ref |
+| `release/<tag>` | upstream tag plus linear patch commits | disposable work branch |
+| `fork/<tag>` | exact source commit shipped | immutable after promotion |
+| `main` | overlay only | protected PR history |
 
-The pointer from `main` to release source is `fork/patches/RELEASE`:
+`fork/patches/RELEASE` points at v0.34.0, upstream commit
+`62d4bc3c7e33b1b6c906e233e6af2d3506c482ca`. The patch series is empty.
+The v0.34.0 candidate is not certified until its own gate record exists.
+The preceding v0.33.0 audio release and its limitations remain documented in
+[its gate record](fork/bench/configs/v0.33.0/results/20261105-gate.md).
 
-```text
-tag: v0.33.0
-release-sha: 4ba787ec9959e566d3b587a796dff07673324da5
-```
-
-`export-patches.sh` writes that pointer with `series`, `upstream.map`, and one
-unified diff per patch commit. The commit contract requires a
-`[fork-patch] <what>` subject, only regular text changes under `vllm/**`, and
-body sections headed `Impact:`, `Root cause:`, `Reproduce:`, `Validation:`, and
-`Ruled out:` (each heading at the start of a line, in any order), followed by
-these trailers:
+Every `[fork-patch] <what>` commit has body headings `Impact:`, `Root cause:`,
+`Reproduce:`, `Validation:`, and `Ruled out:`, each starting a line, plus:
 
 ```text
 Upstream-PR: https://github.com/vllm-project/vllm/pull/NNNNN
@@ -123,115 +68,59 @@ Upstream-Merge: <40-hex merge SHA, or none>
 Exit-Criterion: <when this patch is dropped>
 ```
 
-The image workflow reads only `RELEASE`, builds from the matching upstream tag,
-and labels the candidate with the overlay SHA, release SHA, patch-export hash,
-and upstream image digest.
+`export-patches.sh` generates `RELEASE`, `series`, `upstream.map`, and patches.
+Never hand-edit those files. Release history must be exactly its upstream tag
+plus those commits. The recurring image labels record the overlay SHA, release
+SHA, patch-export hash, and upstream image digest.
 
-The `v0.29.0` gate passed without source patches. Upstream includes the XGrammar
-termination fix (#52805) and speculative reasoning-boundary logging fix (#53046).
-The [release gate record](fork/bench/configs/v0.29.0/results/20260909-gate.md)
-records all required checks passing, including structured streams and the
-corrected PCIe collective environment.
+## Release procedure
 
-The `v0.30.0` candidate carries no source patches and passed all 38 required
-checks on H200/NVLink. **PCIe validation remains outstanding**; the user
-authorized versioned publication with that limitation. Keep the tested V1
-runner and TP2 collective environment from the fleet. See the
-[validation record](fork/bench/configs/v0.30.0/results/20260923-gate.md).
-
-The `v0.31.0` release carries no source patches and passed all 38 required
-checks, all 50 declared results, and 12 supplemental structured streams on
-H100 PCIe. Gemma follows upstream's `TRITON_FLASH_ATTN` default; keep the
-validated V1 runner and TP2 collective environment. The
-[gate record](fork/bench/configs/v0.31.0/results/20261015-gate.md) documents
-cold JIT latency, warm decode repeats, and verified rental teardown.
-
-The `v0.33.0` release carries no source patches and passed all 38 required
-checks, all 50 declared results, and 12 supplemental structured streams on
-PCIe-connected H200 NVL GPUs. The base is now `vllm/vllm` and the fork image
-is `openimage/vllm-audio`. Keep the validated V1 runner and TP2 collective
-environment. See the [release gate](fork/bench/configs/v0.33.0/results/20261105-gate.md).
-
-## Lockstep with upstream releases
-
-When vLLM cuts a new release:
+Follow the [release runbook](fork/bench/RUNBOOK.md):
 
 ```bash
 git fetch upstream --tags
 fork/scripts/new-release.sh vX.Y.Z
+bash fork/bench/preflight.sh
+fork/scripts/check-alignment.sh
 ```
 
-The script creates `release/<tag>` at the pristine tag, drops commits whose
-`Upstream-Merge` is already an ancestor, and cherry-picks the survivors. It
-then creates `fork/bump-<tag>` from `main`, regenerates the export, copies the
-previous benchmark configuration without `results/`, and bumps all four pins.
-Review and commit that overlay branch, push the release work branch, and build a
-candidate.
+`new-release.sh` creates the release source branch, retires absorbed patches,
+replays survivors, creates an overlay bump branch, exports patches, copies the
+previous configuration without results, and bumps the four recurring pins.
+Review each copied setting against the new upstream release. Merge through a
+PR, build a candidate, and validate its digest with the exact committed config.
 
-After building a candidate, keep gate records outside `fork/patches/`: the
-image fingerprint covers every file there, including `README.md`. Changing
-that directory requires a new candidate; do not alter it while documenting a
-completed gate for an existing digest.
+Keep gate records outside `fork/patches/`; the image fingerprint covers every
+file there, including its README. Promotion takes `promote_from`, `publish_tags`,
+`promote_latest`, and `gate_record`. It verifies provenance against `main`,
+creates `fork/<tag>` at the labeled release SHA with digest/evidence in its
+annotation, and only then retags that exact image. Delete `release/<tag>` after
+freezing. A rebuild is a new artifact and needs a new gate.
 
-After the gate passes, dispatch promotion with `promote_from` (the candidate
-tag), `publish_tags`, `promote_latest`, and `gate_record` (the gate-record
-path). Promotion verifies the candidate's labels against `main`, creates
-`fork/<tag>` on the labeled release SHA, records the image digest and gate
-evidence in its annotation, pushes the tag, and only then retags the image.
-For a legacy rollback from a label-less image, only `:latest` may move and
-`publish_tags` must be empty. Delete `release/<tag>` after the freeze.
+## Configuration, hardware and privacy
 
-Repository rulesets make `fork/*` tags immutable and protect `main` from
-deletion and non-fast-forward updates while requiring the `alignment` check.
+Versioned engine files live in [the configuration catalog](fork/bench/configs/CATALOG.md).
+The v0.34.0 primary gate is DeepSeek V4.1 Flash TP4. Runner V1 is removed;
+legacy `VLLM_USE_V2_MODEL_RUNNER=0` is fatal. Default-valued flags and artificial
+image caps do not belong in the current config. Nondefault performance settings
+need same-hardware evidence. Full-context and image checks must measure actual
+inputs, not just successful startup.
 
-**CI hygiene.** Because `main` contains no upstream source, upstream workflows
-are absent rather than tracked as deletions. The add-only ledger declares the
-fork overlay's complete path set.
+Use anonymous capability profiles and the cheapest venue preserving the tested
+property. Keep one watched development rental/cache warm through configuration
+failures; certification is collect-and-destroy after the final bytes already
+work. Arm a label watchdog before every paid create. See
+[hardware policy](fork/deploy/HARDWARE_PROFILES.md) for privacy and cost rules.
+Private topology, capacity goals, endpoints, ownership, and rental identifiers
+belong only in ignored local records, never the public overlay or release notes.
 
-For the one-time transition, `migrate-to-overlay-main.sh --dry-run` builds a
-local `overlay-main` audit branch in a temporary worktree. It makes no remote
-changes and does not switch, clean, or otherwise alter the active checkout. Before the migration branch is merged, rehearse from the branch itself
-with `SOURCE_REF=HEAD fork/scripts/migrate-to-overlay-main.sh --dry-run`;
-the real run refuses `SOURCE_REF` and always replaces `main` with what
-`origin/main` contains.
-
-## Testing the patches locally
-
-The canonical integrated tree for a shipped release is the immutable
-`fork/<tag>` annotated tag:
+## Inspecting source
 
 ```bash
-git fetch origin tag fork/<tag>
-git log --oneline <tag>..fork/<tag>   # exactly the patch commits
+git worktree add /tmp/<TAG> <TAG>
+git log --oneline <TAG>..fork/<TAG>
 ```
 
-Or apply a single patch against a fresh checkout to inspect it in isolation:
-
-```bash
-git worktree add /tmp/<tag> <tag>
-cd /tmp/<tag>
-patch -p1 --dry-run --force < /path/to/fork/patches/<patch-file>
-```
-
-## The image
-
-- **Registry / name:** `docker.io/openimage/vllm-audio`
-- **Validated version:** `v0.33.0` on `hopper-pcie-2` (two H200 NVL GPUs);
-  versioned publication uses the exact digest in the
-  [gate record](fork/bench/configs/v0.33.0/results/20261105-gate.md).
-  The legacy repository's `latest` remains on `v0.28.0`; the new repository
-  publishes `v0.33.0` and `0.33.0` without promoting `latest`.
-- **Drop-in:** entrypoint is inherited from `vllm/vllm`, so it replaces
-  the stock image directly.
-- **CI:** [`build-vllm-audio.yml`](.github/workflows/build-vllm-audio.yml) —
-  builds on push to `main` that changes an actual image input (`fork/patches/*.patch`,
-  `fork/patches/series`, `fork/docker/**`, or the workflow — docs/notes do not
-  trigger a rebuild), or via **Run workflow** (dispatch) with an optional
-  `vllm_tag` / `publish_tags` / `promote_latest`. Needs the `DOCKERHUB_USERNAME`
-  and `DOCKERHUB_TOKEN` repo secrets.
-
-This image build used to live in
-[`Mazyod/production-stack`](https://github.com/Mazyod/production-stack). It was
-migrated here so everything about the **vLLM engine** lives in this repo, and
-production-stack only builds the **router**. See `fork/README.md` for the
-overlay layout.
+The migration utility is historical infrastructure. Run
+`fork/scripts/migrate-to-overlay-main.sh` only with `--dry-run`; script tests use
+throwaway repositories and never migrate the active checkout.

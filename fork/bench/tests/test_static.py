@@ -120,7 +120,9 @@ def test_every_series_patch_has_a_leave_one_out_arm_or_a_waiver():
     from fork.bench import profiles
 
     exercised = {
-        name for profile in profiles.PROFILES for name in profile.revert_patches
+        name
+        for profile in profiles.load("v0.33.0").profiles
+        for name in profile.revert_patches
     }
     waived = set(profiles.LEAVE_ONE_OUT_WAIVERS)
     missing = set(_series()) - exercised - waived
@@ -133,7 +135,7 @@ def test_every_leave_one_out_profile_fires_traffic():
     paid for it. Reverted engines must serve real requests."""
     from fork.bench import profiles
 
-    for profile in profiles.PROFILES:
+    for profile in profiles.load("v0.33.0").profiles:
         if profile.revert_patches:
             assert any(p[0] in "BP" for p in profile.probes), (
                 f"{profile.id} reverts a patch but never sends traffic"
@@ -147,7 +149,7 @@ def test_expect_boot_evidence_names_are_real_boot_evidence_fields():
     from fork.bench.receipts import BootEvidence
 
     known = {field.name for field in dataclasses.fields(BootEvidence)}
-    for profile in profiles.PROFILES:
+    for profile in profiles.load("v0.33.0").profiles:
         unknown = set(profile.expect_boot_evidence) - known
         assert not unknown, f"{profile.id} expects unknown evidence: {unknown}"
 
@@ -171,13 +173,11 @@ def test_the_four_release_pins_name_one_tag():
     from fork.bench import profiles
 
     docker = _value_after(
-        (REPO_ROOT / "fork/docker/Dockerfile.audio").read_text(encoding="utf-8"),
+        (REPO_ROOT / "fork/docker/Dockerfile").read_text(encoding="utf-8"),
         "ARG BASE_TAG=",
     )
     workflow = _value_after(
-        (REPO_ROOT / ".github/workflows/build-vllm-audio.yml").read_text(
-            encoding="utf-8"
-        ),
+        (REPO_ROOT / ".github/workflows/build-vllm.yml").read_text(encoding="utf-8"),
         "DEFAULT_BASE_TAG:",
         strip_line=True,
     )

@@ -20,14 +20,14 @@ from fork.bench.runner import (
 
 
 def _profile(profile_id: str):
-    return profiles.get(profile_id)
+    return profiles.load("v0.33.0").get(profile_id)
 
 
 def test_the_command_serves_the_profiles_committed_config():
     profile = _profile("gemma-full")
     argv = build_local_command(profile, port=8000)
     expected = (
-        profiles.BENCH_ROOT / "configs" / profiles.DEFAULT_TAG / "engine/gemma-tp1.yaml"
+        profiles.BENCH_ROOT / "configs" / "v0.33.0" / "engine/gemma-tp1.yaml"
     ).resolve()
     assert argv[0] == "vllm"
     assert Path(argv[argv.index("--config") + 1]).samefile(expected)
@@ -125,8 +125,8 @@ def _leave_one_out_profile():
     empty, but launcher patch-state handling must keep working."""
     return profiles.Profile(
         id="gemma-minus-0001",
-        model=profiles.GEMMA_MODEL,
-        served_name=profiles.GEMMA_SERVED,
+        model=profiles.load("v0.33.0").get("gemma-full").model,
+        served_name=profiles.load("v0.33.0").get("gemma-full").served_name,
         phase=2,
         revert_patches=("0001-synthetic.patch",),
         gating=False,

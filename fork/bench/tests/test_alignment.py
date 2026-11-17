@@ -46,10 +46,10 @@ def overlay_repo(
     repo = tmp_path / "overlay"
     repo.mkdir()
     git(repo, "init", "-q", "-b", "main")
-    _write(repo, "fork/docker/Dockerfile.audio", "ARG BASE_TAG=v9.9.9\n")
+    _write(repo, "fork/docker/Dockerfile", "ARG BASE_TAG=v9.9.9\n")
     _write(
         repo,
-        ".github/workflows/build-vllm-audio.yml",
+        ".github/workflows/build-vllm.yml",
         "env:\n  DEFAULT_BASE_TAG: v9.9.9\n",
     )
     _write(repo, "fork/bench/profiles.py", 'DEFAULT_TAG = "v9.9.9"\n')
@@ -59,7 +59,7 @@ def overlay_repo(
         repo,
         "fork/alignment.ledger",
         "add fork/** permanent fork\n"
-        "add .github/workflows/build-vllm-audio.yml permanent workflow\n",
+        "add .github/workflows/build-vllm.yml permanent workflow\n",
     )
     shutil.copytree(generated, repo / "fork" / "patches")
     git(repo, "add", "-A")
@@ -226,7 +226,7 @@ def test_a_moved_pointer_after_freeze_fails_frozen(tmp_path):
 
 def test_pre_migration_mode_runs_only_the_legacy_diff_check(tmp_path):
     repo = init_repo(tmp_path / "legacy")
-    _write(repo, "fork/docker/Dockerfile.audio", "ARG BASE_TAG=v9.9.9\n")
+    _write(repo, "fork/docker/Dockerfile", "ARG BASE_TAG=v9.9.9\n")
     _write(repo, "fork/alignment.ledger", "add fork/** permanent fork\n")
     _write(repo, "vllm/v1/core.py", "x = 2\n")
     git(repo, "add", "-A")

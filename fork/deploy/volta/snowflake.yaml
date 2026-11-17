@@ -1,0 +1,12 @@
+model: Snowflake/snowflake-arctic-embed-l-v2.0
+served-model-name: snowflake
+dtype: half
+max-model-len: 8192
+enforce-eager: true
+max-num-seqs: 4
+max-num-batched-tokens: 8192
+gpu-memory-utilization: 0.2
+runner: pooling
+attention-config:
+  backend: FLEX_ATTENTION
+revision: ac6544c8a46e00af67e330e85a9028c66b8cfd9a
