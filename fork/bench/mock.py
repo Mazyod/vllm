@@ -39,6 +39,7 @@ class MockConfig:
         received: Every request body the server was sent, in order. Lets tests
             assert what a probe actually asked for, which is how the
             measurement invariants in DESIGN.md become checks rather than prose.
+
     """
 
     corrupt_openers: int = 0
@@ -55,6 +56,7 @@ class MockConfig:
 
         Args:
             request: Parsed JSON body as received.
+
         """
         with self._lock:
             self.received.append(request)
@@ -64,6 +66,7 @@ class MockConfig:
 
         Returns:
             One of "fsm_500", "corrupt", "silent", or "clean".
+
         """
         with self._lock:
             if self.fsm_500s > 0:
@@ -88,11 +91,20 @@ def _metrics_text(config: MockConfig) -> str:
         'vllm:num_requests_running{model_name="mock"} 0.0',
     ]
     if config.spec_decode:
+        # Forced decoding deliberately has a different acceptance rate. The
+        # natural-generation probe must exclude this earlier traffic.
+        drafted = 400 + 100 * len(config.received)
+        accepted = 320 + sum(
+            95 if request.get("ignore_eos") else 80 for request in config.received
+        )
         lines += [
             "# TYPE vllm:spec_decode_num_draft_tokens_total counter",
-            'vllm:spec_decode_num_draft_tokens_total{model_name="mock"} 400.0',
+            f'vllm:spec_decode_num_draft_tokens_total{{model_name="mock"}} {drafted}',
             "# TYPE vllm:spec_decode_num_accepted_tokens_total counter",
-            'vllm:spec_decode_num_accepted_tokens_total{model_name="mock"} 320.0',
+            (
+                'vllm:spec_decode_num_accepted_tokens_total{model_name="mock"} '
+                f"{accepted}"
+            ),
         ]
     return "\n".join(lines) + "\n"
 
@@ -231,6 +243,7 @@ def serve(config: MockConfig, port: int = 0) -> Iterator[str]:
 
     Yields:
         Base URL of the running server.
+
     """
     server = ThreadingHTTPServer(("127.0.0.1", port), _handler_class(config))
     server.daemon_threads = True
