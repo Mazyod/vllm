@@ -722,5 +722,139 @@
     "verification_s": 712.370201587677,
     "gpu_allocated_during_staging": false,
     "weight_sha256_verified": true
+  },
+  "final_acceptance": {
+    "configuration_commit": "accb5fe6658ba458889816e0d3c69e1b8990c9ae",
+    "gate": [
+      {
+        "probe_id": "R5",
+        "profile_id": "deepseek-tp4",
+        "passed": true,
+        "detail": "served=True crashed=False lines=695",
+        "data": {
+          "crash_signature": ""
+        },
+        "launch_ids": []
+      },
+      {
+        "probe_id": "B1",
+        "profile_id": "deepseek-tp4",
+        "passed": true,
+        "detail": "0/100 corrupt (100 constrained outputs inspected)",
+        "data": {
+          "corrupt": 0,
+          "inspected": 100,
+          "shapes": {
+            "constrained": 99,
+            "truncated": 1
+          }
+        },
+        "launch_ids": []
+      },
+      {
+        "probe_id": "B3",
+        "profile_id": "deepseek-tp4",
+        "passed": true,
+        "detail": "acceptance=0.3479777206512425",
+        "data": {
+          "acceptance_rate": 0.3479777206512425
+        },
+        "launch_ids": []
+      },
+      {
+        "probe_id": "B4",
+        "profile_id": "deepseek-tp4",
+        "passed": true,
+        "detail": "status=200",
+        "data": {
+          "status": 200
+        },
+        "launch_ids": []
+      },
+      {
+        "probe_id": "P1",
+        "profile_id": "deepseek-tp4",
+        "passed": true,
+        "detail": "ttft_p50=0.115 (4/4 samples)",
+        "data": {
+          "ttft_p50": 0.11500793499999418,
+          "ttft_p99": 0.14778268999998545,
+          "n": 4
+        },
+        "launch_ids": []
+      },
+      {
+        "probe_id": "P2",
+        "profile_id": "deepseek-tp4",
+        "passed": true,
+        "detail": "decode_tok_s=288.9",
+        "data": {
+          "decode_tok_s": 288.9319675417306,
+          "elapsed_s": 0.8860217239998747
+        },
+        "launch_ids": []
+      },
+      {
+        "probe_id": "P3",
+        "profile_id": "deepseek-tp4",
+        "passed": true,
+        "detail": "aggregate throughput recorded",
+        "data": {
+          "throughput_conc1": 275.2251543614339,
+          "throughput_conc8": 1074.5312639638828,
+          "throughput_conc32": 2925.437224869039
+        },
+        "launch_ids": []
+      },
+      {
+        "probe_id": "P4",
+        "profile_id": "deepseek-tp4",
+        "passed": true,
+        "detail": "acceptance=0.4270967741935484",
+        "data": {
+          "acceptance_rate": 0.4270967741935484
+        },
+        "launch_ids": []
+      }
+    ],
+    "supplemental": {
+      "passed": true,
+      "images": [
+        1,
+        9
+      ],
+      "prompt_tokens": 1047476,
+      "max_model_len": 1048576
+    },
+    "cold_long_context_elapsed_s": 39.26524309300021,
+    "cpu_reload": {
+      "passed": true,
+      "elapsed_s": 4.13155763100076,
+      "load_bytes": 7654574592.0,
+      "usage": {
+        "prompt_tokens": 1047476,
+        "total_tokens": 1047496,
+        "completion_tokens": 20,
+        "prompt_tokens_details": {
+          "cached_tokens": 1047424,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "correct_answer": true
+    }
+  },
+  "cleanup": {
+    "app_stopped": true,
+    "containers_remaining": 0,
+    "watchdog_confirmed_stopped": true,
+    "volume_retained": true,
+    "gpu_container_elapsed_s": 6642.768047809601,
+    "gpu_allocation_phase_elapsed_s": 7071.397665739059,
+    "before_original_deadline": true,
+    "compute_metered_usd": 49.73322173
   }
 }
