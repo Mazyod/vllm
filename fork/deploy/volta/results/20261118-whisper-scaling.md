@@ -1,14 +1,15 @@
-# Whisper scaling on two V100 16 GB GPUs
+# Initial Whisper scaling on two V100 16 GB GPUs
 
-**Highest measured throughput:** two independent Whisper
+**Highest throughput in this initial comparison:** two independent Whisper
 workers, one per GPU, using [whisper-throughput.yaml](../whisper-throughput.yaml).
 Run one BGE service beside the first worker and one Snowflake service beside the
 second. The new profile changes only `max-num-seqs` from 4 to 8. The frozen image
 and model revisions are unchanged.
 
-For one Docker service and one API endpoint, use the verified
-[native DP2 profile](../whisper-dp2.yaml). It contains the exact configuration
-measured in the native-DP row below, with four sequences per rank.
+The four-sequence native-DP configuration measured here is preserved at
+[its original commit](https://github.com/Mazyod/vllm/blob/df6504d193b02106b85c7e18f897f6ce6c130a93/fork/deploy/volta/whisper-dp2.yaml).
+The [current native DP2 profile](../whisper-dp2.yaml) uses eight sequences
+following the [paired batching comparison](20261118-whisper-dp2-batching.md).
 
 [Structured measurements](20261118-whisper-scaling.json) bind the configurations,
 image, software, quality checks, memory observations and cleanup receipt.
@@ -30,7 +31,8 @@ in the original layout.
 
 Native DP2 also passed. Its metrics recorded 103 successful engine requests on
 each rank, confirming that both GPUs handled work. It was tested with four
-sequences per rank; native DP2 with eight was not evaluated. These results do
+sequences per rank; native DP2 with eight was evaluated in the linked follow-up,
+not this initial comparison. These results do
 not establish an architectural throughput ceiling for either approach.
 
 ## Placement of the throughput-oriented alternative

@@ -40,22 +40,23 @@ and handles request distribution internally.
 | BGE | 1 | 0 | `bge.yaml` |
 | Snowflake | 1 | 1 | `snowflake.yaml` |
 
-This is the exact native-DP configuration that passed the
-[two-V100 comparison](results/20261118-whisper-scaling.md), including inference
-on both ranks with BGE and Snowflake active. It retains four sequences per
-rank; eight sequences with native DP2 were not tested.
+This profile uses eight sequences per rank, up to sixteen across both GPUs.
+The [paired native-DP test](results/20261118-whisper-dp2-batching.md) measured
+49% more short-clip throughput at concurrency 16 and 81% more long-upload
+throughput at concurrency 4 than four sequences per rank. Both ranks processed
+requests with BGE and Snowflake active, with no cache preemptions.
 
 The optional [whisper-throughput.yaml](whisper-throughput.yaml) profile uses
-eight sequences with independent one-GPU workers and had the highest measured
-aggregate throughput. It requires two externally balanced workers. The DP2
-profile is the simpler deployment choice.
+eight sequences with independent one-GPU workers and external request
+balancing. Its [earlier measurements](results/20261118-whisper-scaling.md)
+remain available; the native DP2 profile provides one service and endpoint.
 
 Fetch the exact configuration snapshot into a new directory:
 
 ```bash
 (
   set -eu
-  config_base="https://raw.githubusercontent.com/Mazyod/vllm/df6504d193b02106b85c7e18f897f6ce6c130a93"
+  config_base="https://raw.githubusercontent.com/Mazyod/vllm/2b32ed0e0f3f03d392e540abec5bb3e92acb97d0"
   mkdir -p vllm-configs-dp2
   for model in whisper-dp2 bge snowflake; do
     curl -fL --retry 3 "$config_base/fork/deploy/volta/$model.yaml" \
@@ -65,7 +66,7 @@ Fetch the exact configuration snapshot into a new directory:
 ```
 
 The DP2 profile's SHA-256 is
-`910cce3f28d9aa3d37eb97928f39a958a0415b2bc73e0a1bed66ca00d04e2240`.
+`0b1afedb639a5300189e27f823b7550c51ab28120fec18fb57dae74fc0a2e5a6`.
 Mount the selected YAML into the container and pass `--config /path/to/model.yaml`
 to the image's existing `vllm serve` entrypoint. Ports, replica counts, GPU
 bindings, cache mounts and request routing belong in the deployment definition.
