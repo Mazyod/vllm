@@ -27,6 +27,10 @@ available by selecting their release tag. Do not treat old runner fixtures as
 proof that the new runner boots.
 
 Review every nondefault flag. Keep only required behavior or a measured gain.
+Required behavior includes API response metadata and intentional cache tiers.
+Distinguish default-equivalent cleanup from a changed feature or retired
+workaround; record the validation scope for each change. A minimal gate config
+must not silently replace deployment-specific requirements.
 There is no fork-imposed image-count limit. Leave default dtype, tokenizer,
 Engram offload, prefix caching, and chunked prefill to upstream. Keep checkpoint
 revisions pinned; model identity is part of the evidence.
