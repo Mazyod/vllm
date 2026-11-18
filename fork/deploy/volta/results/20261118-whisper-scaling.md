@@ -1,10 +1,14 @@
 # Whisper scaling on two V100 16 GB GPUs
 
-**Recommended for the measured throughput workload:** two independent Whisper
+**Highest measured throughput:** two independent Whisper
 workers, one per GPU, using [whisper-throughput.yaml](../whisper-throughput.yaml).
 Run one BGE service beside the first worker and one Snowflake service beside the
 second. The new profile changes only `max-num-seqs` from 4 to 8. The frozen image
 and model revisions are unchanged.
+
+For one Docker service and one API endpoint, use the verified
+[native DP2 profile](../whisper-dp2.yaml). It contains the exact configuration
+measured in the native-DP row below, with four sequences per rank.
 
 [Structured measurements](20261118-whisper-scaling.json) bind the configurations,
 image, software, quality checks, memory observations and cleanup receipt.
@@ -29,7 +33,7 @@ each rank, confirming that both GPUs handled work. It was tested with four
 sequences per rank; native DP2 with eight was not evaluated. These results do
 not establish an architectural throughput ceiling for either approach.
 
-## Placement and replication
+## Placement of the throughput-oriented alternative
 
 | process/container | instances | visible GPU(s) | engine config |
 | --- | ---: | --- | --- |
@@ -50,7 +54,7 @@ binding both use that GPU.
 
 The independent workers use default TP1 and DP1. Do not additionally set native
 DP2 on each copy. For the alternative native-DP setup, use one Whisper service
-with both GPUs visible and `--config whisper.yaml --data-parallel-size 2`.
+with both GPUs visible and `--config whisper-dp2.yaml`.
 v0.32.0 defaults that internal-DP launch to two API server processes. See the
 [versioned upstream DP guide](https://docs.vllm.ai/en/v0.32.0/serving/data_parallel_deployment/).
 

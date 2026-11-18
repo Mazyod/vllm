@@ -12,7 +12,8 @@ Do not copy that environment into vLLM 0.34.0.
 
 | configuration | API contract | full input/decoder window |
 | --- | --- | --- |
-| [Whisper](whisper.yaml) | native `mlmlaziz/bbyn-v2`; explicit language and JSON | 448 decoder tokens; long audio uses native chunking |
+| [Whisper, two GPUs](whisper-dp2.yaml) | one service/API with two native DP workers; explicit language and JSON | 448 decoder tokens; long audio uses native chunking |
+| [Whisper, one GPU](whisper.yaml) | native `mlmlaziz/bbyn-v2`; explicit language and JSON | 448 decoder tokens |
 | [BGE reranker](bge.yaml) | `/rerank` | 8192 tokens |
 | [Snowflake](snowflake.yaml) | `/v1/embeddings`, 1024 dimensions | 8192 tokens |
 
@@ -26,35 +27,45 @@ fine-tune, audio, and chunk boundaries. Matching that reference does not
 establish domain accuracy: Arabic read-speech WER was approximately 50% in both
 paths. Timestamp formats and automatic language detection are not qualified.
 
-## Higher Whisper throughput on two GPUs
+## One Whisper service on two GPUs
 
-The [scaling comparison](results/20261118-whisper-scaling.md) recommends two
-independent Whisper workers, one per GPU, using
-[whisper-throughput.yaml](whisper-throughput.yaml). Run BGE on GPU 0 and
-Snowflake on GPU 1. Each Whisper worker allows eight sequences; the original
-four-sequence configuration remains available unchanged.
+Use [whisper-dp2.yaml](whisper-dp2.yaml) for a single Docker service and API
+endpoint. Set the deployment's `REPLICAS=1` and expose both GPUs to that
+container. vLLM's `data-parallel-size: 2` starts one full Whisper worker per GPU
+and handles request distribution internally.
 
-Use one container/service instance per explicitly bound GPU and balance the
-two Whisper endpoints through your router. Raising a deployment's replica
-count does not itself assign distinct GPUs. Native vLLM DP2 also works, but
-the tested two-worker configuration had the best measured aggregate throughput.
+| service | deployment replicas | visible GPU(s) | engine config |
+| --- | ---: | --- | --- |
+| Whisper | 1 | 0, 1 | `whisper-dp2.yaml` |
+| BGE | 1 | 0 | `bge.yaml` |
+| Snowflake | 1 | 1 | `snowflake.yaml` |
+
+This is the exact native-DP configuration that passed the
+[two-V100 comparison](results/20261118-whisper-scaling.md), including inference
+on both ranks with BGE and Snowflake active. It retains four sequences per
+rank; eight sequences with native DP2 were not tested.
+
+The optional [whisper-throughput.yaml](whisper-throughput.yaml) profile uses
+eight sequences with independent one-GPU workers and had the highest measured
+aggregate throughput. It requires two externally balanced workers. The DP2
+profile is the simpler deployment choice.
 
 Fetch the exact configuration snapshot into a new directory:
 
 ```bash
 (
   set -eu
-  config_base="https://raw.githubusercontent.com/Mazyod/vllm/5d668ca5855b9ec430530c2db75475f2d7b0b229"
-  mkdir -p vllm-configs-20261118
-  for model in whisper whisper-throughput bge snowflake; do
+  config_base="https://raw.githubusercontent.com/Mazyod/vllm/df6504d193b02106b85c7e18f897f6ce6c130a93"
+  mkdir -p vllm-configs-dp2
+  for model in whisper-dp2 bge snowflake; do
     curl -fL --retry 3 "$config_base/fork/deploy/volta/$model.yaml" \
-      -o "vllm-configs-20261118/$model.yaml"
+      -o "vllm-configs-dp2/$model.yaml"
   done
 )
 ```
 
-The throughput profile's SHA-256 is
-`27ab20dd25dc50d91800a54161cd48b83e371250d9563b7644f388209ee4d242`.
+The DP2 profile's SHA-256 is
+`910cce3f28d9aa3d37eb97928f39a958a0415b2bc73e0a1bed66ca00d04e2240`.
 Mount the selected YAML into the container and pass `--config /path/to/model.yaml`
 to the image's existing `vllm serve` entrypoint. Ports, replica counts, GPU
 bindings, cache mounts and request routing belong in the deployment definition.
