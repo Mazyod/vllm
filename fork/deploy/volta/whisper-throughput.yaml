@@ -1,0 +1,12 @@
+model: mlmlaziz/bbyn-v2
+served-model-name: whisper
+dtype: half
+max-model-len: 448
+enforce-eager: true
+max-num-seqs: 8
+max-num-batched-tokens: 8192
+gpu-memory-utilization: 0.4
+kv-cache-memory-bytes: 2147483648
+attention-config:
+  backend: TRITON_ATTN
+revision: e910dbbc381deab0561e944c7149c3ace41b6bff

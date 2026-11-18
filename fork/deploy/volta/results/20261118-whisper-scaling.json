@@ -1,0 +1,693 @@
+{
+  "date": "2026-11-18",
+  "image": "openimage/vllm-audio@sha256:ddbb02258092f1888e19654e0757744e70d52be2c36c01584025a5ab5106dc5e",
+  "hardware_profile": "volta-16gb",
+  "interconnect": "NODE; no NVLink reported",
+  "driver": "580.173.02",
+  "runtime": {
+    "packages": {
+      "vllm": "0.32.0+cu126",
+      "torch": "2.13.0+cu126",
+      "torchaudio": "2.11.0+cu126",
+      "triton": "3.7.1",
+      "transformers": "5.19.0"
+    },
+    "cuda": "12.6",
+    "gpus": [
+      {
+        "name": "Tesla V100-SXM2-16GB",
+        "memory_bytes": 16928342016,
+        "compute_capability": "7.0"
+      },
+      {
+        "name": "Tesla V100-SXM2-16GB",
+        "memory_bytes": 16928342016,
+        "compute_capability": "7.0"
+      }
+    ]
+  },
+  "harness_sha256": "20bf4c237587979432607df4b3eeeb75ba75f3ea2baa2ff85e204e6b84bbc76b",
+  "case_bank_sha256": "bed64f67749670882b0023a39fb53997b4c9f60f5adf3564e89e67025f3547a6",
+  "profile_source": "5d668ca5855b9ec430530c2db75475f2d7b0b229",
+  "trials": {
+    "baseline": {
+      "placement": {
+        "bge": "1",
+        "snowflake": "1",
+        "whisper": "0"
+      },
+      "config_sha256": {
+        "bge": "1968ec0fc979d7243a53738f6c22b49a007bc983647c734657b4c532745e3c4a",
+        "snowflake": "e0e0cfa6f970b2e7fd3e76005d5ecc991696019d924425ff12eff9244366fb9f",
+        "whisper": "e6eb5f8f2d127a726c59b1171ece566716132e837332e966b6708fb38ab2b12e"
+      },
+      "ready_seconds": {
+        "bge": 53.00623188680038,
+        "snowflake": 52.95767871593125,
+        "whisper": 71.16110426397063
+      },
+      "performance": [
+        {
+          "kind": "short",
+          "concurrency": 1,
+          "requests": 32,
+          "elapsed_s": 44.62160037411377,
+          "audio_seconds_s": 7.19651463209936,
+          "requests_s": 0.7171414680716851,
+          "p50_s": 1.2784708654507995,
+          "p95_s": 2.743618866871111,
+          "passed": true
+        },
+        {
+          "kind": "short",
+          "concurrency": 4,
+          "requests": 32,
+          "elapsed_s": 20.316328945104033,
+          "audio_seconds_s": 15.806005153179294,
+          "requests_s": 1.5750877083387438,
+          "p50_s": 1.4872780400328338,
+          "p95_s": 2.9781235888483932,
+          "passed": true
+        },
+        {
+          "kind": "short",
+          "concurrency": 8,
+          "requests": 32,
+          "elapsed_s": 16.376241479068995,
+          "audio_seconds_s": 19.608895020901706,
+          "requests_s": 1.9540503259493478,
+          "p50_s": 1.9478257914306596,
+          "p95_s": 4.164240103727207,
+          "passed": true
+        },
+        {
+          "kind": "short",
+          "concurrency": 16,
+          "requests": 32,
+          "elapsed_s": 14.630796517943963,
+          "audio_seconds_s": 21.94822404960399,
+          "requests_s": 2.1871673193426995,
+          "p50_s": 3.3610553143080324,
+          "p95_s": 6.964988419844303,
+          "passed": true
+        },
+        {
+          "kind": "long",
+          "concurrency": 1,
+          "requests": 2,
+          "elapsed_s": 16.76994980708696,
+          "audio_seconds_s": 22.62081904620175,
+          "requests_s": 0.11926094132701594,
+          "latencies_s": [
+            5.773839411092922,
+            10.996110395994037
+          ],
+          "passed": true
+        },
+        {
+          "kind": "long",
+          "concurrency": 4,
+          "requests": 4,
+          "elapsed_s": 28.257787831127644,
+          "audio_seconds_s": 26.849235493383052,
+          "requests_s": 0.14155389742128932,
+          "latencies_s": [
+            9.842211591079831,
+            5.953660588944331,
+            28.256463300203905,
+            20.05811064899899
+          ],
+          "passed": true
+        }
+      ],
+      "asr_checked_including_warmup": 164,
+      "all_asr_checks_passed": true,
+      "auxiliary": {
+        "bge": {
+          "requests": 17,
+          "all_passed": true,
+          "cases": {
+            "bge-4096": {
+              "n": 4,
+              "median_s": 0.44979915546718985,
+              "max_s": 0.4674944879952818
+            },
+            "bge-64": {
+              "n": 5,
+              "median_s": 0.026886266889050603,
+              "max_s": 0.05716121499426663
+            },
+            "bge-8192": {
+              "n": 4,
+              "median_s": 1.5582447249908,
+              "max_s": 1.5644192919135094
+            },
+            "bge-batch": {
+              "n": 4,
+              "median_s": 0.3756259564543143,
+              "max_s": 0.3810124599840492
+            }
+          }
+        },
+        "snowflake": {
+          "requests": 17,
+          "all_passed": true,
+          "cases": {
+            "snowflake-4096": {
+              "n": 4,
+              "median_s": 0.4317103495122865,
+              "max_s": 0.44509625690989196
+            },
+            "snowflake-64": {
+              "n": 5,
+              "median_s": 0.049317686120048165,
+              "max_s": 0.0615002540871501
+            },
+            "snowflake-8192": {
+              "n": 4,
+              "median_s": 1.5557565134949982,
+              "max_s": 1.5571029300335795
+            },
+            "snowflake-batch": {
+              "n": 4,
+              "median_s": 3.6195694720372558,
+              "max_s": 3.629271276993677
+            }
+          }
+        }
+      },
+      "max_observed_gpu_mib": [
+        6097,
+        3891
+      ],
+      "per_engine_successful_requests": {}
+    },
+    "replicas": {
+      "placement": {
+        "bge": "0",
+        "snowflake": "1",
+        "whisper": "0",
+        "whisper-b": "1"
+      },
+      "config_sha256": {
+        "bge": "1968ec0fc979d7243a53738f6c22b49a007bc983647c734657b4c532745e3c4a",
+        "snowflake": "e0e0cfa6f970b2e7fd3e76005d5ecc991696019d924425ff12eff9244366fb9f",
+        "whisper": "e6eb5f8f2d127a726c59b1171ece566716132e837332e966b6708fb38ab2b12e",
+        "whisper-b": "e6eb5f8f2d127a726c59b1171ece566716132e837332e966b6708fb38ab2b12e"
+      },
+      "ready_seconds": {
+        "bge": 40.791037935065106,
+        "snowflake": 40.736539280973375,
+        "whisper": 38.67245685704984,
+        "whisper-b": 38.63689082697965
+      },
+      "performance": [
+        {
+          "kind": "short",
+          "concurrency": 1,
+          "requests": 32,
+          "elapsed_s": 44.02344390703365,
+          "audio_seconds_s": 7.294295300434105,
+          "requests_s": 0.7268854310347888,
+          "p50_s": 1.2851038209628314,
+          "p95_s": 2.727063751267269,
+          "passed": true
+        },
+        {
+          "kind": "short",
+          "concurrency": 4,
+          "requests": 32,
+          "elapsed_s": 19.063101136591285,
+          "audio_seconds_s": 16.84510813319958,
+          "requests_s": 1.6786355887593003,
+          "p50_s": 1.3600436119595543,
+          "p95_s": 2.7828223124728537,
+          "passed": true
+        },
+        {
+          "kind": "short",
+          "concurrency": 8,
+          "requests": 32,
+          "elapsed_s": 11.108440053183585,
+          "audio_seconds_s": 28.90774928456041,
+          "requests_s": 2.8806925046896272,
+          "p50_s": 1.5405422919429839,
+          "p95_s": 2.88061564945383,
+          "passed": true
+        },
+        {
+          "kind": "short",
+          "concurrency": 16,
+          "requests": 32,
+          "elapsed_s": 7.750375644071028,
+          "audio_seconds_s": 41.432830451986426,
+          "requests_s": 4.128832132734074,
+          "p50_s": 2.12331787601579,
+          "p95_s": 3.640524445986375,
+          "passed": true
+        },
+        {
+          "kind": "long",
+          "concurrency": 1,
+          "requests": 2,
+          "elapsed_s": 16.408826218917966,
+          "audio_seconds_s": 23.118655468642974,
+          "requests_s": 0.12188562261048093,
+          "latencies_s": [
+            5.716336299898103,
+            10.692489919019863
+          ],
+          "passed": true
+        },
+        {
+          "kind": "long",
+          "concurrency": 4,
+          "requests": 4,
+          "elapsed_s": 14.808033572975546,
+          "audio_seconds_s": 51.23570231395321,
+          "requests_s": 0.2701236447288953,
+          "latencies_s": [
+            14.025875509949401,
+            5.558788971975446,
+            11.276143101044,
+            14.808033572975546
+          ],
+          "passed": true
+        }
+      ],
+      "asr_checked_including_warmup": 165,
+      "all_asr_checks_passed": true,
+      "auxiliary": {
+        "bge": {
+          "requests": 13,
+          "all_passed": true,
+          "cases": {
+            "bge-4096": {
+              "n": 3,
+              "median_s": 0.6060654779430479,
+              "max_s": 0.7738286729436368
+            },
+            "bge-64": {
+              "n": 4,
+              "median_s": 0.028489756514318287,
+              "max_s": 0.057592981960624456
+            },
+            "bge-8192": {
+              "n": 3,
+              "median_s": 1.9648322719149292,
+              "max_s": 1.986710315104574
+            },
+            "bge-batch": {
+              "n": 3,
+              "median_s": 0.48147505591623485,
+              "max_s": 0.49658753792755306
+            }
+          }
+        },
+        "snowflake": {
+          "requests": 13,
+          "all_passed": true,
+          "cases": {
+            "snowflake-4096": {
+              "n": 3,
+              "median_s": 0.6151288049295545,
+              "max_s": 0.7926705740392208
+            },
+            "snowflake-64": {
+              "n": 4,
+              "median_s": 0.04902791150379926,
+              "max_s": 0.06021215091459453
+            },
+            "snowflake-8192": {
+              "n": 3,
+              "median_s": 1.6214853471610695,
+              "max_s": 2.0606609180103987
+            },
+            "snowflake-batch": {
+              "n": 3,
+              "median_s": 5.727863967884332,
+              "max_s": 6.683168769115582
+            }
+          }
+        }
+      },
+      "max_observed_gpu_mib": [
+        8029,
+        8007
+      ],
+      "per_engine_successful_requests": {}
+    },
+    "native-dp": {
+      "placement": {
+        "bge": "0",
+        "snowflake": "1",
+        "whisper": "0,1"
+      },
+      "config_sha256": {
+        "bge": "1968ec0fc979d7243a53738f6c22b49a007bc983647c734657b4c532745e3c4a",
+        "snowflake": "e0e0cfa6f970b2e7fd3e76005d5ecc991696019d924425ff12eff9244366fb9f",
+        "whisper": "910cce3f28d9aa3d37eb97928f39a958a0415b2bc73e0a1bed66ca00d04e2240"
+      },
+      "ready_seconds": {
+        "bge": 40.70875509898178,
+        "snowflake": 40.70830097910948,
+        "whisper": 56.95820399699733
+      },
+      "performance": [
+        {
+          "kind": "short",
+          "concurrency": 1,
+          "requests": 32,
+          "elapsed_s": 43.07721524499357,
+          "audio_seconds_s": 7.454520868484426,
+          "requests_s": 0.742852104482753,
+          "p50_s": 1.22803460189607,
+          "p95_s": 2.667452159849927,
+          "passed": true
+        },
+        {
+          "kind": "short",
+          "concurrency": 4,
+          "requests": 32,
+          "elapsed_s": 18.695605213055387,
+          "audio_seconds_s": 17.17622919079173,
+          "requests_s": 1.7116322063569238,
+          "p50_s": 1.3432811455568299,
+          "p95_s": 2.7126898831687867,
+          "passed": true
+        },
+        {
+          "kind": "short",
+          "concurrency": 8,
+          "requests": 32,
+          "elapsed_s": 11.568143918178976,
+          "audio_seconds_s": 27.758990748323072,
+          "requests_s": 2.7662173142324935,
+          "p50_s": 1.5334016660926864,
+          "p95_s": 2.9837887643603604,
+          "passed": true
+        },
+        {
+          "kind": "short",
+          "concurrency": 16,
+          "requests": 32,
+          "elapsed_s": 9.886949308915064,
+          "audio_seconds_s": 32.47917936733488,
+          "requests_s": 3.236589872180855,
+          "p50_s": 2.220702134538442,
+          "p95_s": 4.430367837985978,
+          "passed": true
+        },
+        {
+          "kind": "long",
+          "concurrency": 1,
+          "requests": 2,
+          "elapsed_s": 9.405564942862839,
+          "audio_seconds_s": 40.33250552247365,
+          "requests_s": 0.21264007129286228,
+          "latencies_s": [
+            3.3939910929184407,
+            6.011573849944398
+          ],
+          "passed": true
+        },
+        {
+          "kind": "long",
+          "concurrency": 4,
+          "requests": 4,
+          "elapsed_s": 14.779659403022379,
+          "audio_seconds_s": 51.33406523866504,
+          "requests_s": 0.27064223138877047,
+          "latencies_s": [
+            3.7498020820785314,
+            6.271915107965469,
+            14.77933117817156,
+            12.16325998888351
+          ],
+          "passed": true
+        }
+      ],
+      "asr_checked_including_warmup": 164,
+      "all_asr_checks_passed": true,
+      "auxiliary": {
+        "bge": {
+          "requests": 12,
+          "all_passed": true,
+          "cases": {
+            "bge-4096": {
+              "n": 3,
+              "median_s": 0.6447245581075549,
+              "max_s": 0.8378831821028143
+            },
+            "bge-64": {
+              "n": 3,
+              "median_s": 0.029078450053930283,
+              "max_s": 0.035360150039196014
+            },
+            "bge-8192": {
+              "n": 3,
+              "median_s": 1.8693954769987613,
+              "max_s": 2.6168857039883733
+            },
+            "bge-batch": {
+              "n": 3,
+              "median_s": 0.530816612066701,
+              "max_s": 0.5835685539059341
+            }
+          }
+        },
+        "snowflake": {
+          "requests": 12,
+          "all_passed": true,
+          "cases": {
+            "snowflake-4096": {
+              "n": 3,
+              "median_s": 0.6975627769716084,
+              "max_s": 0.7145809370558709
+            },
+            "snowflake-64": {
+              "n": 3,
+              "median_s": 0.05512002296745777,
+              "max_s": 0.06033983500674367
+            },
+            "snowflake-8192": {
+              "n": 3,
+              "median_s": 2.5256885020062327,
+              "max_s": 2.751339394133538
+            },
+            "snowflake-batch": {
+              "n": 3,
+              "median_s": 5.605656350962818,
+              "max_s": 6.171420720173046
+            }
+          }
+        }
+      },
+      "max_observed_gpu_mib": [
+        8029,
+        8025
+      ],
+      "per_engine_successful_requests": {
+        "0": 103.0,
+        "1": 103.0
+      }
+    },
+    "replicas-8": {
+      "placement": {
+        "bge": "0",
+        "snowflake": "1",
+        "whisper": "0",
+        "whisper-b": "1"
+      },
+      "config_sha256": {
+        "bge": "1968ec0fc979d7243a53738f6c22b49a007bc983647c734657b4c532745e3c4a",
+        "snowflake": "e0e0cfa6f970b2e7fd3e76005d5ecc991696019d924425ff12eff9244366fb9f",
+        "whisper": "27ab20dd25dc50d91800a54161cd48b83e371250d9563b7644f388209ee4d242",
+        "whisper-b": "27ab20dd25dc50d91800a54161cd48b83e371250d9563b7644f388209ee4d242"
+      },
+      "ready_seconds": {
+        "bge": 40.712085395120084,
+        "snowflake": 40.71305131702684,
+        "whisper": 42.723735332954675,
+        "whisper-b": 40.73415533383377
+      },
+      "performance": [
+        {
+          "kind": "short",
+          "concurrency": 8,
+          "requests": 32,
+          "elapsed_s": 11.064967528218403,
+          "audio_seconds_s": 29.021323305383824,
+          "requests_s": 2.892010294507606,
+          "p50_s": 1.4568230391014367,
+          "p95_s": 2.9054031819454393,
+          "passed": true
+        },
+        {
+          "kind": "short",
+          "concurrency": 16,
+          "requests": 32,
+          "elapsed_s": 6.499411514960229,
+          "audio_seconds_s": 49.4075500929356,
+          "requests_s": 4.923522679913861,
+          "p50_s": 1.6886903734412044,
+          "p95_s": 3.088593845872674,
+          "passed": true
+        },
+        {
+          "kind": "long",
+          "concurrency": 1,
+          "requests": 2,
+          "elapsed_s": 9.277838063891977,
+          "audio_seconds_s": 40.88775826734637,
+          "requests_s": 0.21556746153866543,
+          "latencies_s": [
+            3.500555817037821,
+            5.777282246854156
+          ],
+          "passed": true
+        },
+        {
+          "kind": "long",
+          "concurrency": 4,
+          "requests": 4,
+          "elapsed_s": 10.377329491078854,
+          "audio_seconds_s": 73.11129521831572,
+          "requests_s": 0.38545562260875554,
+          "latencies_s": [
+            8.25437188684009,
+            10.376321011921391,
+            5.96252019610256,
+            8.127938308985904
+          ],
+          "passed": true
+        }
+      ],
+      "asr_checked_including_warmup": 96,
+      "all_asr_checks_passed": true,
+      "auxiliary": {
+        "bge": {
+          "requests": 5,
+          "all_passed": true,
+          "cases": {
+            "bge-4096": {
+              "n": 1,
+              "median_s": 0.6051268801093102,
+              "max_s": 0.6051268801093102
+            },
+            "bge-64": {
+              "n": 2,
+              "median_s": 0.0415868335403502,
+              "max_s": 0.05639906809665263
+            },
+            "bge-8192": {
+              "n": 1,
+              "median_s": 2.778842261992395,
+              "max_s": 2.778842261992395
+            },
+            "bge-batch": {
+              "n": 1,
+              "median_s": 0.43483707308769226,
+              "max_s": 0.43483707308769226
+            }
+          }
+        },
+        "snowflake": {
+          "requests": 5,
+          "all_passed": true,
+          "cases": {
+            "snowflake-4096": {
+              "n": 1,
+              "median_s": 0.7510806270875037,
+              "max_s": 0.7510806270875037
+            },
+            "snowflake-64": {
+              "n": 2,
+              "median_s": 0.072874391451478,
+              "max_s": 0.09314311295747757
+            },
+            "snowflake-8192": {
+              "n": 1,
+              "median_s": 2.3519292580895126,
+              "max_s": 2.3519292580895126
+            },
+            "snowflake-batch": {
+              "n": 1,
+              "median_s": 9.060587357962504,
+              "max_s": 9.060587357962504
+            }
+          }
+        }
+      },
+      "max_observed_gpu_mib": [
+        8047,
+        8051
+      ],
+      "per_engine_successful_requests": {}
+    }
+  },
+  "method": {
+    "short_clips": 32,
+    "languages": [
+      "en",
+      "ar"
+    ],
+    "long_clips": 2,
+    "short_concurrencies": [
+      1,
+      4,
+      8,
+      16
+    ],
+    "final_batching_concurrencies": [
+      8,
+      16
+    ],
+    "timed_short_requests_per_cell": 32,
+    "timed_long_concurrencies": [
+      1,
+      4
+    ],
+    "timed_long_requests": [
+      2,
+      4
+    ],
+    "auxiliary_arrivals_per_minute": 12,
+    "auxiliary_services": "alternating BGE/Snowflake; 64/4096/8192-token inputs and saved 8-input embedding / 32-document reranking batches",
+    "warmup": "Pooling shapes validated before timing; one ASR cohort per concurrency excluded from throughput",
+    "timing": "Sum of barrier-synchronized HTTP cohort spans, reference validation excluded; loopback HTTP",
+    "replica_routing": "round robin, with paired-language ordering so endpoints see balanced languages",
+    "references": "Saved FP32 outputs from the pinned 20261117 qualification, same checkpoints and audio SHA-256 values",
+    "quality": "At most one additional word error for short clips; max(1 word, 2% reference words) for long clips; pooling cosine >=0.999 and rerank atol0.01 with top-1 agreement",
+    "scope": "Small same-host comparison on warm reused fixtures, not production SLO or sustained saturation of all auxiliary services"
+  },
+  "accounting": {
+    "elapsed_hours": 0.747894760436482,
+    "hourly_rate": 0.3940740740740741,
+    "full_rate_elapsed_compute_storage_bound": 0.2947259352238581,
+    "model_staging_ingress_bytes": 6836307522,
+    "model_staging_seconds": 34.976802349090576,
+    "model_staging_mbit_s": 1563.6209288131793,
+    "inbound_dollars_per_gb": 0.00390625,
+    "cache_reused_between_trials": true,
+    "provider_absence_verified": true,
+    "external_watchdog_absence_verified": true,
+    "transfer_scope": "Guest counters exclude provider-side image pull; includes control traffic"
+  },
+  "recommendation": {
+    "config": "fork/deploy/volta/whisper-throughput.yaml",
+    "config_sha256": "27ab20dd25dc50d91800a54161cd48b83e371250d9563b7644f388209ee4d242",
+    "whisper_workers": 2,
+    "max_num_seqs_each": 8,
+    "gpu0": [
+      "whisper-0",
+      "bge"
+    ],
+    "gpu1": [
+      "whisper-1",
+      "snowflake"
+    ],
+    "vllm_dp_size_each": 1,
+    "vllm_tp_size_each": 1
+  }
+}
