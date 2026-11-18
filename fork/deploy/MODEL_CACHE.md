@@ -1,9 +1,33 @@
-# Vast.ai H200 model warm-up optimization
+# Stage model weights before GPU allocation
 
-**Status: proposed, not hardware-validated.** Provider and Hugging Face command
+**Vast workflow status: proposed, not hardware-validated.** Provider and Hugging Face command
 references checked on 2026-09-17. No rental, clone, throughput, or savings
 measurement has validated this workflow. The existing rental controllers do not
 automatically provision or attach these volumes.
+
+## Validated Modal alternative
+
+A CPU-only Function can download a pinned snapshot into a v2 Modal Volume and
+verify its checksums before GPU allocation. A separate GPU Function mounts the
+same volume and loads with `HF_HUB_OFFLINE=1`. The
+[v0.34.0 campaign](../bench/configs/v0.34.0/results/20261118-tuning.md) used this
+sequence for a 510 GB checkpoint: 29.7 minutes downloading and 11.9 minutes
+verifying, with no GPUs allocated during those steps.
+
+Prepare the runtime image and real parser on CPU too. Modal needs `python` on
+PATH; this image needed an alias to its existing `python3`, without replacing
+inference dependencies. Check CPU thread variables: resource-based provider
+defaults can override vLLM's normal serving settings.
+
+Keep one watched GPU container through process restarts using native container
+execution. Bound the app with a native timeout and an external app-specific
+watchdog, retaining the verified volume when compute stops. Storage needs its
+own budget and retention decision. Volume reuse avoids another Hub download;
+model reads and kernel initialization still take time, and cross-provider
+transfer speed requires separate measurement.
+
+References: [Modal model storage](https://modal.com/docs/guide/model-weights),
+[Volumes](https://modal.com/docs/guide/volumes), [pricing](https://modal.com/pricing).
 
 ## Goal
 
