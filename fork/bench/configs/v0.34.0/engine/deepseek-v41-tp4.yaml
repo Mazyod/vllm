@@ -5,6 +5,7 @@ tensor-parallel-size: 4
 mm-encoder-tp-mode: data
 tool-call-parser: deepseek_v41
 enable-auto-tool-choice: true
+enable-prompt-tokens-details: true
 reasoning-parser: deepseek_v41
 speculative-config:
   method: dspark
