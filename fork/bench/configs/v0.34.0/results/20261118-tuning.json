@@ -1,0 +1,726 @@
+{
+  "image": "openimage/vllm@sha256:32a0c7999d89cffba871b172cfffdfedafe33afb86f398cc6196a1d6d85ff828",
+  "release_source": "62d4bc3c7e33b1b6c906e233e6af2d3506c482ca",
+  "model_revision": "dba1be0a40aa45a94ad051997016db3960a90277",
+  "selected_config_sha256": "01fdc1f69ed15774fe91f17d04014b424e9c9d4abfc075b7f451af572b50c5b9",
+  "hardware": {
+    "gpu_count": 4,
+    "gpu": "H200",
+    "compute_capability": "9.0",
+    "usable_gpu_gib": 139.79,
+    "driver": "610.57.04",
+    "host_memory_gib": 768,
+    "requested_cpu_cores": 16,
+    "topology_query": "unavailable"
+  },
+  "runtime_env": {
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "HF_HUB_OFFLINE": "1",
+    "VLLM_SERVER_DEV_MODE": "1",
+    "VLLM_ENGINE_READY_TIMEOUT_S": "1800"
+  },
+  "method": {
+    "warmup_rounds": 1,
+    "measured_rounds": 3,
+    "concurrency": [
+      1,
+      8,
+      32,
+      128
+    ],
+    "burst_output_tokens": 256,
+    "ignore_eos": true,
+    "temperature": 1,
+    "seed": "request index",
+    "prefixes": "fresh nonce per burst, distinct request index before first complete cache block"
+  },
+  "variants": {
+    "baseline-omp1": {
+      "status": "complete",
+      "config_sha256": "023e25329f74dd525f47da0d7a40917849908da8ef036c2456552d504d21c4c4",
+      "config": {
+        "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "revision": "dba1be0a40aa45a94ad051997016db3960a90277",
+        "served-model-name": "deepseek-v4.1-flash",
+        "tensor-parallel-size": 4,
+        "mm-encoder-tp-mode": "data",
+        "tool-call-parser": "deepseek_v41",
+        "enable-auto-tool-choice": true,
+        "enable-prompt-tokens-details": true,
+        "reasoning-parser": "deepseek_v41",
+        "speculative-config": {
+          "method": "dspark",
+          "draft_sample_method": "probabilistic",
+          "rejection_sample_method": "block"
+        },
+        "max-num-seqs": 512
+      },
+      "ttft_p50_s": [
+        0.1066676230000212,
+        0.10711958000001687,
+        0.10739689199999702
+      ],
+      "median_output_tok_s": {
+        "1": 290.14888533290855,
+        "8": 1110.3059670044727,
+        "32": 2047.8566853575412,
+        "128": 1911.2120525761582
+      },
+      "gpu_kv_gib_per_rank": 17.75,
+      "measured_burst_elapsed_s": {
+        "1": [
+          0.8220151400000759,
+          0.9044283559999258,
+          0.8823056470000665
+        ],
+        "8": [
+          1.8445366060000197,
+          1.9214239930001895,
+          1.7972029059999386
+        ],
+        "32": [
+          4.000279931000023,
+          3.9544207809999534,
+          4.016001494999955
+        ],
+        "128": [
+          17.05722214299999,
+          17.245095945000003,
+          17.14514093599996
+        ]
+      },
+      "warm_prefix_hits": 0,
+      "warm_preemptions": 0.0,
+      "engine_counters_matched_usage": true,
+      "validated_requests": 693
+    },
+    "ep": {
+      "status": "complete",
+      "config_sha256": "348504e0c3876b0f4c74fd1ba0800280eb0acd9d321143af38f0a10e107e2902",
+      "config": {
+        "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "revision": "dba1be0a40aa45a94ad051997016db3960a90277",
+        "served-model-name": "deepseek-v4.1-flash",
+        "tensor-parallel-size": 4,
+        "mm-encoder-tp-mode": "data",
+        "tool-call-parser": "deepseek_v41",
+        "enable-auto-tool-choice": true,
+        "enable-prompt-tokens-details": true,
+        "reasoning-parser": "deepseek_v41",
+        "speculative-config": {
+          "method": "dspark",
+          "draft_sample_method": "probabilistic",
+          "rejection_sample_method": "block"
+        },
+        "max-num-seqs": 512,
+        "enable-expert-parallel": true
+      },
+      "ttft_p50_s": [
+        0.11215399499997147,
+        0.12264234599979318,
+        0.11083038700007819
+      ],
+      "median_output_tok_s": {
+        "1": 244.36852052391177,
+        "8": 1030.3124860849566,
+        "32": 1952.7526509341283,
+        "128": 1904.4971030339032
+      },
+      "gpu_kv_gib_per_rank": 25.41,
+      "measured_burst_elapsed_s": {
+        "1": [
+          1.0111830880000525,
+          1.0475981090000914,
+          1.0483778979998988
+        ],
+        "8": [
+          1.9474207449998175,
+          2.0881377759999395,
+          1.987746462999894
+        ],
+        "32": [
+          4.195103765999875,
+          4.195561818000215,
+          4.111763871999983
+        ],
+        "128": [
+          19.371225944000116,
+          17.021390335999968,
+          17.20559193700001
+        ]
+      },
+      "warm_prefix_hits": 0,
+      "warm_preemptions": 0.0,
+      "engine_counters_matched_usage": true,
+      "validated_requests": 693
+    },
+    "adaptive": {
+      "status": "complete",
+      "config_sha256": "a296657b15ce32e65196ac51a346c6f626823cc56c8999bc3a0bf89bf8c3143a",
+      "config": {
+        "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "revision": "dba1be0a40aa45a94ad051997016db3960a90277",
+        "served-model-name": "deepseek-v4.1-flash",
+        "tensor-parallel-size": 4,
+        "mm-encoder-tp-mode": "data",
+        "tool-call-parser": "deepseek_v41",
+        "enable-auto-tool-choice": true,
+        "enable-prompt-tokens-details": true,
+        "reasoning-parser": "deepseek_v41",
+        "speculative-config": {
+          "method": "dspark",
+          "draft_sample_method": "probabilistic",
+          "rejection_sample_method": "block",
+          "enable_adaptive_verification": true
+        },
+        "max-num-seqs": 512
+      },
+      "ttft_p50_s": [
+        0.10826259699979346,
+        0.10617787000001044,
+        0.10445604699998512
+      ],
+      "median_output_tok_s": {
+        "1": 267.6398069562819,
+        "8": 1081.5707282008295,
+        "32": 2205.3825797539025,
+        "128": 3006.5295867920845
+      },
+      "gpu_kv_gib_per_rank": 17.83,
+      "measured_burst_elapsed_s": {
+        "1": [
+          0.8870151250002891,
+          0.9565094330000647,
+          0.9693341050001436
+        ],
+        "8": [
+          1.9079226239996387,
+          1.8935423699999774,
+          1.8822723150001366
+        ],
+        "32": [
+          3.7145482490000177,
+          3.7367953120001403,
+          3.7130287630002385
+        ],
+        "128": [
+          10.898944797999775,
+          10.95779411500007,
+          10.851450155999828
+        ]
+      },
+      "warm_prefix_hits": 0,
+      "warm_preemptions": 0.0,
+      "engine_counters_matched_usage": true,
+      "validated_requests": 693
+    },
+    "graphs1024": {
+      "status": "complete",
+      "config_sha256": "7016ab3adee4acb4a0b6f75c3567b009e2fa1a45557a9c3eb2f9851143121c7f",
+      "config": {
+        "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "revision": "dba1be0a40aa45a94ad051997016db3960a90277",
+        "served-model-name": "deepseek-v4.1-flash",
+        "tensor-parallel-size": 4,
+        "mm-encoder-tp-mode": "data",
+        "tool-call-parser": "deepseek_v41",
+        "enable-auto-tool-choice": true,
+        "enable-prompt-tokens-details": true,
+        "reasoning-parser": "deepseek_v41",
+        "speculative-config": {
+          "method": "dspark",
+          "draft_sample_method": "probabilistic",
+          "rejection_sample_method": "block"
+        },
+        "max-num-seqs": 512,
+        "max-cudagraph-capture-size": 1024
+      },
+      "ttft_p50_s": [
+        0.10653449000028559,
+        0.10928845000034926,
+        0.10711808899986863
+      ],
+      "median_output_tok_s": {
+        "1": 272.52495739925257,
+        "8": 1103.5719990076736,
+        "32": 2082.573428338527,
+        "128": 2864.8681373924296
+      },
+      "gpu_kv_gib_per_rank": 13.54,
+      "measured_burst_elapsed_s": {
+        "1": [
+          0.9256621879999329,
+          0.9393635079995875,
+          1.010580500999822
+        ],
+        "8": [
+          1.8557919209997635,
+          1.9210849820001386,
+          1.7823904259998926
+        ],
+        "32": [
+          3.9315930600000684,
+          3.933594795999852,
+          4.0315688149999005
+        ],
+        "128": [
+          11.496491903999868,
+          11.437873726999896,
+          11.337380447999749
+        ]
+      },
+      "warm_prefix_hits": 0,
+      "warm_preemptions": 0.0,
+      "engine_counters_matched_usage": true,
+      "validated_requests": 693
+    },
+    "adaptive-graphs1024": {
+      "status": "complete",
+      "config_sha256": "401c43a505ef56a38858657dbebb1e1de08ded03771fe32f109b17f3f7916c73",
+      "config": {
+        "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "revision": "dba1be0a40aa45a94ad051997016db3960a90277",
+        "served-model-name": "deepseek-v4.1-flash",
+        "tensor-parallel-size": 4,
+        "mm-encoder-tp-mode": "data",
+        "tool-call-parser": "deepseek_v41",
+        "enable-auto-tool-choice": true,
+        "enable-prompt-tokens-details": true,
+        "reasoning-parser": "deepseek_v41",
+        "speculative-config": {
+          "method": "dspark",
+          "draft_sample_method": "probabilistic",
+          "rejection_sample_method": "block",
+          "enable_adaptive_verification": true
+        },
+        "max-num-seqs": 512,
+        "max-cudagraph-capture-size": 1024
+      },
+      "ttft_p50_s": [
+        0.10524710599975151,
+        0.10506678199999442,
+        0.10359317799975543
+      ],
+      "median_output_tok_s": {
+        "1": 258.03487229225533,
+        "8": 1118.1648079905724,
+        "32": 2186.7228791259413,
+        "128": 3068.189383189654
+      },
+      "gpu_kv_gib_per_rank": 13.84,
+      "measured_burst_elapsed_s": {
+        "1": [
+          1.013630424999974,
+          0.9485365929999716,
+          0.9921139639996
+        ],
+        "8": [
+          1.8315725779998502,
+          1.8481076269999903,
+          1.8142204320001838
+        ],
+        "32": [
+          3.7462451589999546,
+          3.769013180999991,
+          3.722895795000113
+        ],
+        "128": [
+          10.708450472000095,
+          10.654008848000103,
+          10.679914408000059
+        ]
+      },
+      "warm_prefix_hits": 0,
+      "warm_preemptions": 0.0,
+      "engine_counters_matched_usage": true,
+      "validated_requests": 693
+    },
+    "adaptive-kv256": {
+      "status": "complete",
+      "config_sha256": "01fdc1f69ed15774fe91f17d04014b424e9c9d4abfc075b7f451af572b50c5b9",
+      "config": {
+        "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "revision": "dba1be0a40aa45a94ad051997016db3960a90277",
+        "served-model-name": "deepseek-v4.1-flash",
+        "tensor-parallel-size": 4,
+        "mm-encoder-tp-mode": "data",
+        "tool-call-parser": "deepseek_v41",
+        "enable-auto-tool-choice": true,
+        "enable-prompt-tokens-details": true,
+        "reasoning-parser": "deepseek_v41",
+        "speculative-config": {
+          "method": "dspark",
+          "draft_sample_method": "probabilistic",
+          "rejection_sample_method": "block",
+          "enable_adaptive_verification": true
+        },
+        "max-num-seqs": 512,
+        "kv-offloading-size": 256
+      },
+      "ttft_p50_s": [
+        0.10408474299993031,
+        0.11870569400025488,
+        0.11847206899983576
+      ],
+      "median_output_tok_s": {
+        "1": 255.04306032964183,
+        "8": 1070.4327641281834,
+        "32": 2156.9529130836413,
+        "128": 2932.791618844553
+      },
+      "gpu_kv_gib_per_rank": 17.83,
+      "measured_burst_elapsed_s": {
+        "1": [
+          1.0037520709997807,
+          1.1200146830001358,
+          0.9865594749999218
+        ],
+        "8": [
+          1.8028531450004266,
+          2.1848681159999614,
+          1.913244874999691
+        ],
+        "32": [
+          3.701163999000073,
+          4.000266608999937,
+          3.797950316999959
+        ],
+        "128": [
+          11.246868136000103,
+          10.952600474000064,
+          11.17297246399994
+        ]
+      },
+      "warm_prefix_hits": 0,
+      "warm_preemptions": 0.0,
+      "engine_counters_matched_usage": true,
+      "validated_requests": 693
+    },
+    "adaptive-kv256-marlin": {
+      "status": "complete",
+      "config_sha256": "64c0eca6169338f913f90b8179a6fb3dd85bad740b18ffcf38dc952fa85088af",
+      "config": {
+        "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "revision": "dba1be0a40aa45a94ad051997016db3960a90277",
+        "served-model-name": "deepseek-v4.1-flash",
+        "tensor-parallel-size": 4,
+        "mm-encoder-tp-mode": "data",
+        "tool-call-parser": "deepseek_v41",
+        "enable-auto-tool-choice": true,
+        "enable-prompt-tokens-details": true,
+        "reasoning-parser": "deepseek_v41",
+        "speculative-config": {
+          "method": "dspark",
+          "draft_sample_method": "probabilistic",
+          "rejection_sample_method": "block",
+          "enable_adaptive_verification": true
+        },
+        "max-num-seqs": 512,
+        "kv-offloading-size": 256,
+        "moe-backend": "marlin"
+      },
+      "ttft_p50_s": [
+        0.10609578200001124,
+        0.10113781300060509,
+        0.10223628999938228
+      ],
+      "median_output_tok_s": {
+        "1": 270.29606425395315,
+        "8": 931.2494121968093,
+        "32": 1723.1338640044064,
+        "128": 2312.719934130703
+      },
+      "gpu_kv_gib_per_rank": 17.9,
+      "measured_burst_elapsed_s": {
+        "1": [
+          0.9424208850005016,
+          0.9706216530003076,
+          0.947109609999643
+        ],
+        "8": [
+          2.1991960190007376,
+          2.1872577060003096,
+          2.2579099829999905
+        ],
+        "32": [
+          4.789604071000213,
+          4.740369332999762,
+          4.754128608999963
+        ],
+        "128": [
+          14.18466486899979,
+          14.16859841799942,
+          14.11880543100051
+        ]
+      },
+      "warm_prefix_hits": 0,
+      "warm_preemptions": 0.0,
+      "engine_counters_matched_usage": true,
+      "validated_requests": 693
+    },
+    "adaptive-thp": {
+      "status": "incomplete",
+      "config_sha256": "b15153d6d2350b5e8fd30e4220cdd6025e7628e14cfcf1e40ca5229143107160",
+      "config": {
+        "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "revision": "dba1be0a40aa45a94ad051997016db3960a90277",
+        "served-model-name": "deepseek-v4.1-flash",
+        "tensor-parallel-size": 4,
+        "mm-encoder-tp-mode": "data",
+        "tool-call-parser": "deepseek_v41",
+        "enable-auto-tool-choice": true,
+        "enable-prompt-tokens-details": true,
+        "reasoning-parser": "deepseek_v41",
+        "speculative-config": {
+          "method": "dspark",
+          "draft_sample_method": "probabilistic",
+          "rejection_sample_method": "block",
+          "enable_adaptive_verification": true
+        },
+        "max-num-seqs": 512,
+        "engram-config": {
+          "use_thp": true
+        }
+      },
+      "ttft_p50_s": [
+        0.1073038220001763,
+        0.1055566959994394
+      ],
+      "limitation": "HTTP client RemoteProtocolError during round 2 C32; server remained healthy; no complete median.",
+      "gpu_kv_gib_per_rank": 17.87,
+      "measured_burst_elapsed_s": {
+        "1": [
+          0.9954015009998329,
+          0.9574234880001313
+        ],
+        "8": [
+          1.7875187780000488,
+          1.8707683610000458
+        ],
+        "32": [
+          3.751034668000102
+        ],
+        "128": [
+          11.109650892999525
+        ]
+      },
+      "warm_prefix_hits": 0,
+      "warm_preemptions": 0.0,
+      "engine_counters_matched_usage": true
+    }
+  },
+  "cache_reuse": {
+    "adaptive-graphs1024": [
+      {
+        "round": 0,
+        "phase": "cold",
+        "elapsed_s": 3.024497424999936,
+        "prompt_tokens": 132027,
+        "cached_tokens": 0,
+        "cpu_load_bytes": 0,
+        "gpu_hit_tokens": 0.0,
+        "external_hit_tokens": 0.0,
+        "correct": true
+      },
+      {
+        "round": 0,
+        "phase": "gpu_hit",
+        "elapsed_s": 0.34014356299985593,
+        "prompt_tokens": 132027,
+        "cached_tokens": 131968,
+        "cpu_load_bytes": 0,
+        "gpu_hit_tokens": 131968.0,
+        "external_hit_tokens": 0.0,
+        "correct": true
+      },
+      {
+        "round": 0,
+        "phase": "after_gpu_eviction",
+        "elapsed_s": 3.0173268270000335,
+        "prompt_tokens": 132027,
+        "cached_tokens": 0,
+        "cpu_load_bytes": 0,
+        "gpu_hit_tokens": 0.0,
+        "external_hit_tokens": 0.0,
+        "correct": true
+      },
+      {
+        "round": 1,
+        "phase": "cold",
+        "elapsed_s": 2.9799779099998887,
+        "prompt_tokens": 132027,
+        "cached_tokens": 0,
+        "cpu_load_bytes": 0,
+        "gpu_hit_tokens": 0.0,
+        "external_hit_tokens": 0.0,
+        "correct": true
+      },
+      {
+        "round": 1,
+        "phase": "gpu_hit",
+        "elapsed_s": 0.3739910219997,
+        "prompt_tokens": 132027,
+        "cached_tokens": 131968,
+        "cpu_load_bytes": 0,
+        "gpu_hit_tokens": 131968.0,
+        "external_hit_tokens": 0.0,
+        "correct": true
+      },
+      {
+        "round": 1,
+        "phase": "after_gpu_eviction",
+        "elapsed_s": 2.9798027729998466,
+        "prompt_tokens": 132027,
+        "cached_tokens": 0,
+        "cpu_load_bytes": 0,
+        "gpu_hit_tokens": 0.0,
+        "external_hit_tokens": 0.0,
+        "correct": true
+      },
+      {
+        "round": 2,
+        "phase": "cold",
+        "elapsed_s": 3.0056951280002977,
+        "prompt_tokens": 132026,
+        "cached_tokens": 0,
+        "cpu_load_bytes": 0,
+        "gpu_hit_tokens": 0.0,
+        "external_hit_tokens": 0.0,
+        "correct": true
+      },
+      {
+        "round": 2,
+        "phase": "gpu_hit",
+        "elapsed_s": 0.3552742010001566,
+        "prompt_tokens": 132026,
+        "cached_tokens": 131968,
+        "cpu_load_bytes": 0,
+        "gpu_hit_tokens": 131968.0,
+        "external_hit_tokens": 0.0,
+        "correct": true
+      },
+      {
+        "round": 2,
+        "phase": "after_gpu_eviction",
+        "elapsed_s": 2.996448171999873,
+        "prompt_tokens": 132026,
+        "cached_tokens": 0,
+        "cpu_load_bytes": 0,
+        "gpu_hit_tokens": 0.0,
+        "external_hit_tokens": 0.0,
+        "correct": true
+      }
+    ],
+    "adaptive-kv256": [
+      {
+        "round": 0,
+        "phase": "cold",
+        "elapsed_s": 3.1364547740004127,
+        "prompt_tokens": 132027,
+        "cached_tokens": 0,
+        "cpu_load_bytes": 0,
+        "gpu_hit_tokens": 0.0,
+        "external_hit_tokens": 0.0,
+        "correct": true
+      },
+      {
+        "round": 0,
+        "phase": "gpu_hit",
+        "elapsed_s": 0.3919539349999468,
+        "prompt_tokens": 132027,
+        "cached_tokens": 131968,
+        "cpu_load_bytes": 0,
+        "gpu_hit_tokens": 131968.0,
+        "external_hit_tokens": 0.0,
+        "correct": true
+      },
+      {
+        "round": 0,
+        "phase": "after_gpu_eviction",
+        "elapsed_s": 0.411140241999874,
+        "prompt_tokens": 132027,
+        "cached_tokens": 131968,
+        "cpu_load_bytes": 964422144.0,
+        "gpu_hit_tokens": 0.0,
+        "external_hit_tokens": 131968.0,
+        "correct": true
+      },
+      {
+        "round": 1,
+        "phase": "cold",
+        "elapsed_s": 2.9892548429997987,
+        "prompt_tokens": 132029,
+        "cached_tokens": 0,
+        "cpu_load_bytes": 0.0,
+        "gpu_hit_tokens": 0.0,
+        "external_hit_tokens": 0.0,
+        "correct": true
+      },
+      {
+        "round": 1,
+        "phase": "gpu_hit",
+        "elapsed_s": 0.4034513000001425,
+        "prompt_tokens": 132029,
+        "cached_tokens": 131968,
+        "cpu_load_bytes": 0.0,
+        "gpu_hit_tokens": 131968.0,
+        "external_hit_tokens": 0.0,
+        "correct": true
+      },
+      {
+        "round": 1,
+        "phase": "after_gpu_eviction",
+        "elapsed_s": 0.40468892300032167,
+        "prompt_tokens": 132029,
+        "cached_tokens": 131968,
+        "cpu_load_bytes": 964422144.0,
+        "gpu_hit_tokens": 0.0,
+        "external_hit_tokens": 131968.0,
+        "correct": true
+      },
+      {
+        "round": 2,
+        "phase": "cold",
+        "elapsed_s": 3.0300294660000873,
+        "prompt_tokens": 132030,
+        "cached_tokens": 0,
+        "cpu_load_bytes": 0.0,
+        "gpu_hit_tokens": 0.0,
+        "external_hit_tokens": 0.0,
+        "correct": true
+      },
+      {
+        "round": 2,
+        "phase": "gpu_hit",
+        "elapsed_s": 0.40943515600019964,
+        "prompt_tokens": 132030,
+        "cached_tokens": 131968,
+        "cpu_load_bytes": 0.0,
+        "gpu_hit_tokens": 131968.0,
+        "external_hit_tokens": 0.0,
+        "correct": true
+      },
+      {
+        "round": 2,
+        "phase": "after_gpu_eviction",
+        "elapsed_s": 0.38715827699979855,
+        "prompt_tokens": 132030,
+        "cached_tokens": 131968,
+        "cpu_load_bytes": 964422144.0,
+        "gpu_hit_tokens": 0.0,
+        "external_hit_tokens": 131968.0,
+        "correct": true
+      }
+    ]
+  },
+  "staging": {
+    "payload_bytes": 510310568472,
+    "files": 66,
+    "download_s": 1783.6279821395874,
+    "verification_s": 712.370201587677,
+    "gpu_allocated_during_staging": false,
+    "weight_sha256_verified": true
+  }
+}

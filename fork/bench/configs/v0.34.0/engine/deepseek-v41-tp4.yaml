@@ -11,4 +11,6 @@ speculative-config:
   method: dspark
   draft_sample_method: probabilistic
   rejection_sample_method: block
+  enable_adaptive_verification: true
 max-num-seqs: 512
+kv-offloading-size: 256

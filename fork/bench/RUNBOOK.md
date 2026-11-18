@@ -96,7 +96,11 @@ staging. R3's historical PCIe collective regression requires a genuinely unlinke
 pair; fabric hardware is not equivalent. DeepSeek TP4 records its actual fabric
 and must not be mislabeled as PCIe proof.
 
-Stage pinned checkpoint files once. Reuse Hugging Face and compilation caches.
+Prepare and verify pinned checkpoints on cheap compute before allocating the
+large GPU venue when independent storage is available. See the validated
+[Modal staging workflow](../deploy/MODEL_CACHE.md). Record venue constraints
+requiring GPU-host staging, including the transfer-time estimate. Stage files
+once and reuse Hugging Face and compilation caches across restarts.
 Do not expose credentials through command lines or logs. Public checkpoints need
 no token. Validate the real parser in the candidate environment:
 
